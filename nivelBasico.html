@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso Basico</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        nav {
+            display: flex;
+            background-color: #34495e;
+        }
+        
+        .tab {
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        
+        .tab:hover {
+            background-color: #2c3e50;
+        }
+        
+        .tab.active {
+            background-color: #2980b9;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        button {
+            padding: 8px 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .success {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .date-selector {
+            margin-bottom: 20px;
+        }
+        
+        .date-selector input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .exam-selector {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .exam-selector select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .legend {
+            display: flex;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .legend-item {
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            display: inline-block;
+            margin-right: 5px;
+            border-radius: 3px;
+        }
+        
+        .present {
+            background-color: #27ae60;
+        }
+        
+        .absent {
+            background-color: #e74c3c;
+        }
+        
+        .late {
+            background-color: #f39c12;
+        }
+        
+        .notes-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .stats {
+            flex: 1;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            margin-right: 10px;
+        }
+        
+        .notes-table {
+            flex: 2;
+        }
+        
+        .student-row.approved {
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .student-row.failed {
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .notes-container {
+                flex-direction: column;
+            }
+            
+            .stats {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Control de asistencias y examenes (BASICO)</h1>
+        </header>
+        
+        <nav>
+            <div class="tab active" onclick="showSection('attendance')">Control de Asistencia</div>
+            <div class="tab" onclick="showSection('exams')">Evaluación de Exámenes</div>
+        </nav>
+        
+        <div class="content">
+            <!-- Sección de Asistencia -->
+            <div id="attendance" class="section active">
+                <h2>Control de Asistencia</h2>
+                
+                <div class="date-selector">
+                    <label for="attendance-date">Fecha:</label>
+                    <input type="date" id="attendance-date" onchange="updateAttendanceDate()">
+                </div>
+                
+                <table id="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Nº</th>
+                            <th>Nombre del Estudiante</th>
+                            <th>Asistencia</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-list">
+                        <!-- Aquí se generará dinámicamente la lista de estudiantes -->
+                    </tbody>
+                </table>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-color present"></span> Presente
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color late"></span> Tarde
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color absent"></span> Ausente
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de Exámenes -->
+            <div id="exams" class="section">
+                <h2>Evaluación de Exámenes</h2>
+                
+                <div class="exam-selector">
+                    <label for="exam-select">Examen:</label>
+                    <select id="exam-select" onchange="updateExamView()">
+                        <option value="1">Examen 1</option>
+                        <option value="2">Examen 2</option>
+                        <option value="3">Examen 3</option>
+                        <option value="4">Examen 4</option>
+                        <option value="5">Examen 5</option>
+                        <option value="6">Examen 6</option>
+                        <option value="7">Examen 7</option>
+                        <option value="8">Examen 8</option>
+                        <option value="9">Examen 9</option>
+                        <option value="10">Examen 10</option>
+                    </select>
+                </div>
+                
+                <table id="exams-table">
+                    <thead>
+                        <tr>
+                            <th>Nº</th>
+                            <th>Nombre del Estudiante</th>
+                            <th>Errores (máx. 10)</th>
+                            <th>Nota (/100)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exams-list">
+                        <!-- Aquí se generará dinámicamente la lista de estudiantes -->
+                    </tbody>
+                </table>
+                
+                <div class="notes-container">
+                    <div class="stats">
+                        <h3>Estadísticas del Examen</h3>
+                        <p>Promedio de la clase: <span id="class-average">-</span></p>
+                        <p>Nota más alta: <span id="highest-score">-</span></p>
+                        <p>Nota más baja: <span id="lowest-score">-</span></p>
+                        <p>Aprobados: <span id="approved-count">-</span></p>
+                        <p>Desaprobados: <span id="failed-count">-</span></p>
+                    </div>
+                    
+                    <div class="notes-table">
+                        <h3>Resumen de Notas</h3>
+                        <table id="summary-table">
+                            <thead>
+                                <tr>
+                                    <th>Estudiante</th>
+                                    <th>Promedio</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-list">
+                                <!-- Aquí se generará el resumen de notas -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Lista de estudiantes (simulada)
+        const students = [
+        { id: 1, name: "Abimael Quema Rojas" },
+        { id: 2, name: "Alex Burgos Mendez" },
+        { id: 3, name: "Carla Karina Muñoz Castro" },
+        { id: 4, name: "Carlos Saul Burgos Mendez" },
+        { id: 5, name: "Eulogia Villafuerte" },
+        { id: 6, name: "Gessica Esmeralda Jancko Pérez" },
+        { id: 7, name: "Jimena Arce" },
+        { id: 8, name: "Josias Arnez" },
+        { id: 9, name: "Keila Dayana Zoto Garnica" },
+        { id: 10, name: "Lidio Burgos" },
+        { id: 11, name: "Luis Adrian Uvaldez Colque" },
+        { id: 12, name: "Marco Sanchez" },
+        { id: 13, name: "Maria Quispe" },
+        { id: 14, name: "María Cristina Alvarado Villarroel" },
+        { id: 15, name: "Marta Mendez" },
+        { id: 16, name: "Nayra Gabriela Rioja Porcel" },
+        { id: 17, name: "Nelly Avendaño" },
+        { id: 18, name: "Nicole Cortez Artega" },
+        { id: 19, name: "Paola Alejandra Quispe Mamani" },
+        { id: 20, name: "Priscila Burgos" },
+        { id: 21, name: "Rafael Quispe Mamani" },
+        { id: 22, name: "Richard Luis Quispe Mamani" },
+        { id: 23, name: "Vanesa Aillon Rodríguez" }
+    ];    
+        
+        // Datos de asistencia (simulados)
+        let attendanceData = {};
+        
+        // Datos de exámenes (simulados)
+        let examData = {};
+        
+        // Inicializar datos
+        function initializeData() {
+            // Configurar fecha actual en el selector de asistencia
+            document.getElementById('attendance-date').valueAsDate = new Date();
+            
+            // Inicializar datos de asistencia
+            const today = formatDate(new Date());
+            if (!attendanceData[today]) {
+                attendanceData[today] = {};
+            }
+            
+            // Inicializar datos de exámenes
+            for (let i = 1; i <= 10; i++) {
+                if (!examData[i]) {
+                    examData[i] = {};
+                }
+            }
+            
+            // Cargar datos guardados (si existen)
+            loadData();
+            
+            // Renderizar vistas iniciales
+            renderAttendanceList();
+            updateExamView();
+        }
+        
+        // Formatear fecha como YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Cambiar entre secciones
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Desactivar todas las pestañas
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar la sección seleccionada
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Activar la pestaña correspondiente
+            document.querySelectorAll('.tab').forEach((tab, index) => {
+                if (index === 0 && sectionId === 'attendance') {
+                    tab.classList.add('active');
+                } else if (index === 1 && sectionId === 'exams') {
+                    tab.classList.add('active');
+                }
+            });
+        }
+        
+        // Actualizar fecha de asistencia
+        function updateAttendanceDate() {
+            const dateInput = document.getElementById('attendance-date');
+            const selectedDate = formatDate(new Date(dateInput.value));
+            
+            // Inicializar datos para la fecha seleccionada si no existen
+            if (!attendanceData[selectedDate]) {
+                attendanceData[selectedDate] = {};
+            }
+            
+            // Renderizar lista de asistencia para la fecha seleccionada
+            renderAttendanceList();
+            
+            // Guardar datos
+            saveData();
+        }
+        
+        // Renderizar lista de asistencia
+        function renderAttendanceList() {
+            const attendanceList = document.getElementById('attendance-list');
+            attendanceList.innerHTML = '';
+            
+            const dateInput = document.getElementById('attendance-date');
+            const selectedDate = formatDate(new Date(dateInput.value));
+            
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                
+                // Status (presente, ausente o sin registrar)
+                let status = attendanceData[selectedDate][student.id];
+                
+                row.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>
+                        <button 
+                            onclick="markAttendance(${student.id}, true)" 
+                            ${status === true ? 'disabled' : ''}
+                            class="${status === true ? 'active' : ''}"
+                        >
+                            Presente
+                        </button>
+                        <button 
+                            onclick="markAttendance(${student.id}, 'late')" 
+                            ${status === 'late' ? 'disabled' : ''}
+                            class="${status === 'late' ? 'active' : ''}"
+                        >
+                            Tarde
+                        </button>
+                        <button 
+                            onclick="markAttendance(${student.id}, false)" 
+                            ${status === false ? 'disabled' : ''}
+                            class="${status === false ? 'active' : ''}"
+                        >
+                            Ausente
+                        </button>
+                    </td>
+                    <td>${getStatusText(status)}</td>
+                `;
+                
+                attendanceList.appendChild(row);
+            });
+        }
+        
+        // Obtener texto de estado de asistencia
+        function getStatusText(status) {
+            if (status === true) {
+                return '<span style="color: #27ae60;">Presente</span>';
+            } else if (status === 'late') {
+                return '<span style="color: #f39c12;">Tarde</span>';
+            } else if (status === false) {
+                return '<span style="color: #e74c3c;">Ausente</span>';
+            } else {
+                return '<span style="color: #95a5a6;">Sin registrar</span>';
+            }
+        }
+        
+        // Marcar asistencia
+        function markAttendance(studentId, isPresent) {
+            const dateInput = document.getElementById('attendance-date');
+            const selectedDate = formatDate(new Date(dateInput.value));
+            
+            // Guardar estado de asistencia
+            attendanceData[selectedDate][studentId] = isPresent;
+            
+            // Actualizar vista
+            renderAttendanceList();
+            
+            // Guardar datos
+            saveData();
+        }
+        
+        // Actualizar vista de exámenes
+        function updateExamView() {
+            const examSelect = document.getElementById('exam-select');
+            const selectedExam = examSelect.value;
+            
+            // Renderizar lista de estudiantes para el examen seleccionado
+            renderExamsList(selectedExam);
+            
+            // Actualizar estadísticas
+            updateExamStats(selectedExam);
+            
+            // Actualizar resumen de notas
+            updateSummary();
+        }
+        
+        // Renderizar lista de estudiantes para examen
+        function renderExamsList(examNumber) {
+            const examsList = document.getElementById('exams-list');
+            examsList.innerHTML = '';
+            
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                
+                // Datos del estudiante para este examen
+                const studentExamData = examData[examNumber][student.id] || {};
+                const errors = studentExamData.errors;
+                const score = studentExamData.score;
+                
+                row.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>
+                        <input 
+                            type="number" 
+                            min="0" 
+                            max="10" 
+                            value="${errors !== undefined ? errors : ''}" 
+                            onchange="registerErrors(${student.id}, ${examNumber}, this.value)"
+                        >
+                        ${score !== undefined ? '<button onclick="resetExamScore(' + student.id + ', ' + examNumber + ')">Modificar</button>' : ''}
+                    </td>
+                    <td>${score !== undefined ? score : '-'}</td>
+                `;
+                
+                examsList.appendChild(row);
+            });
+        }
+        
+        // Registrar errores y calcular nota
+        function registerErrors(studentId, examNumber, errors) {
+            errors = parseInt(errors);
+            
+            // Validar entrada
+            if (isNaN(errors) || errors < 0 || errors > 10) {
+                alert("Por favor, ingrese un número válido de errores (0-10).");
+                renderExamsList(examNumber);
+                return;
+            }
+            
+            // Calcular nota (cada pregunta vale 10 puntos)
+            const score = 100 - (errors * 10);
+            
+            // Guardar datos
+            if (!examData[examNumber]) {
+                examData[examNumber] = {};
+            }
+            
+            examData[examNumber][studentId] = {
+                errors: errors,
+                score: score
+            };
+            
+            // Actualizar vista
+            renderExamsList(examNumber);
+            
+            // Actualizar estadísticas
+            updateExamStats(examNumber);
+            
+            // Actualizar resumen de notas
+            updateSummary();
+            
+            // Guardar datos
+            saveData();
+        }
+        
+        // Resetear la nota para permitir modificación
+        function resetExamScore(studentId, examNumber) {
+            if (confirm("¿Está seguro de que desea modificar esta nota? Esta acción no se puede deshacer.")) {
+                // Mantener el valor de errores pero permitir su modificación
+                const errors = examData[examNumber][studentId].errors;
+                examData[examNumber][studentId] = {
+                    errors: errors
+                };
+                
+                // Actualizar vista
+                renderExamsList(examNumber);
+                
+                // Actualizar estadísticas
+                updateExamStats(examNumber);
+                
+                // Actualizar resumen de notas
+                updateSummary();
+                
+                // Guardar datos
+                saveData();
+            }
+        }
+        
+        // Actualizar estadísticas de examen
+        function updateExamStats(examNumber) {
+            const scores = [];
+            let approvedCount = 0;
+            let failedCount = 0;
+            
+            // Recopilar todas las notas registradas
+            students.forEach(student => {
+                if (examData[examNumber][student.id] && examData[examNumber][student.id].score !== undefined) {
+                    const score = examData[examNumber][student.id].score;
+                    scores.push(score);
+                    
+                    if (score >= 60) {
+                        approvedCount++;
+                    } else {
+                        failedCount++;
+                    }
+                }
+            });
+            
+            // Calcular estadísticas
+            let average = '-';
+            let highest = '-';
+            let lowest = '-';
+            
+            if (scores.length > 0) {
+                // Promedio
+                const sum = scores.reduce((a, b) => a + b, 0);
+                average = (sum / scores.length).toFixed(1);
+                
+                // Nota más alta
+                highest = Math.max(...scores);
+                
+                // Nota más baja
+                lowest = Math.min(...scores);
+            }
+            
+            // Actualizar elementos en la interfaz
+            document.getElementById('class-average').textContent = average;
+            document.getElementById('highest-score').textContent = highest;
+            document.getElementById('lowest-score').textContent = lowest;
+            document.getElementById('approved-count').textContent = approvedCount;
+            document.getElementById('failed-count').textContent = failedCount;
+        }
+        
+        // Actualizar resumen de notas
+        function updateSummary() {
+            const summaryList = document.getElementById('summary-list');
+            summaryList.innerHTML = '';
+            
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.className = 'student-row';
+                
+                // Calcular promedio de exámenes
+                let totalScore = 0;
+                let examCount = 0;
+                
+                for (let i = 1; i <= 10; i++) {
+                    if (examData[i] && examData[i][student.id] && examData[i][student.id].score !== undefined) {
+                        totalScore += examData[i][student.id].score;
+                        examCount++;
+                    }
+                }
+                
+                const average = examCount > 0 ? (totalScore / examCount).toFixed(1) : '-';
+                let status = '-';
+                
+                if (average !== '-') {
+                    if (parseFloat(average) >= 60) {
+                        status = '<span style="color: #27ae60;">Aprobado</span>';
+                        row.classList.add('approved');
+                    } else {
+                        status = '<span style="color: #e74c3c;">Desaprobado</span>';
+                        row.classList.add('failed');
+                    }
+                }
+                
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${average}</td>
+                    <td>${status}</td>
+                `;
+                
+                summaryList.appendChild(row);
+            });
+        }
+        
+        // Guardar datos en localStorage
+        function saveData() {
+            localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+            localStorage.setItem('examData', JSON.stringify(examData));
+        }
+        
+        // Cargar datos de localStorage
+        function loadData() {
+            const savedAttendanceData = localStorage.getItem('attendanceData');
+            const savedExamData = localStorage.getItem('examData');
+            
+            if (savedAttendanceData) {
+                attendanceData = JSON.parse(savedAttendanceData);
+            }
+            
+            if (savedExamData) {
+                examData = JSON.parse(savedExamData);
+            }
+        }
+        
+        // Inicializar cuando se carga la página
+        window.onload = initializeData;
+    </script>
+</body>
+</html>
