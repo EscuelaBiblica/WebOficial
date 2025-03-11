@@ -220,6 +220,33 @@
                 margin-bottom: 15px;
             }
         }
+        .send-button {
+            padding: 10px 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+          }
+          
+          .send-button:hover {
+            background-color: #27ae60;
+          }
+          
+          #status-message {
+            margin-top: 10px;
+            font-size: 14px;
+          }
+          
+          .success-message {
+            color: #27ae60;
+          }
+          
+          .error-message {
+            color: #e74c3c;
+          }
     </style>
 </head>
 <body>
@@ -268,6 +295,12 @@
                         <span class="legend-color absent"></span> Ausente
                     </div>
                 </div>
+            </div>
+            <div style="margin-top: 20px; text-align: right;">
+                <button id="send-attendance" onclick="sendAttendanceToGoogleSheet()" class="send-button">
+                  Enviar datos
+                </button>
+                <div id="status-message"></div>
             </div>
             
             <!-- Sección de Exámenes -->
@@ -720,6 +753,84 @@
                 examData = JSON.parse(savedExamData);
             }
         }
+        
+                // Añadir esta función al bloque de script
+
+// URL del script de Google Apps Script (deberás reemplazar esto con tu URL cuando lo publiques)
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWoW0gncmL7fEkVYthh4SCA0wtyr7zh5KgsbC926AgsyAO2sU55IBwKktnVeIerbqf/exec';
+
+// Función para enviar datos de asistencia a Google Sheets
+async function sendAttendanceToGoogleSheet() {
+  const statusMessage = document.getElementById('status-message');
+  const sendButton = document.getElementById('send-attendance');
+  
+  // Deshabilitar el botón mientras se procesa
+  sendButton.disabled = true;
+  statusMessage.innerHTML = 'Enviando datos...';
+  statusMessage.className = '';
+  
+  try {
+    // Obtener la fecha seleccionada
+    const dateInput = document.getElementById('attendance-date');
+    const selectedDate = formatDate(new Date(dateInput.value));
+    
+    // Preparar los datos a enviar
+    const dataToSend = {
+      date: selectedDate,
+      attendance: []
+    };
+    
+    // Recopilar datos de asistencia de cada estudiante
+    students.forEach(student => {
+      const status = attendanceData[selectedDate][student.id];
+      let statusText = '';
+      
+      if (status === true) {
+        statusText = 'Presente';
+      } else if (status === 'late') {
+        statusText = 'Tarde';
+      } else if (status === false) {
+        statusText = 'Ausente';
+      } else {
+        statusText = ''; // Si no hay registro
+      }
+      
+      dataToSend.attendance.push({
+        id: student.id,
+        name: student.name,
+        status: statusText
+      });
+    });
+    
+    // Enviar datos a Google Sheets
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(dataToSend),
+      headers: { 'Content-Type': 'application/json' },
+      mode: 'no-cors'
+    });
+    
+    // Mostrar mensaje de éxito
+    statusMessage.innerHTML = '¡Datos enviados correctamente!';
+    statusMessage.className = 'success-message';
+    
+    // Habilitar el botón después de 3 segundos
+    setTimeout(() => {
+      statusMessage.innerHTML = '';
+      sendButton.disabled = false;
+    }, 3000);
+    
+  } catch (error) {
+    console.error('Error al enviar datos:', error);
+    
+    // Mostrar mensaje de error
+    statusMessage.innerHTML = 'Error al enviar los datos. Inténtalo de nuevo.';
+    statusMessage.className = 'error-message';
+    
+    // Habilitar el botón
+    sendButton.disabled = false;
+  }
+}
         
         // Inicializar cuando se carga la página
         window.onload = initializeData;
