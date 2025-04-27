@@ -252,12 +252,12 @@
 <body>
     <div class="container">
         <header>
-            <h1>Control de asistencias y examenes (BASICO)</h1>
+            <h1>Control de asistencias y devocionales (BASICO)</h1>
         </header>
         
         <nav>
             <div class="tab active" onclick="showSection('attendance')">Control de Asistencia</div>
-            <div class="tab" onclick="showSection('exams')">Evaluación de Exámenes</div>
+            <div class="tab" onclick="showSection('exams')">Control de Devocionales</div>
         </nav>
         
         <div class="content">
@@ -303,69 +303,37 @@
                   </div>                
             </div>
             
-            <!-- Sección de Exámenes -->
+            <!-- Sección de Devocionales -->
             <div id="exams" class="section">
-                <h2>Evaluación de Exámenes</h2>
-                
+                <h2>Control de Devocionales</h2>
+
                 <div class="exam-selector">
-                    <label for="exam-select">Examen:</label>
-                    <select id="exam-select" onchange="updateExamView()">
-                        <option value="1">Examen 1</option>
-                        <option value="2">Examen 2</option>
-                        <option value="3">Examen 3</option>
-                        <option value="4">Examen 4</option>
-                        <option value="5">Examen 5</option>
-                        <option value="6">Examen 6</option>
-                        <option value="7">Examen 7</option>
-                        <option value="8">Examen 8</option>
-                        <option value="9">Examen 9</option>
-                        <option value="10">Examen 10</option>
+                    <label for="week-select">Semana:</label>
+                    <select id="week-select" onchange="updateDevotionalView()">
+                        <option value="1">Semana 1</option>
+                        <option value="2">Semana 2</option>
+                        <option value="3">Semana 3</option>
+                        <option value="4">Semana 4 (Recuperación)</option>
                     </select>
                 </div>
-                
-                <table id="exams-table">
+
+                <table id="devotionals-table">
                     <thead>
                         <tr>
                             <th>Nº</th>
                             <th>Nombre del Estudiante</th>
-                            <th>Errores (máx. 10)</th>
-                            <th>Nota (/100)</th>
+                            <th>Devocionales Realizados (0-7)</th>
+                            <th>Nota (%)</th>
                         </tr>
                     </thead>
-                    <tbody id="exams-list">
-                        <!-- Aquí se generará dinámicamente la lista de estudiantes -->
+                    <tbody id="devotionals-list">
+                        <!-- Aquí se genera la lista -->
                     </tbody>
                 </table>
-                
-                <div class="notes-container">
-                    <div class="stats">
-                        <h3>Estadísticas del Examen</h3>
-                        <p>Promedio de la clase: <span id="class-average">-</span></p>
-                        <p>Nota más alta: <span id="highest-score">-</span></p>
-                        <p>Nota más baja: <span id="lowest-score">-</span></p>
-                        <p>Aprobados: <span id="approved-count">-</span></p>
-                        <p>Desaprobados: <span id="failed-count">-</span></p>
-                    </div>
-                    
-                    <div class="notes-table">
-                        <h3>Resumen de Notas</h3>
-                        <table id="summary-table">
-                            <thead>
-                                <tr>
-                                    <th>Estudiante</th>
-                                    <th>Promedio</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="summary-list">
-                                <!-- Aquí se generará el resumen de notas -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
                 <div style="margin-top: 20px; text-align: right;">
                     <button id="send-exam" onclick="sendExamToGoogleSheet()" class="send-button">
-                        Enviar Calificaciones
+                        Enviar Devocionales
                     </button>
                     <div id="exam-status-message"></div>
                 </div>
@@ -406,8 +374,17 @@
         // Datos de asistencia (simulados)
         let attendanceData = {};
         
-        // Datos de exámenes (simulados)
-        let examData = {};
+        // Datos de DEVOCIONALES (simulados)
+        let devotionalData = {};
+
+        // Inicializar datos de devocionales
+            function initializeDevotionalData() {
+                for (let i = 1; i <= 4; i++) {
+                    if (!devotionalData[i]) {
+                        devotionalData[i] = {};
+                    }
+                }
+            }
         
         // Inicializar datos
         function initializeData() {
@@ -420,19 +397,12 @@
                 attendanceData[today] = {};
             }
             
-            // Inicializar datos de exámenes
-            for (let i = 1; i <= 10; i++) {
-                if (!examData[i]) {
-                    examData[i] = {};
-                }
-            }
-            
             // Cargar datos guardados (si existen)
             loadData();
             
             // Renderizar vistas iniciales
             renderAttendanceList();
-            updateExamView();
+            updateDevotionalView();
         }
         
         // Formatear fecha como YYYY-MM-DD
@@ -560,34 +530,28 @@
             saveData();
         }
         
-        // Actualizar vista de exámenes
-        function updateExamView() {
-            const examSelect = document.getElementById('exam-select');
-            const selectedExam = examSelect.value;
-            
-            // Renderizar lista de estudiantes para el examen seleccionado
-            renderExamsList(selectedExam);
-            
-            // Actualizar estadísticas
-            updateExamStats(selectedExam);
-            
-            // Actualizar resumen de notas
-            updateSummary();
+        function updateDevotionalView() {
+            const weekSelect = document.getElementById('week-select');
+            const selectedWeek = weekSelect.value;
+            renderDevotionalsList(selectedWeek);
         }
+    
+        function renderDevotionalsList(weekNumber) {
+            const devotionalsList = document.getElementById('devotionals-list');
+            devotionalsList.innerHTML = '';
         
-        // Renderizar lista de estudiantes para examen
-        function renderExamsList(examNumber) {
-            const examsList = document.getElementById('exams-list');
-            examsList.innerHTML = '';
-            
+            // SOLUCIÓN: aseguramos que la semana exista
+            if (!devotionalData[weekNumber]) {
+                devotionalData[weekNumber] = {};
+            }
+        
             students.forEach(student => {
                 const row = document.createElement('tr');
-                
-                // Datos del estudiante para este examen
-                const studentExamData = examData[examNumber][student.id] || {};
-                const errors = studentExamData.errors;
-                const score = studentExamData.score;
-                
+        
+                const studentData = devotionalData[weekNumber][student.id] || {};
+                const days = studentData.days !== undefined ? studentData.days : '';
+                const score = studentData.score !== undefined ? studentData.score : '-';
+        
                 row.innerHTML = `
                     <td>${student.id}</td>
                     <td>${student.name}</td>
@@ -595,190 +559,60 @@
                         <input 
                             type="number" 
                             min="0" 
-                            max="10" 
-                            value="${errors !== undefined ? errors : ''}" 
-                            onchange="registerErrors(${student.id}, ${examNumber}, this.value)"
+                            max="7" 
+                            value="${days}" 
+                            onchange="registerDevotionals(${student.id}, ${weekNumber}, this.value)"
                         >
-                        ${score !== undefined ? '<button onclick="resetExamScore(' + student.id + ', ' + examNumber + ')">Modificar</button>' : ''}
                     </td>
-                    <td>${score !== undefined ? score : '-'}</td>
+                    <td>${score}</td>
                 `;
-                
-                examsList.appendChild(row);
+        
+                devotionalsList.appendChild(row);
             });
         }
-        
-        // Registrar errores y calcular nota
-        function registerErrors(studentId, examNumber, errors) {
-            errors = parseInt(errors);
-            
-            // Validar entrada
-            if (isNaN(errors) || errors < 0 || errors > 10) {
-                alert("Por favor, ingrese un número válido de errores (0-10).");
-                renderExamsList(examNumber);
+           
+        function registerDevotionals(studentId, weekNumber, days) {
+            days = parseInt(days);
+    /*
+            if (isNaN(days) || days < 0 || days > 7) {
+                alert("Por favor, ingrese un número válido de devocionales (0-7).\");
+                renderDevotionalsList(weekNumber);
                 return;
+            }*/
+    
+            const score = ((days / 7) * 100).toFixed(1);
+    
+            if (!devotionalData[weekNumber]) {
+                devotionalData[weekNumber] = {};
             }
-            
-            // Calcular nota (cada pregunta vale 10 puntos)
-            const score = 100 - (errors * 10);
-            
-            // Guardar datos
-            if (!examData[examNumber]) {
-                examData[examNumber] = {};
-            }
-            
-            examData[examNumber][studentId] = {
-                errors: errors,
+    
+            devotionalData[weekNumber][studentId] = {
+                days: days,
                 score: score
             };
-            
-            // Actualizar vista
-            renderExamsList(examNumber);
-            
-            // Actualizar estadísticas
-            updateExamStats(examNumber);
-            
-            // Actualizar resumen de notas
-            updateSummary();
-            
-            // Guardar datos
+    
+            renderDevotionalsList(weekNumber);
             saveData();
         }
-        
-        // Resetear la nota para permitir modificación
-        function resetExamScore(studentId, examNumber) {
-            if (confirm("¿Está seguro de que desea modificar esta nota? Esta acción no se puede deshacer.")) {
-                // Mantener el valor de errores pero permitir su modificación
-                const errors = examData[examNumber][studentId].errors;
-                examData[examNumber][studentId] = {
-                    errors: errors
-                };
-                
-                // Actualizar vista
-                renderExamsList(examNumber);
-                
-                // Actualizar estadísticas
-                updateExamStats(examNumber);
-                
-                // Actualizar resumen de notas
-                updateSummary();
-                
-                // Guardar datos
-                saveData();
-            }
-        }
-        
-        // Actualizar estadísticas de examen
-        function updateExamStats(examNumber) {
-            const scores = [];
-            let approvedCount = 0;
-            let failedCount = 0;
-            
-            // Recopilar todas las notas registradas
-            students.forEach(student => {
-                if (examData[examNumber][student.id] && examData[examNumber][student.id].score !== undefined) {
-                    const score = examData[examNumber][student.id].score;
-                    scores.push(score);
-                    
-                    if (score >= 60) {
-                        approvedCount++;
-                    } else {
-                        failedCount++;
-                    }
-                }
-            });
-            
-            // Calcular estadísticas
-            let average = '-';
-            let highest = '-';
-            let lowest = '-';
-            
-            if (scores.length > 0) {
-                // Promedio
-                const sum = scores.reduce((a, b) => a + b, 0);
-                average = (sum / scores.length).toFixed(1);
-                
-                // Nota más alta
-                highest = Math.max(...scores);
-                
-                // Nota más baja
-                lowest = Math.min(...scores);
-            }
-            
-            // Actualizar elementos en la interfaz
-            document.getElementById('class-average').textContent = average;
-            document.getElementById('highest-score').textContent = highest;
-            document.getElementById('lowest-score').textContent = lowest;
-            document.getElementById('approved-count').textContent = approvedCount;
-            document.getElementById('failed-count').textContent = failedCount;
-        }
-        
-        // Actualizar resumen de notas
-        function updateSummary() {
-            const summaryList = document.getElementById('summary-list');
-            summaryList.innerHTML = '';
-            
-            students.forEach(student => {
-                const row = document.createElement('tr');
-                row.className = 'student-row';
-                
-                // Calcular promedio de exámenes
-                let totalScore = 0;
-                let examCount = 0;
-                
-                for (let i = 1; i <= 10; i++) {
-                    if (examData[i] && examData[i][student.id] && examData[i][student.id].score !== undefined) {
-                        totalScore += examData[i][student.id].score;
-                        examCount++;
-                    }
-                }
-                
-                const average = examCount > 0 ? (totalScore / examCount).toFixed(1) : '-';
-                let status = '-';
-                
-                if (average !== '-') {
-                    if (parseFloat(average) >= 60) {
-                        status = '<span style="color: #27ae60;">Aprobado</span>';
-                        row.classList.add('approved');
-                    } else {
-                        status = '<span style="color: #e74c3c;">Desaprobado</span>';
-                        row.classList.add('failed');
-                    }
-                }
-                
-                row.innerHTML = `
-                    <td>${student.name}</td>
-                    <td>${average}</td>
-                    <td>${status}</td>
-                `;
-                
-                summaryList.appendChild(row);
-            });
-        }
-        
-        // Guardar datos en localStorage
+    
         function saveData() {
             localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
-            localStorage.setItem('examData', JSON.stringify(examData));
+            localStorage.setItem('devotionalData', JSON.stringify(devotionalData));
         }
-        
-        // Cargar datos de localStorage
+    
         function loadData() {
             const savedAttendanceData = localStorage.getItem('attendanceData');
-            const savedExamData = localStorage.getItem('examData');
-            
+            const savedDevotionalData = localStorage.getItem('devotionalData');
+    
             if (savedAttendanceData) {
                 attendanceData = JSON.parse(savedAttendanceData);
             }
-            
-            if (savedExamData) {
-                examData = JSON.parse(savedExamData);
+    
+            if (savedDevotionalData) {
+                devotionalData = JSON.parse(savedDevotionalData);
             }
         }
-        
-        // Añadir esta función al bloque de script
-
-// URL del script de Google Apps Script (deberás reemplazar esto con tu URL cuando lo publiques)
+    // URL del script de Google Apps Script (deberás reemplazar esto con tu URL cuando lo publiques)
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWoW0gncmL7fEkVYthh4SCA0wtyr7zh5KgsbC926AgsyAO2sU55IBwKktnVeIerbqf/exec';
 
 // Función para enviar datos de asistencia a Google Sheets
@@ -853,8 +687,7 @@ async function sendAttendanceToGoogleSheet() {
     sendButton.disabled = false;
   }
 }
-        
-// Función para enviar datos de examen a Google Sheets
+// Función corregida para enviar devocionales como exámenes
 async function sendExamToGoogleSheet() {
     const statusMessage = document.getElementById('exam-status-message');
     const sendButton = document.getElementById('send-exam');
@@ -865,25 +698,24 @@ async function sendExamToGoogleSheet() {
     statusMessage.className = '';
     
     try {
-        // Obtener el examen seleccionado
-        const examSelect = document.getElementById('exam-select');
-        const selectedExam = examSelect.value;
-        
+        // Obtener la semana seleccionada (se enviará como "examen")
+        const weekSelect = document.getElementById('week-select');
+        const selectedExam = weekSelect.value; // <-- seguimos usando "examNumber" como espera tu script
+
         // Preparar los datos a enviar
         const dataToSend = {
             examNumber: selectedExam,
             examData: []
         };
         
-        // Recopilar datos de notas de cada estudiante
         students.forEach(student => {
-            const studentExamData = examData[selectedExam][student.id] || {};
-            const score = studentExamData.score;
+            const studentDevotionalData = devotionalData[selectedExam][student.id] || {};
+            const score = studentDevotionalData.score;
             
             dataToSend.examData.push({
                 id: student.id,
                 name: student.name,
-                score: score !== undefined ? score : '' // Enviar nota o cadena vacía si no hay
+                score: score !== undefined ? score : '' // Si no hizo nada, vacío
             });
         });
         
@@ -896,7 +728,7 @@ async function sendExamToGoogleSheet() {
         });
         
         // Mostrar mensaje de éxito
-        statusMessage.innerHTML = '¡Datos de examen enviados correctamente!';
+        statusMessage.innerHTML = '¡Datos de devocionales enviados correctamente!';
         statusMessage.className = 'success-message';
         
         // Habilitar el botón después de 3 segundos
@@ -905,19 +737,16 @@ async function sendExamToGoogleSheet() {
             sendButton.disabled = false;
         }, 3000);
     } catch (error) {
-        console.error('Error al enviar datos del examen:', error);
-        
-        // Mostrar mensaje de error
+        console.error('Error al enviar datos del devocional:', error);
         statusMessage.innerHTML = 'Error al enviar los datos. Inténtalo de nuevo.';
         statusMessage.className = 'error-message';
-        
-        // Habilitar el botón
         sendButton.disabled = false;
     }
-}        
-
-// Inicializar cuando se carga la página
-        window.onload = initializeData;
-    </script>
+}
+        window.onload = function() {
+            initializeData();
+            initializeDevotionalData();
+        };
+        </script>
 </body>
 </html>
