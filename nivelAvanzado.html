@@ -795,37 +795,21 @@
         }
         
         // Función para borrar todos los datos
-        function clearAllData() {
-            if (confirm('¿Está seguro de que desea borrar TODOS los datos guardados? Esta acción no se puede deshacer.')) {
-                // Borrar datos del localStorage
-                localStorage.removeItem('attendanceData');
-                localStorage.removeItem('examData');
-                
-                // Reinicializar las variables
-                attendanceData = {};
-                examData = {};
-                
-                // Reinicializar datos de exámenes
-                for (let i = 1; i <= 10; i++) {
-                    if (!examData[i]) {
-                        examData[i] = {};
-                    }
-                }
-                
-                // Reinicializar datos de asistencia para hoy
-                const today = formatDate(new Date());
-                if (!attendanceData[today]) {
-                    attendanceData[today] = {};
-                }
-                
-                // Actualizar todas las vistas
-                renderAttendanceList();
-                updateExamView();
-                
-                alert('Todos los datos han sido borrados exitosamente.');
-            }
-        }
+// Función para borrar todos los datos
+function clearAllData() {
+    if (confirm('¿Está seguro de que desea borrar TODOS los datos guardados? Esta acción no se puede deshacer.')) {
+        // Borrar datos del localStorage
+        localStorage.removeItem('attendanceData');
+        localStorage.removeItem('examData'); // Para curso avanzado
+        localStorage.removeItem('devotionalData'); // Para curso básico
         
+        // Mostrar mensaje de confirmación antes de recargar
+        alert('Todos los datos han sido borrados exitosamente. La página se recargará.');
+        
+        // Recargar la página completamente
+        window.location.reload();
+    }
+}
         // === FUNCIONES DE ENVÍO A GOOGLE SHEETS ===
         
         // Función para enviar datos de asistencia a Google Sheets
