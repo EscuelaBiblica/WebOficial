@@ -32,6 +32,7 @@
             color: white;
             padding: 20px;
             text-align: center;
+            position: relative;
         }
         
         nav {
@@ -220,6 +221,7 @@
                 margin-bottom: 15px;
             }
         }
+        
         .send-button {
             padding: 10px 15px;
             background-color: #2ecc71;
@@ -229,30 +231,57 @@
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.3s;
-          }
-          
-          .send-button:hover {
+        }
+        
+        .send-button:hover {
             background-color: #27ae60;
-          }
-          
-          #status-message {
+        }
+        
+        #status-message {
             margin-top: 10px;
             font-size: 14px;
-          }
-          
-          .success-message {
+        }
+        
+        .success-message {
             color: #27ae60;
-          }
-          
-          .error-message {
+        }
+        
+        .error-message {
             color: #e74c3c;
-          }
+        }
+
+        /* Estilos para el botón de borrar datos */
+        .clear-data-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .clear-data-button:hover {
+            background-color: #c0392b;
+        }
+        
+        .clear-data-button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Control de asistencias y examenes (AVANZADO)</h1>
+            <button class="clear-data-button" onclick="clearAllData()" title="Borrar todos los datos guardados">
+                🗑️ Borrar Datos
+            </button>
         </header>
         
         <nav>
@@ -375,20 +404,22 @@
     
     <script>
         // Lista de estudiantes (simulada)
-const students = [
-    { id: 1, name: "Evelin Ayala" },
-    { id: 2, name: "Kevin Gabriel Sanchez Arias" },
-    { id: 3, name: "Ludin Quema" },
-    { id: 4, name: "Mary Luz Fonseca Canaviri" },
-    { id: 5, name: "Miguel Chavez" }
-];
-   
+        const students = [
+            { id: 1, name: "Evelin Ayala" },
+            { id: 2, name: "Kevin Gabriel Sanchez Arias" },
+            { id: 3, name: "Ludin Quema" },
+            { id: 4, name: "Mary Luz Fonseca Canaviri" },
+            { id: 5, name: "Miguel Chavez" }
+        ];
         
         // Datos de asistencia (simulados)
         let attendanceData = {};
         
         // Datos de exámenes (simulados)
         let examData = {};
+        
+        // URL del script de Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4hbgCVJ5P-EoV_lsjjnGeN__Q7-dwt1H5OJwPxyQmzsfNkBWYfUaM6KWLnsKgac0/exec';
         
         // Inicializar datos
         function initializeData() {
@@ -448,6 +479,8 @@ const students = [
                 }
             });
         }
+        
+        // === SECCIÓN DE ASISTENCIA ===
         
         // Actualizar fecha de asistencia
         function updateAttendanceDate() {
@@ -540,6 +573,8 @@ const students = [
             // Guardar datos
             saveData();
         }
+        
+        // === SECCIÓN DE EXÁMENES ===
         
         // Actualizar vista de exámenes
         function updateExamView() {
@@ -737,6 +772,8 @@ const students = [
             });
         }
         
+        // === FUNCIONES DE DATOS ===
+        
         // Guardar datos en localStorage
         function saveData() {
             localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
@@ -757,146 +794,175 @@ const students = [
             }
         }
         
-                // Añadir esta función al bloque de script
-
-// URL del script de Google Apps Script (deberás reemplazar esto con tu URL cuando lo publiques)
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4hbgCVJ5P-EoV_lsjjnGeN__Q7-dwt1H5OJwPxyQmzsfNkBWYfUaM6KWLnsKgac0/exec';
-
-// Función para enviar datos de asistencia a Google Sheets
-async function sendAttendanceToGoogleSheet() {
-  const statusMessage = document.getElementById('status-message');
-  const sendButton = document.getElementById('send-attendance');
-  
-  // Deshabilitar el botón mientras se procesa
-  sendButton.disabled = true;
-  statusMessage.innerHTML = 'Enviando datos...';
-  statusMessage.className = '';
-  
-  try {
-    // Obtener la fecha seleccionada
-    const dateInput = document.getElementById('attendance-date');
-    const selectedDate = formatDate(new Date(dateInput.value));
-    
-    // Preparar los datos a enviar
-    const dataToSend = {
-      date: selectedDate,
-      attendance: []
-    };
-    
-    // Recopilar datos de asistencia de cada estudiante
-    students.forEach(student => {
-      const status = attendanceData[selectedDate][student.id];
-      let statusText = '';
-      
-      if (status === true) {
-        statusText = 'Presente';
-      } else if (status === 'late') {
-        statusText = 'Tarde';
-      } else if (status === false) {
-        statusText = 'Ausente';
-      } else {
-        statusText = ''; // Si no hay registro
-      }
-      
-      dataToSend.attendance.push({
-        id: student.id,
-        name: student.name,
-        status: statusText
-      });
-    });
-    
-    // Enviar datos a Google Sheets
-    const response = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(dataToSend),
-      headers: { 'Content-Type': 'application/json' },
-      mode: 'no-cors'
-    });
-    
-    // Mostrar mensaje de éxito
-    statusMessage.innerHTML = '¡Datos enviados correctamente!';
-    statusMessage.className = 'success-message';
-    
-    // Habilitar el botón después de 3 segundos
-    setTimeout(() => {
-      statusMessage.innerHTML = '';
-      sendButton.disabled = false;
-    }, 3000);
-    
-  } catch (error) {
-    console.error('Error al enviar datos:', error);
-    
-    // Mostrar mensaje de error
-    statusMessage.innerHTML = 'Error al enviar los datos. Inténtalo de nuevo.';
-    statusMessage.className = 'error-message';
-    
-    // Habilitar el botón
-    sendButton.disabled = false;
-  }
-}
-      
-// Función para enviar datos de examen a Google Sheets
-async function sendExamToGoogleSheet() {
-    const statusMessage = document.getElementById('exam-status-message');
-    const sendButton = document.getElementById('send-exam');
-    
-    // Deshabilitar el botón mientras se procesa
-    sendButton.disabled = true;
-    statusMessage.innerHTML = 'Enviando datos...';
-    statusMessage.className = '';
-    
-    try {
-        // Obtener el examen seleccionado
-        const examSelect = document.getElementById('exam-select');
-        const selectedExam = examSelect.value;
+        // Función para borrar todos los datos
+        function clearAllData() {
+            if (confirm('¿Está seguro de que desea borrar TODOS los datos guardados? Esta acción no se puede deshacer.')) {
+                // Borrar datos del localStorage
+                localStorage.removeItem('attendanceData');
+                localStorage.removeItem('examData');
+                
+                // Reinicializar las variables
+                attendanceData = {};
+                examData = {};
+                
+                // Reinicializar datos de exámenes
+                for (let i = 1; i <= 10; i++) {
+                    if (!examData[i]) {
+                        examData[i] = {};
+                    }
+                }
+                
+                // Reinicializar datos de asistencia para hoy
+                const today = formatDate(new Date());
+                if (!attendanceData[today]) {
+                    attendanceData[today] = {};
+                }
+                
+                // Actualizar todas las vistas
+                renderAttendanceList();
+                updateExamView();
+                
+                alert('Todos los datos han sido borrados exitosamente.');
+            }
+        }
         
-        // Preparar los datos a enviar
-        const dataToSend = {
-            examNumber: selectedExam,
-            examData: []
-        };
+        // === FUNCIONES DE ENVÍO A GOOGLE SHEETS ===
         
-        // Recopilar datos de notas de cada estudiante
-        students.forEach(student => {
-            const studentExamData = examData[selectedExam][student.id] || {};
-            const score = studentExamData.score;
+        // Función para enviar datos de asistencia a Google Sheets
+        async function sendAttendanceToGoogleSheet() {
+            const statusMessage = document.getElementById('status-message');
+            const sendButton = document.getElementById('send-attendance');
             
-            dataToSend.examData.push({
-                id: student.id,
-                name: student.name,
-                score: score !== undefined ? score : '' // Enviar nota o cadena vacía si no hay
-            });
-        });
+            // Deshabilitar el botón mientras se procesa
+            sendButton.disabled = true;
+            statusMessage.innerHTML = 'Enviando datos...';
+            statusMessage.className = '';
+            
+            try {
+                // Obtener la fecha seleccionada
+                const dateInput = document.getElementById('attendance-date');
+                const selectedDate = formatDate(new Date(dateInput.value));
+                
+                // Preparar los datos a enviar
+                const dataToSend = {
+                    date: selectedDate,
+                    attendance: []
+                };
+                
+                // Recopilar datos de asistencia de cada estudiante
+                students.forEach(student => {
+                    const status = attendanceData[selectedDate][student.id];
+                    let statusText = '';
+                    
+                    if (status === true) {
+                        statusText = 'Presente';
+                    } else if (status === 'late') {
+                        statusText = 'Tarde';
+                    } else if (status === false) {
+                        statusText = 'Ausente';
+                    } else {
+                        statusText = ''; // Si no hay registro
+                    }
+                    
+                    dataToSend.attendance.push({
+                        id: student.id,
+                        name: student.name,
+                        status: statusText
+                    });
+                });
+                
+                // Enviar datos a Google Sheets
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(dataToSend),
+                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'no-cors'
+                });
+                
+                // Mostrar mensaje de éxito
+                statusMessage.innerHTML = '¡Datos enviados correctamente!';
+                statusMessage.className = 'success-message';
+                
+                // Habilitar el botón después de 3 segundos
+                setTimeout(() => {
+                    statusMessage.innerHTML = '';
+                    sendButton.disabled = false;
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error al enviar datos:', error);
+                
+                // Mostrar mensaje de error
+                statusMessage.innerHTML = 'Error al enviar los datos. Inténtalo de nuevo.';
+                statusMessage.className = 'error-message';
+                
+                // Habilitar el botón
+                sendButton.disabled = false;
+            }
+        }
         
-        // Enviar datos a Google Sheets
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(dataToSend),
-            headers: { 'Content-Type': 'application/json' },
-            mode: 'no-cors'
-        });
+        // Función para enviar datos de examen a Google Sheets
+        async function sendExamToGoogleSheet() {
+            const statusMessage = document.getElementById('exam-status-message');
+            const sendButton = document.getElementById('send-exam');
+            
+            // Deshabilitar el botón mientras se procesa
+            sendButton.disabled = true;
+            statusMessage.innerHTML = 'Enviando datos...';
+            statusMessage.className = '';
+            
+            try {
+                // Obtener el examen seleccionado
+                const examSelect = document.getElementById('exam-select');
+                const selectedExam = examSelect.value;
+                
+                // Preparar los datos a enviar
+                const dataToSend = {
+                    examNumber: selectedExam,
+                    examData: []
+                };
+                
+                // Recopilar datos de notas de cada estudiante
+                students.forEach(student => {
+                    const studentExamData = examData[selectedExam][student.id] || {};
+                    const score = studentExamData.score;
+                    
+                    dataToSend.examData.push({
+                        id: student.id,
+                        name: student.name,
+                        score: score !== undefined ? score : '' // Enviar nota o cadena vacía si no hay
+                    });
+                });
+                
+                // Enviar datos a Google Sheets
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(dataToSend),
+                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'no-cors'
+                });
+                
+                // Mostrar mensaje de éxito
+                statusMessage.innerHTML = '¡Datos de examen enviados correctamente!';
+                statusMessage.className = 'success-message';
+                
+                // Habilitar el botón después de 3 segundos
+                setTimeout(() => {
+                    statusMessage.innerHTML = '';
+                    sendButton.disabled = false;
+                }, 3000);
+            } catch (error) {
+                console.error('Error al enviar datos del examen:', error);
+                
+                // Mostrar mensaje de error
+                statusMessage.innerHTML = 'Error al enviar los datos. Inténtalo de nuevo.';
+                statusMessage.className = 'error-message';
+                
+                // Habilitar el botón
+                sendButton.disabled = false;
+            }
+        }
         
-        // Mostrar mensaje de éxito
-        statusMessage.innerHTML = '¡Datos de examen enviados correctamente!';
-        statusMessage.className = 'success-message';
-        
-        // Habilitar el botón después de 3 segundos
-        setTimeout(() => {
-            statusMessage.innerHTML = '';
-            sendButton.disabled = false;
-        }, 3000);
-    } catch (error) {
-        console.error('Error al enviar datos del examen:', error);
-        
-        // Mostrar mensaje de error
-        statusMessage.innerHTML = 'Error al enviar los datos. Inténtalo de nuevo.';
-        statusMessage.className = 'error-message';
-        
-        // Habilitar el botón
-        sendButton.disabled = false;
-    }
-}
-
         // Inicializar cuando se carga la página
         window.onload = initializeData;
     </script>
