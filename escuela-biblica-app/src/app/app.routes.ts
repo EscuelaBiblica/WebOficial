@@ -36,6 +36,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboards/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
   },
   {
+    path: 'admin/usuarios',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/admin/usuarios/usuarios.component').then(m => m.UsuariosComponent)
+  },
+  {
     path: 'profesor',
     canActivate: [authGuard, profesorGuard],
     loadComponent: () => import('./features/dashboards/profesor-dashboard/profesor-dashboard.component').then(m => m.ProfesorDashboardComponent)
