@@ -6,7 +6,7 @@ export interface User {
   nombre: string;
   apellido: string;
   rol: UserRole;
-  fotoPerfil?: string;
+  fotoPerfil?: string | null;
   fechaRegistro: Date;
   activo: boolean;
   cursosInscritos?: string[]; // IDs de cursos (solo estudiantes)

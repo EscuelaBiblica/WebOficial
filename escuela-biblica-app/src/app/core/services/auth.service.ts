@@ -154,7 +154,7 @@ export class AuthService {
         nombre: data.nombre || '',
         apellido: data.apellido || '',
         rol: data.rol || 'estudiante',
-        fotoPerfil: data.fotoPerfil,
+        fotoPerfil: data.fotoPerfil || null,
         fechaRegistro: new Date(),
         activo: true,
         cursosInscritos: [],

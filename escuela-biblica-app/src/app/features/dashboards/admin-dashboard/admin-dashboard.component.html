@@ -1,0 +1,123 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="assets/img/logo.svg" alt="Logo" height="40">
+      </a>
+      <span class="navbar-text text-white me-3">
+        <i class="fas fa-user-shield"></i> {{ userName }}
+      </span>
+      <button class="btn btn-outline-light btn-sm" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i> Salir
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container py-5">
+    <!-- Welcome Message -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <h1 class="mb-2">¡Bienvenido, {{ userName }}!</h1>
+        <p class="text-muted">Panel de Administración - Escuela Bíblica CAVEVID</p>
+      </div>
+    </div>
+
+    <!-- Estadisticas -->
+    <div class="row mb-5">
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card p-4 bg-primary text-white rounded shadow-sm">
+          <i class="fas fa-users fa-2x mb-3"></i>
+          <h3 class="mb-0">{{ stats.totalUsuarios }}</h3>
+          <p class="mb-0">Total Usuarios</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card p-4 bg-success text-white rounded shadow-sm">
+          <i class="fas fa-book fa-2x mb-3"></i>
+          <h3 class="mb-0">{{ stats.totalCursos }}</h3>
+          <p class="mb-0">Cursos Activos</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card p-4 bg-info text-white rounded shadow-sm">
+          <i class="fas fa-user-graduate fa-2x mb-3"></i>
+          <h3 class="mb-0">{{ stats.totalEstudiantes }}</h3>
+          <p class="mb-0">Estudiantes</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card p-4 bg-warning text-white rounded shadow-sm">
+          <i class="fas fa-chalkboard-teacher fa-2x mb-3"></i>
+          <h3 class="mb-0">{{ stats.totalProfesores }}</h3>
+          <p class="mb-0">Profesores</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <h3 class="mb-3">Acciones Rápidas</h3>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="card action-card h-100 shadow-sm" (click)="navegarA('/admin/usuarios')">
+          <div class="card-body text-center py-4">
+            <i class="fas fa-users-cog fa-3x text-primary mb-3"></i>
+            <h5 class="card-title">Gestionar Usuarios</h5>
+            <p class="card-text text-muted">Crear, editar y eliminar usuarios</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card action-card h-100 shadow-sm" (click)="navegarA('/admin/cursos')">
+          <div class="card-body text-center py-4">
+            <i class="fas fa-book-reader fa-3x text-success mb-3"></i>
+            <h5 class="card-title">Gestionar Cursos</h5>
+            <p class="card-text text-muted">Crear y administrar cursos</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card action-card h-100 shadow-sm" (click)="navegarA('/admin/inscripciones')">
+          <div class="card-body text-center py-4">
+            <i class="fas fa-user-plus fa-3x text-info mb-3"></i>
+            <h5 class="card-title">Inscripciones</h5>
+            <p class="card-text text-muted">Gestionar inscripciones de estudiantes</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card action-card h-100 shadow-sm" (click)="navegarA('/admin/asignaciones')">
+          <div class="card-body text-center py-4">
+            <i class="fas fa-user-tie fa-3x text-warning mb-3"></i>
+            <h5 class="card-title">Asignar Profesores</h5>
+            <p class="card-text text-muted">Asignar profesores a cursos</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card action-card h-100 shadow-sm" (click)="navegarA('/admin/reportes')">
+          <div class="card-body text-center py-4">
+            <i class="fas fa-chart-bar fa-3x text-danger mb-3"></i>
+            <h5 class="card-title">Reportes</h5>
+            <p class="card-text text-muted">Ver estadísticas y reportes</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card action-card h-100 shadow-sm" (click)="navegarA('/admin/configuracion')">
+          <div class="card-body text-center py-4">
+            <i class="fas fa-cog fa-3x text-secondary mb-3"></i>
+            <h5 class="card-title">Configuración</h5>
+            <p class="card-text text-muted">Configuración del sistema</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

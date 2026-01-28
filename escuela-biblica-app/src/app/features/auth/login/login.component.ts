@@ -41,8 +41,8 @@ export class LoginComponent {
       const { email, password } = this.loginForm.value;
       await this.authService.login(email, password);
       
-      // Redirigir al dashboard
-      this.router.navigate(['/dashboard']);
+      // Redirigir según el rol del usuario
+      this.redirectByRole();
     } catch (error: any) {
       console.error('Error en login:', error);
       this.errorMessage = this.getErrorMessage(error.code);
@@ -57,13 +57,33 @@ export class LoginComponent {
 
     try {
       await this.authService.loginWithGoogle();
-      this.router.navigate(['/dashboard']);
+      this.redirectByRole();
     } catch (error: any) {
       console.error('Error en login con Google:', error);
       this.errorMessage = this.getErrorMessage(error.code);
     } finally {
       this.loading = false;
     }
+  }
+
+  private redirectByRole() {
+    this.authService.userProfile$.subscribe(profile => {
+      if (profile) {
+        switch (profile.rol) {
+          case 'admin':
+            this.router.navigate(['/admin']);
+            break;
+          case 'profesor':
+            this.router.navigate(['/profesor']);
+            break;
+          case 'estudiante':
+            this.router.navigate(['/estudiante']);
+            break;
+          default:
+            this.router.navigate(['/home']);
+        }
+      }
+    });
   }
 
   private getErrorMessage(errorCode: string): string {
