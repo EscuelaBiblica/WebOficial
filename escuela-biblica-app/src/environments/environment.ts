@@ -7,5 +7,9 @@ export const environment = {
     storageBucket: 'escuela-biblica-cavevid.firebasestorage.app',
     messagingSenderId: '9438200761',
     appId: '1:9438200761:web:da067df022edeb14afec68'
+  },
+  cloudinary: {
+    cloudName: 'dhiun8hx8',
+    uploadPreset: 'userProfile'
   }
 };

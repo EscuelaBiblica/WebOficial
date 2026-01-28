@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../../core/services/user.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { UserModel, UserRole } from '../../../core/models/user.model';
 
 @Component({
@@ -23,13 +24,31 @@ export class UsuariosComponent implements OnInit {
   filterRole: UserRole | 'todos' = 'todos';
   filterStatus: 'todos' | 'activos' | 'inactivos' = 'todos';
 
-  // Usuario seleccionado para editar
+  // Modales
   selectedUser: UserModel | null = null;
   showEditModal = false;
+  showCreateModal = false;
+  showViewModal = false;
+  
+  // Nuevo usuario
+  newUser = {
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
+    rol: 'estudiante' as UserRole,
+    fotoPerfil: ''
+  };
+  
+  // Preview y upload de imágenes
+  imagePreviewCreate: string | null = null;
+  imagePreviewEdit: string | null = null;
+  uploadingImage = false;
 
   constructor(
     private userService: UserService,
     private authService: AuthService,
+    private cloudinaryService: CloudinaryService,
     private router: Router
   ) {}
 
@@ -121,14 +140,140 @@ export class UsuariosComponent implements OnInit {
     }
   }
 
+  openCreateModal() {
+    this.newUser = {
+      nombre: '',
+      apellido: '',
+      email: '',
+      password: '',
+      rol: 'estudiante',
+      fotoPerfil: ''
+    };
+    this.imagePreviewCreate = null;
+    this.showCreateModal = true;
+  }
+
+  closeCreateModal() {
+    this.showCreateModal = false;
+    this.imagePreviewCreate = null;
+    this.newUser = {
+      nombre: '',
+      apellido: '',
+      email: '',
+      password: '',
+      rol: 'estudiante',
+      fotoPerfil: ''
+    };
+  }
+
+  async onImageSelectedCreate(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      
+      if (!this.cloudinaryService.isValidImageFile(file)) {
+        return;
+      }
+
+      // Mostrar preview local
+      this.imagePreviewCreate = this.cloudinaryService.createImagePreview(file);
+
+      // Subir a Cloudinary
+      try {
+        this.uploadingImage = true;
+        const imageUrl = await this.cloudinaryService.uploadImage(file);
+        this.newUser.fotoPerfil = imageUrl;
+        this.uploadingImage = false;
+      } catch (error) {
+        console.error('Error subiendo imagen:', error);
+        alert('Error al subir la imagen');
+        this.imagePreviewCreate = null;
+        this.uploadingImage = false;
+      }
+    }
+  }
+
+  async createUser() {
+    try {
+      if (!this.newUser.nombre || !this.newUser.apellido || !this.newUser.email || !this.newUser.password) {
+        alert('Por favor completa todos los campos requeridos');
+        return;
+      }
+
+      await this.authService.register(
+        this.newUser.email,
+        this.newUser.password,
+        {
+          nombre: this.newUser.nombre,
+          apellido: this.newUser.apellido,
+          rol: this.newUser.rol,
+          fotoPerfil: this.newUser.fotoPerfil || null
+        }
+      );
+      
+      alert('Usuario creado exitosamente');
+      this.closeCreateModal();
+      this.loadUsers();
+    } catch (error: any) {
+      console.error('Error al crear usuario:', error);
+      alert('Error al crear usuario: ' + (error.message || 'Error desconocido'));
+    }
+  }
+
+  viewUser(user: UserModel) {
+    this.selectedUser = { ...user };
+    this.showViewModal = true;
+  }
+
+  closeViewModal() {
+    this.showViewModal = false;
+    this.selectedUser = null;
+  }
+
+  editUserFromView() {
+    this.showViewModal = false;
+    this.showEditModal = true;
+  }
+
   editUser(user: UserModel) {
     this.selectedUser = { ...user };
+    this.imagePreviewEdit = user.fotoPerfil || null;
     this.showEditModal = true;
   }
 
   closeEditModal() {
     this.showEditModal = false;
+    this.imagePreviewEdit = null;
     this.selectedUser = null;
+  }
+
+  async onImageSelectedEdit(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      
+      if (!this.cloudinaryService.isValidImageFile(file)) {
+        return;
+      }
+
+      // Mostrar preview local
+      this.imagePreviewEdit = this.cloudinaryService.createImagePreview(file);
+
+      // Subir a Cloudinary
+      try {
+        this.uploadingImage = true;
+        const imageUrl = await this.cloudinaryService.uploadImage(file);
+        if (this.selectedUser) {
+          this.selectedUser.fotoPerfil = imageUrl;
+        }
+        this.uploadingImage = false;
+      } catch (error) {
+        console.error('Error subiendo imagen:', error);
+        alert('Error al subir la imagen');
+        this.imagePreviewEdit = this.selectedUser?.fotoPerfil || null;
+        this.uploadingImage = false;
+      }
+    }
   }
 
   async saveUser() {
@@ -139,7 +284,8 @@ export class UsuariosComponent implements OnInit {
         nombre: this.selectedUser.nombre,
         apellido: this.selectedUser.apellido,
         email: this.selectedUser.email,
-        rol: this.selectedUser.rol
+        rol: this.selectedUser.rol,
+        fotoPerfil: this.selectedUser.fotoPerfil || null
       });
       this.closeEditModal();
       alert('Usuario actualizado correctamente');

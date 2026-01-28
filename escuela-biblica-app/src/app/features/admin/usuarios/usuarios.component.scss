@@ -15,7 +15,25 @@
   font-weight: bold;
   font-size: 14px;
 }
+.user-avatar-large {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 48px;
+  margin: 0 auto;
+}
 
+.profile-image-large img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+}
 .table {
   background: white;
   
