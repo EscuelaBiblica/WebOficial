@@ -97,9 +97,14 @@
                   <tr *ngFor="let user of usuariosFiltrados">
                     <td>
                       <div class="d-flex align-items-center">
-                        <div class="user-avatar me-2">
+                        <div class="user-avatar me-2" *ngIf="!user.fotoPerfil">
                           {{ user.nombre.charAt(0) }}{{ user.apellido.charAt(0) }}
                         </div>
+                        <img 
+                          *ngIf="user.fotoPerfil" 
+                          [src]="user.fotoPerfil" 
+                          [alt]="user.nombre" 
+                          class="user-avatar-img me-2">
                         <div>
                           <strong>{{ user.nombre }} {{ user.apellido }}</strong>
                         </div>

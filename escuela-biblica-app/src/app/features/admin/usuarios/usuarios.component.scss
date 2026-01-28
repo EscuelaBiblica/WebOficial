@@ -15,7 +15,13 @@
   font-weight: bold;
   font-size: 14px;
 }
-.user-avatar-large {
+.user-avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}.user-avatar-large {
   width: 150px;
   height: 150px;
   border-radius: 50%;
