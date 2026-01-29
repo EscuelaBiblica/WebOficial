@@ -66,6 +66,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/tasks/tareas.component').then(m => m.TareasComponent)
   },
   {
+    path: 'tareas/:tareaId/entregas',
+    canActivate: [authGuard, profesorGuard],
+    loadComponent: () => import('./features/tasks/lista-entregas.component').then(m => m.ListaEntregasComponent)
+  },
+  {
     path: 'tareas/:tareaId/calificar/:entregaId',
     canActivate: [authGuard, profesorGuard],
     loadComponent: () => import('./features/tasks/calificar.component').then(m => m.CalificarComponent)

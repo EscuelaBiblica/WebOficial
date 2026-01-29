@@ -3,6 +3,9 @@ import { Firestore, collection, doc, setDoc, updateDoc, deleteDoc, query, where,
 import { Observable } from 'rxjs';
 import { Tarea, EntregaTarea } from '../models/task.model';
 import { LessonService } from './lesson.service';
+import { GradeService } from './grade.service';
+import { AuthService } from './auth.service';
+import { SectionService } from './section.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +16,10 @@ export class TaskService {
 
   constructor(
     private firestore: Firestore,
-    private lessonService: LessonService
+    private lessonService: LessonService,
+    private gradeService: GradeService,
+    private authService: AuthService,
+    private sectionService: SectionService
   ) {}
 
   /**
@@ -236,12 +242,66 @@ export class TaskService {
    */
   async gradeSubmission(entregaId: string, calificacion: number, retroalimentacion?: string): Promise<void> {
     try {
+      // Actualizar la entrega
       const entregaDocRef = doc(this.firestore, `entregas/${entregaId}`);
       await updateDoc(entregaDocRef, {
         calificacion,
         retroalimentacion: retroalimentacion || '',
         estado: 'calificada'
       });
+
+      // Obtener datos de la entrega y la tarea para crear/actualizar la calificación
+      const entregaSnap = await getDoc(entregaDocRef);
+      if (entregaSnap.exists()) {
+        const entregaData = entregaSnap.data() as EntregaTarea;
+        const tarea = await this.getTaskById(entregaData.tareaId);
+
+        if (tarea) {
+          // Obtener la lección para obtener el seccionId
+          const leccion = await this.lessonService.getLessonById(tarea.leccionId);
+
+          if (leccion) {
+            // Obtener la sección para obtener el cursoId
+            const seccion = await this.sectionService.getSectionById(leccion.seccionId);
+
+            if (seccion) {
+              const currentUser = this.authService.getCurrentUser();
+              const puntosFinal = (calificacion * tarea.ponderacion) / 100;
+
+              // Verificar si ya existe una calificación para esta tarea y estudiante
+              const calificacionExistente = await this.gradeService.getGradeByStudentAndTask(
+                entregaData.estudianteId,
+                tarea.id
+              );
+
+              if (calificacionExistente) {
+                // Actualizar calificación existente
+                await this.gradeService.updateGrade(calificacionExistente.id, {
+                  calificacion,
+                  puntosFinal,
+                  fechaCalificacion: new Date(),
+                  retroalimentacion: retroalimentacion || '',
+                  profesorId: currentUser?.uid || ''
+                });
+              } else {
+                // Crear nueva calificación
+                await this.gradeService.createGrade({
+                  estudianteId: entregaData.estudianteId,
+                  cursoId: seccion.cursoId,
+                  tareaId: tarea.id,
+                  tipo: 'tarea',
+                  calificacion,
+                  ponderacion: tarea.ponderacion,
+                  puntosFinal,
+                  fechaCalificacion: new Date(),
+                  retroalimentacion: retroalimentacion || '',
+                  profesorId: currentUser?.uid || ''
+                });
+              }
+            }
+          }
+        }
+      }
     } catch (error) {
       console.error('Error calificando entrega:', error);
       throw error;

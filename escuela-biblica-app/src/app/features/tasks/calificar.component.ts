@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../core/services/task.service';
 import { AuthService } from '../../core/services/auth.service';
+import { UserService } from '../../core/services/user.service';
 import { EntregaTarea } from '../../core/models/task.model';
 import { Tarea } from '../../core/models/task.model';
 
@@ -20,10 +21,14 @@ export class CalificarComponent implements OnInit {
   calificacion: number = 0;
   retroalimentacion: string = '';
   loading: boolean = false;
+  tareaId: string = '';
+  estudianteNombre: string = '';
+  estudianteEmail: string = '';
 
   constructor(
     private taskService: TaskService,
     private authService: AuthService,
+    private userService: UserService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -38,9 +43,25 @@ export class CalificarComponent implements OnInit {
       return;
     }
 
+    this.tareaId = tareaId;
+
     try {
       // Cargar la tarea
       this.tarea = await this.taskService.getTaskById(tareaId);
+
+      // Convertir fechas de la tarea
+      if (this.tarea) {
+        if (this.tarea.fechaInicio) {
+          this.tarea.fechaInicio = this.tarea.fechaInicio instanceof Date
+            ? this.tarea.fechaInicio
+            : (this.tarea.fechaInicio as any).toDate();
+        }
+        if (this.tarea.fechaFin) {
+          this.tarea.fechaFin = this.tarea.fechaFin instanceof Date
+            ? this.tarea.fechaFin
+            : (this.tarea.fechaFin as any).toDate();
+        }
+      }
 
       // Cargar la entrega
       const entregas = await this.taskService.getSubmissionsByTask(tareaId);
@@ -50,6 +71,20 @@ export class CalificarComponent implements OnInit {
         alert('Entrega no encontrada');
         this.goBack();
         return;
+      }
+
+      // Convertir fecha de entrega
+      if (this.entrega.fechaEntrega) {
+        this.entrega.fechaEntrega = this.entrega.fechaEntrega instanceof Date
+          ? this.entrega.fechaEntrega
+          : (this.entrega.fechaEntrega as any).toDate();
+      }
+
+      // Cargar información del estudiante
+      const estudiante = await this.userService.getUserById(this.entrega.estudianteId);
+      if (estudiante) {
+        this.estudianteNombre = estudiante.nombre;
+        this.estudianteEmail = estudiante.email;
       }
 
       // Si ya está calificada, pre-llenar los campos
@@ -132,8 +167,12 @@ export class CalificarComponent implements OnInit {
   }
 
   goBack() {
-    // Volver al dashboard del profesor
-    this.router.navigate(['/profesor']);
+    // Volver a la lista de entregas si tenemos tareaId
+    if (this.tareaId) {
+      this.router.navigate(['/tareas', this.tareaId, 'entregas']);
+    } else {
+      this.router.navigate(['/profesor']);
+    }
   }
 
   logout() {

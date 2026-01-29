@@ -52,14 +52,19 @@
         <div class="card-body">
           <div class="row">
             <div class="col-md-6">
-              <p><strong>Estudiante:</strong> {{ entrega.estudianteId }}</p>
-              <p><strong>Fecha de entrega:</strong> {{ formatDate(entrega.fechaEntrega) }}</p>
+              <p><strong><i class="fas fa-user-graduate"></i> Estudiante:</strong> {{ estudianteNombre }}</p>
+              <p><strong><i class="fas fa-envelope"></i> Email:</strong> {{ estudianteEmail }}</p>
+              <p><strong><i class="fas fa-calendar-check"></i> Fecha de entrega:</strong> {{ formatDate(entrega.fechaEntrega) }}</p>
             </div>
             <div class="col-md-6">
-              <p><strong>Estado:</strong>
+              <p><strong><i class="fas fa-info-circle"></i> Estado:</strong>
                 <span class="badge" [ngClass]="getEstadoBadgeClass(entrega.estado)">
                   {{ entrega.estado }}
                 </span>
+              </p>
+              <p *ngIf="entrega.calificacion !== undefined && entrega.calificacion !== null">
+                <strong><i class="fas fa-star"></i> Calificación actual:</strong>
+                <span class="badge bg-success fs-6">{{ entrega.calificacion }}/100</span>
               </p>
             </div>
           </div>

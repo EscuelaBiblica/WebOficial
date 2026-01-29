@@ -291,10 +291,7 @@ export class CourseViewerComponent implements OnInit {
   }
 
   verEntregas(tareaId: string) {
-    // Por ahora, ir al dashboard del profesor
-    // TODO: Crear componente de lista de entregas
-    alert('Para ver las entregas, ve a tu Dashboard de Profesor donde podrás ver todas las entregas pendientes de calificar.');
-    this.router.navigate(['/profesor']);
+    this.router.navigate(['/tareas', tareaId, 'entregas']);
   }
 
   goToDashboard() {
