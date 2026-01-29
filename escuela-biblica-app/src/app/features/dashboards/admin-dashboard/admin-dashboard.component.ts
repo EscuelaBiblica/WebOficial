@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service';
+import { CourseService } from '../../../core/services/course.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -18,9 +20,12 @@ export class AdminDashboardComponent implements OnInit {
     totalEstudiantes: 0,
     totalProfesores: 0
   };
+  loading = true;
 
   constructor(
     private authService: AuthService,
+    private userService: UserService,
+    private courseService: CourseService,
     private router: Router
   ) {}
 
@@ -33,14 +38,29 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  cargarEstadisticas() {
-    // Datos de ejemplo - En producción esto vendría de Firestore
-    this.stats = {
-      totalUsuarios: 35,
-      totalCursos: 10,
-      totalEstudiantes: 27,
-      totalProfesores: 8
-    };
+  async cargarEstadisticas() {
+    try {
+      this.loading = true;
+
+      // Obtener estadísticas de usuarios
+      const userStats = await this.userService.getUserStats();
+
+      // Obtener estadísticas de cursos
+      const courseStats = await this.courseService.getCourseStats();
+
+      // Actualizar estadísticas
+      this.stats = {
+        totalUsuarios: userStats.total,
+        totalCursos: courseStats.cursosActivos,
+        totalEstudiantes: userStats.estudiantes,
+        totalProfesores: userStats.profesores
+      };
+
+      this.loading = false;
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
+      this.loading = false;
+    }
   }
 
   navegarA(ruta: string) {

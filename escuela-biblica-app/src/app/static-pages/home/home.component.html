@@ -14,9 +14,16 @@
                         <li class="nav-item"><a class="nav-link" href="#about">Propósito</a></li>
                         <li class="nav-item"><a class="nav-link" href="#team">Profesores</a></li>
                         <li class="nav-item"><a class="nav-link" href="#contact">Inscripción</a></li>
-                        <li class="nav-item"><a class="nav-link btn btn-primary text-white px-3 ms-lg-3" routerLink="/login">
-                            <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
-                        </a></li>
+                        <li class="nav-item" *ngIf="!isLoggedIn">
+                            <a class="nav-link btn btn-primary text-white px-3 ms-lg-3" routerLink="/login">
+                                <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+                            </a>
+                        </li>
+                        <li class="nav-item" *ngIf="isLoggedIn">
+                            <a class="nav-link btn btn-success text-white px-3 ms-lg-3" (click)="navigateToDashboard()" style="cursor: pointer;">
+                                <i class="fas fa-tachometer-alt me-1"></i>Mi Panel
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -47,7 +54,7 @@
                 <h4 class="my-3">Básico</h4>
                 <h5 class="section-subheading text-muted mb-3">Estudio Bíblico Fundamental</h5>
                 <p class="text-muted mb-4">
-                    Este curso introduce los principios básicos del estudio de la Biblia. 
+                    Este curso introduce los principios básicos del estudio de la Biblia.
                     Ideal para quienes desean establecer una base sólida en su camino de fe y servicio cristiano.
                 </p>
                 <div class="text-start">
@@ -61,7 +68,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <!-- Curso Avanzado -->
             <div class="col-md-6">
                 <span class="fa-stack fa-4x">
@@ -71,7 +78,7 @@
                 <h4 class="my-3">Avanzado</h4>
                 <h5 class="section-subheading text-muted mb-3">Teología y Evangelismo Profesional</h5>
                 <p class="text-muted mb-4">
-                    Este curso profundiza en el estudio avanzado de la Biblia y la teología cristiana. 
+                    Este curso profundiza en el estudio avanzado de la Biblia y la teología cristiana.
                     Está diseñado para aquellos que buscan un conocimiento más profundo para ejercer un liderazgo efectivo en la iglesia y en la misión cristiana.
                 </p>
                 <div class="text-start">
@@ -492,7 +499,7 @@
     </div>
 </div>
 
-    
+
         <!-- Footer-->
         <footer class="footer py-4">
             <div class="container">

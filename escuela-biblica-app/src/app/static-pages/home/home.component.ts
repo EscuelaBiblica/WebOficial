@@ -1,22 +1,50 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 declare const bootstrap: any;
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, NgOptimizedImage],
+  imports: [CommonModule, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements AfterViewInit {
+export class HomeComponent implements OnInit, AfterViewInit {
   isSubmitting = false;
+  isLoggedIn = false;
+  userRole: string | null = null;
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    // Verificar estado de autenticación
+    this.authService.userProfile$.subscribe(userProfile => {
+      this.isLoggedIn = !!userProfile;
+      this.userRole = userProfile?.rol || null;
+    });
+  }
 
   ngAfterViewInit() {
     // Configurar scroll suave para los enlaces de anclaje
     this.setupSmoothScrolling();
+  }
+
+  navigateToDashboard() {
+    if (this.userRole === 'admin') {
+      this.router.navigate(['/admin']);
+    } else if (this.userRole === 'profesor') {
+      this.router.navigate(['/profesor']);
+    } else if (this.userRole === 'estudiante') {
+      this.router.navigate(['/estudiante']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   setupSmoothScrolling() {
@@ -28,13 +56,13 @@ export class HomeComponent implements AfterViewInit {
           e.preventDefault();
           const targetId = href.substring(1);
           const targetElement = document.getElementById(targetId);
-          
+
           if (targetElement) {
             targetElement.scrollIntoView({
               behavior: 'smooth',
               block: 'start'
             });
-            
+
             // Actualizar URL sin recargar la página
             window.history.pushState(null, '', href);
           }
