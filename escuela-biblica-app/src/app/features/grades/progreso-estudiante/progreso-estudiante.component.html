@@ -1,0 +1,195 @@
+<div class="progreso-container">
+  <!-- Header -->
+  <div class="header">
+    <button class="btn-back" (click)="volver()">
+      <i class="fas fa-arrow-left"></i> Volver al Curso
+    </button>
+    <div class="header-content">
+      <h1><i class="fas fa-chart-line"></i> Mi Progreso y Calificaciones</h1>
+      <p class="curso-titulo">{{ cursoTitulo }}</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Cargando tu progreso...</p>
+  </div>
+
+  <!-- Content -->
+  <div class="content" *ngIf="!loading && progreso && calificacion">
+
+    <!-- Resumen General -->
+    <div class="seccion-resumen">
+      <div class="card-grande card-calificacion">
+        <div class="card-header">
+          <i class="fas fa-graduation-cap"></i>
+          <h2>Calificación Final</h2>
+        </div>
+        <div class="calificacion-display">
+          <div class="calificacion-numero" [class]="getCalificacionClase(calificacion.calificacionFinal)">
+            {{ calificacion.calificacionFinal | number:'1.0-2' }}
+          </div>
+          <div class="calificacion-estado" [class]="getEstadoClase()">
+            <i class="fas" [class]="getEstadoIcono()"></i>
+            <span>{{ getEstadoTexto() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-grande card-progreso">
+        <div class="card-header">
+          <i class="fas fa-tasks"></i>
+          <h2>Avance del Curso</h2>
+        </div>
+        <div class="progreso-display">
+          <div class="progreso-circular">
+            <svg viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="90" class="progreso-bg"></circle>
+              <circle cx="100" cy="100" r="90" class="progreso-fill"
+                      [style.stroke-dashoffset]="565 - (565 * progreso.porcentajeAvance / 100)"></circle>
+            </svg>
+            <div class="progreso-text">
+              <span class="progreso-numero">{{ progreso.porcentajeAvance }}%</span>
+              <span class="progreso-label">Completado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desglose de Calificaciones -->
+    <div class="seccion-desglose">
+      <h2><i class="fas fa-chart-bar"></i> Desglose de Calificaciones</h2>
+
+      <div class="desglose-grid">
+        <!-- Tareas -->
+        <div class="card-desglose">
+          <div class="desglose-header">
+            <i class="fas fa-tasks"></i>
+            <h3>Tareas</h3>
+          </div>
+          <div class="desglose-contenido">
+            <div class="promedio-grande" [class]="getCalificacionClase(calificacion.promedioTareas)">
+              {{ calificacion.promedioTareas | number:'1.0-2' }}
+            </div>
+            <div class="desglose-info">
+              <div class="info-item">
+                <span class="label">Completadas:</span>
+                <span class="value">{{ progreso.tareasEntregadas.length }} / {{ progreso.tareasTotales }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Porcentaje:</span>
+                <span class="value">{{ porcentajeTareasCompletadas }}%</span>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill tareas" [style.width.%]="porcentajeTareasCompletadas"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exámenes -->
+        <div class="card-desglose">
+          <div class="desglose-header">
+            <i class="fas fa-file-alt"></i>
+            <h3>Exámenes</h3>
+          </div>
+          <div class="desglose-contenido">
+            <div class="promedio-grande" [class]="getCalificacionClase(calificacion.promedioExamenes)">
+              {{ calificacion.promedioExamenes | number:'1.0-2' }}
+            </div>
+            <div class="desglose-info">
+              <div class="info-item">
+                <span class="label">Completados:</span>
+                <span class="value">{{ progreso.examenesRealizados.length }} / {{ progreso.examenesTotales }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Porcentaje:</span>
+                <span class="value">{{ porcentajeExamenesCompletados }}%</span>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill examenes" [style.width.%]="porcentajeExamenesCompletados"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actividades Pendientes -->
+    <div class="seccion-pendientes">
+      <h2><i class="fas fa-clipboard-list"></i> Resumen de Actividades</h2>
+
+      <div class="pendientes-grid">
+        <div class="card-stat">
+          <div class="stat-icon tareas">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-numero">{{ progreso.tareasTotales - progreso.tareasEntregadas.length }}</div>
+            <div class="stat-label">Tareas Pendientes</div>
+          </div>
+        </div>
+
+        <div class="card-stat">
+          <div class="stat-icon examenes">
+            <i class="fas fa-file-alt"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-numero">{{ progreso.examenesTotales - progreso.examenesRealizados.length }}</div>
+            <div class="stat-label">Exámenes Pendientes</div>
+          </div>
+        </div>
+
+        <div class="card-stat">
+          <div class="stat-icon lecciones">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-numero">{{ progreso.leccionesTotales }}</div>
+            <div class="stat-label">Lecciones Totales</div>
+          </div>
+        </div>
+
+        <div class="card-stat">
+          <div class="stat-icon actividad">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-numero">{{ progreso.ultimaActividad | date:'short' }}</div>
+            <div class="stat-label">Última Actividad</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje de Motivación -->
+    <div class="mensaje-motivacion" *ngIf="calificacion.estado === 'en_progreso'">
+      <i class="fas fa-lightbulb"></i>
+      <div>
+        <h3>¡Sigue adelante!</h3>
+        <p>Completa las actividades pendientes para mejorar tu calificación y avanzar en el curso.</p>
+      </div>
+    </div>
+
+    <div class="mensaje-motivacion exito" *ngIf="calificacion.estado === 'aprobado'">
+      <i class="fas fa-trophy"></i>
+      <div>
+        <h3>¡Felicitaciones!</h3>
+        <p>Has aprobado el curso exitosamente. ¡Excelente trabajo!</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Sin Datos -->
+  <div class="sin-datos" *ngIf="!loading && (!progreso || !calificacion)">
+    <i class="fas fa-info-circle"></i>
+    <h2>No hay datos disponibles</h2>
+    <p>No se pudo cargar la información de progreso. Verifica que el curso tenga configuración de calificaciones.</p>
+    <button class="btn-primary" (click)="volver()">
+      Volver al Curso
+    </button>
+  </div>
+</div>

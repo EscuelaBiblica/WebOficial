@@ -453,7 +453,7 @@ export class CourseViewerComponent implements OnInit {
   }
 
   verMiProgreso(): void {
-    // TODO: Implementar vista de progreso del estudiante
-    alert('Vista de progreso del estudiante - Próximamente');
+    if (!this.curso?.id) return;
+    this.router.navigate(['/cursos', this.curso.id, 'progreso']);
   }
 }

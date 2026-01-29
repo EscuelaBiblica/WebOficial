@@ -61,6 +61,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/grades/libro-calificaciones/libro-calificaciones.component').then(m => m.LibroCalificacionesComponent)
   },
   {
+    path: 'cursos/:cursoId/progreso',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/grades/progreso-estudiante/progreso-estudiante.component').then(m => m.ProgresoEstudianteComponent)
+  },
+  {
     path: 'curso/:cursoId',
     canActivate: [authGuard],
     loadComponent: () => import('./features/course-viewer/course-viewer.component').then(m => m.CourseViewerComponent)

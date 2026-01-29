@@ -1,0 +1,478 @@
+.progreso-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+.header {
+  margin-bottom: 2rem;
+
+  .btn-back {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    transition: color 0.3s;
+
+    &:hover {
+      color: #333;
+    }
+
+    i {
+      margin-right: 0.5rem;
+    }
+  }
+
+  .header-content {
+    h1 {
+      color: #333;
+      margin: 0 0 0.5rem 0;
+
+      i {
+        color: #4a90e2;
+        margin-right: 0.5rem;
+      }
+    }
+
+    .curso-titulo {
+      color: #666;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+  }
+}
+
+// Sección Resumen
+.seccion-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.card-grande {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+
+  .card-header {
+    align-items: center;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+
+    i {
+      color: #4a90e2;
+      font-size: 1.5rem;
+    }
+
+    h2 {
+      color: #333;
+      font-size: 1.3rem;
+      margin: 0;
+    }
+  }
+}
+
+.card-calificacion {
+  .calificacion-display {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .calificacion-numero {
+      border-radius: 50%;
+      color: white;
+      font-size: 3rem;
+      font-weight: 700;
+      height: 150px;
+      width: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .calificacion-estado {
+      align-items: center;
+      border-radius: 24px;
+      display: flex;
+      font-size: 1.2rem;
+      font-weight: 600;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+
+      i {
+        font-size: 1.5rem;
+      }
+    }
+  }
+}
+
+.card-progreso {
+  .progreso-display {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+  }
+
+  .progreso-circular {
+    position: relative;
+    width: 200px;
+    height: 200px;
+
+    svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+
+      .progreso-bg {
+        fill: none;
+        stroke: #e0e0e0;
+        stroke-width: 12;
+      }
+
+      .progreso-fill {
+        fill: none;
+        stroke: #4a90e2;
+        stroke-width: 12;
+        stroke-dasharray: 565;
+        stroke-dashoffset: 565;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s ease;
+      }
+    }
+
+    .progreso-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+
+      .progreso-numero {
+        color: #333;
+        display: block;
+        font-size: 2.5rem;
+        font-weight: 700;
+      }
+
+      .progreso-label {
+        color: #666;
+        display: block;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+// Desglose
+.seccion-desglose {
+  margin-bottom: 2rem;
+
+  h2 {
+    color: #333;
+    margin-bottom: 1rem;
+
+    i {
+      color: #4a90e2;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.desglose-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.card-desglose {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  .desglose-header {
+    align-items: center;
+    background: linear-gradient(135deg, #4a90e2, #357abd);
+    color: white;
+    display: flex;
+    gap: 0.75rem;
+    padding: 1.25rem;
+
+    i {
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+  }
+
+  .desglose-contenido {
+    padding: 1.5rem;
+
+    .promedio-grande {
+      border-radius: 12px;
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .desglose-info {
+      margin-bottom: 1rem;
+
+      .info-item {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+
+        .label {
+          color: #666;
+          font-size: 0.9rem;
+        }
+
+        .value {
+          color: #333;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}
+
+// Pendientes
+.seccion-pendientes {
+  margin-bottom: 2rem;
+
+  h2 {
+    color: #333;
+    margin-bottom: 1rem;
+
+    i {
+      color: #4a90e2;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.pendientes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.card-stat {
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+
+  .stat-icon {
+    align-items: center;
+    border-radius: 12px;
+    display: flex;
+    font-size: 2rem;
+    height: 60px;
+    justify-content: center;
+    width: 60px;
+
+    &.tareas {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    &.examenes {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+
+    &.lecciones {
+      background: #fff3e0;
+      color: #f57c00;
+    }
+
+    &.actividad {
+      background: #f3e5f5;
+      color: #7b1fa2;
+    }
+  }
+
+  .stat-content {
+    flex: 1;
+
+    .stat-numero {
+      color: #333;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      color: #666;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+// Mensaje de Motivación
+.mensaje-motivacion {
+  align-items: center;
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: white;
+  display: flex;
+  gap: 1.5rem;
+  padding: 2rem;
+
+  i {
+    font-size: 3rem;
+    opacity: 0.9;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    margin: 0 0 0.5rem 0;
+  }
+
+  p {
+    margin: 0;
+    opacity: 0.95;
+  }
+
+  &.exito {
+    background: linear-gradient(135deg, #28a745, #20c997);
+  }
+}
+
+// Estados y Calificaciones
+.cal-excelente {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.cal-bueno {
+  background: linear-gradient(135deg, #17a2b8, #0dcaf0);
+}
+
+.cal-regular {
+  background: linear-gradient(135deg, #ffc107, #ffca2c);
+}
+
+.cal-desaprobado {
+  background: linear-gradient(135deg, #dc3545, #e35d6a);
+}
+
+.estado-aprobado {
+  background: #d4edda;
+  color: #155724;
+}
+
+.estado-desaprobado {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.estado-progreso {
+  background: #fff3cd;
+  color: #856404;
+}
+
+// Progress Bar
+.progress-bar {
+  background: #e0e0e0;
+  border-radius: 10px;
+  height: 10px;
+  overflow: hidden;
+
+  .progress-fill {
+    height: 100%;
+    transition: width 0.8s ease;
+
+    &.tareas {
+      background: linear-gradient(90deg, #1976d2, #42a5f5);
+    }
+
+    &.examenes {
+      background: linear-gradient(90deg, #388e3c, #66bb6a);
+    }
+  }
+}
+
+// Loading
+.loading {
+  align-items: center;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 4rem 2rem;
+
+  i {
+    font-size: 3rem;
+  }
+}
+
+// Sin Datos
+.sin-datos {
+  align-items: center;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 4rem 2rem;
+  text-align: center;
+
+  i {
+    color: #ffc107;
+    font-size: 4rem;
+  }
+
+  h2 {
+    color: #333;
+    margin: 0;
+  }
+
+  p {
+    color: #666;
+    margin: 0;
+    max-width: 500px;
+  }
+
+  .btn-primary {
+    background: #4a90e2;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    transition: background 0.3s;
+
+    &:hover {
+      background: #357abd;
+    }
+  }
+}
