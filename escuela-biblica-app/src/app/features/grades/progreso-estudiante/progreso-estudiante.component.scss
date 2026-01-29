@@ -256,6 +256,22 @@
       }
     }
   }
+
+  &.grafico-card {
+    .desglose-contenido {
+      &.grafico-contenido {
+        height: 250px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+
+        canvas {
+          max-height: 100%;
+        }
+      }
+    }
+  }
 }
 
 // Pendientes

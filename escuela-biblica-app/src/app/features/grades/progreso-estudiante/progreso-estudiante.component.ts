@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GradingService } from '../../../core/services/grading.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProgresoEstudiante, CalificacionEstudiante } from '../../../core/models/grading.model';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 
 @Component({
   selector: 'app-progreso-estudiante',
@@ -13,12 +16,14 @@ import { ProgresoEstudiante, CalificacionEstudiante } from '../../../core/models
   styleUrl: './progreso-estudiante.component.scss'
 })
 export class ProgresoEstudianteComponent implements OnInit {
+  @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
   cursoId!: string;
   estudianteId!: string;
   progreso?: ProgresoEstudiante;
   calificacion?: CalificacionEstudiante;
   loading = false;
   cursoTitulo = '';
+  chart?: Chart;
 
   constructor(
     private route: ActivatedRoute,
@@ -57,6 +62,8 @@ export class ProgresoEstudianteComponent implements OnInit {
       // Obtener título del curso
       // TODO: Agregar método en un servicio de cursos
       this.cursoTitulo = 'Curso';
+
+      setTimeout(() => this.createChart(), 100);
     } catch (error) {
       console.error('Error al cargar progreso:', error);
       alert('Error al cargar el progreso. Asegúrate de que el curso tenga configuración de calificaciones.');
@@ -114,5 +121,62 @@ export class ProgresoEstudianteComponent implements OnInit {
 
   volver(): void {
     this.router.navigate(['/curso', this.cursoId]);
+  }
+
+  createChart(): void {
+    if (!this.calificacion || !this.chartCanvas) return;
+
+    // Destruir gráfico anterior si existe
+    if (this.chart) {
+      this.chart.destroy();
+    }
+
+    const ctx = this.chartCanvas.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    const config: ChartConfiguration = {
+      type: 'doughnut',
+      data: {
+        labels: ['Tareas', 'Exámenes'],
+        datasets: [{
+          label: 'Calificaciones',
+          data: [this.calificacion.promedioTareas, this.calificacion.promedioExamenes],
+          backgroundColor: [
+            'rgba(25, 118, 210, 0.7)',
+            'rgba(56, 142, 60, 0.7)'
+          ],
+          borderColor: [
+            'rgb(25, 118, 210)',
+            'rgb(56, 142, 60)'
+          ],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              font: {
+                size: 14
+              },
+              padding: 15
+            }
+          },
+          title: {
+            display: true,
+            text: 'Comparación: Tareas vs Exámenes',
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
+          }
+        }
+      }
+    };
+
+    this.chart = new Chart(ctx, config);
   }
 }

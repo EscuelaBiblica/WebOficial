@@ -158,6 +158,7 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   padding: 1.25rem;
+  align-items: center;
 
   .filtro-estado {
     display: flex;
@@ -201,6 +202,36 @@
       outline: none;
     }
   }
+
+  .btn-toggle-grafico {
+    background: #4a90e2;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    transition: background 0.3s;
+    white-space: nowrap;
+
+    i {
+      margin-right: 0.5rem;
+    }
+
+    &:hover {
+      background: #357abd;
+    }
+  }
+}
+
+// Gráfico
+.grafico-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  height: 300px;
 }
 
 // Tabla
@@ -464,5 +495,185 @@
   i {
     font-size: 3rem;
     opacity: 0.3;
+  }
+}
+
+// Responsive Mobile
+@media (max-width: 768px) {
+  .libro-container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+
+    .header-content {
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+
+    .header-actions {
+      width: 100%;
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  .estadisticas {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+
+    .stat-card {
+      flex-direction: column;
+      padding: 1rem;
+      text-align: center;
+
+      i {
+        font-size: 1.5rem;
+      }
+
+      .stat-info {
+        .stat-value {
+          font-size: 1.25rem;
+        }
+
+        .stat-label {
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+
+  .filtros {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.75rem;
+
+    .filtro-estado,
+    .filtro-busqueda {
+      width: 100%;
+    }
+
+    .filtro-busqueda {
+      input {
+        max-width: 100%;
+      }
+    }
+
+    .btn-toggle-grafico {
+      width: 100%;
+    }
+  }
+
+  .grafico-container {
+    height: 250px;
+    padding: 1rem;
+  }
+
+  .tabla-container {
+    border-radius: 8px 8px 0 0;
+
+    // Ocultar columnas menos importantes en móvil
+    .tabla-calificaciones {
+      font-size: 0.85rem;
+
+      th, td {
+        padding: 0.5rem 0.375rem;
+        font-size: 0.8rem;
+      }
+
+      // Hacer columnas sticky más pequeñas
+      .sticky-col {
+        min-width: 100px;
+        max-width: 120px;
+        left: 0;
+      }
+
+      .sticky-col-2 {
+        display: none; // Ocultar email en móvil
+      }
+
+      // Hacer el resto de columnas más pequeñas
+      .col-tarea,
+      .col-examen {
+        min-width: 60px;
+      }
+
+      .col-promedio {
+        min-width: 70px;
+      }
+
+      .col-final {
+        min-width: 80px;
+      }
+
+      .col-estado {
+        min-width: 90px;
+      }
+
+      thead th {
+        .header-content {
+          flex-direction: column;
+          gap: 0.125rem;
+
+          i {
+            font-size: 0.8rem;
+          }
+        }
+
+        small {
+          font-size: 0.65rem;
+        }
+      }
+
+      tbody {
+        .estudiante-nombre {
+          font-size: 0.8rem;
+          white-space: normal;
+          word-break: break-word;
+        }
+      }
+    }
+  }
+
+  .sin-config,
+  .loading {
+    padding: 2rem 1rem;
+
+    i {
+      font-size: 2.5rem;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .estadisticas {
+    grid-template-columns: 1fr;
+  }
+
+  .tabla-calificaciones {
+    .sticky-col {
+      min-width: 80px;
+      max-width: 100px;
+    }
+
+    .col-tarea,
+    .col-examen {
+      min-width: 50px;
+    }
   }
 }

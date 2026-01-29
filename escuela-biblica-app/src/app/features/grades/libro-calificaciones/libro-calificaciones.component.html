@@ -82,6 +82,15 @@
         placeholder="Buscar por nombre o email..."
         class="form-control">
     </div>
+    <button class="btn-toggle-grafico" (click)="toggleGrafico()">
+      <i class="fas" [class.fa-chart-bar]="!mostrarGrafico" [class.fa-table]="mostrarGrafico"></i>
+      {{ mostrarGrafico ? 'Ocultar' : 'Mostrar' }} Gráfico
+    </button>
+  </div>
+
+  <!-- Gráfico de Distribución -->
+  <div class="grafico-container" *ngIf="!loading && libro && mostrarGrafico">
+    <canvas #chartCanvas></canvas>
   </div>
 
   <!-- Loading -->
