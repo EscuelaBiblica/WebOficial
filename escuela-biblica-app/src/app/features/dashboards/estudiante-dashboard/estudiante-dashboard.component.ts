@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseService } from '../../../core/services/course.service';
 import { SectionService } from '../../../core/services/section.service';
+import { LessonService } from '../../../core/services/lesson.service';
 import { TaskService } from '../../../core/services/task.service';
 import { UserService } from '../../../core/services/user.service';
 import { Router } from '@angular/router';
@@ -35,6 +36,7 @@ export class EstudianteDashboardComponent implements OnInit {
     private authService: AuthService,
     private courseService: CourseService,
     private sectionService: SectionService,
+    private lessonService: LessonService,
     private taskService: TaskService,
     private userService: UserService,
     private router: Router
@@ -74,19 +76,23 @@ export class EstudianteDashboardComponent implements OnInit {
           let tareasEntregadas = 0;
 
           for (const seccion of secciones) {
-            // Obtener tareas de la sección
-            const tareas = await firstValueFrom(this.taskService.getTasksBySection(seccion.id));
-            if (tareas) {
-              totalTareas += tareas.length;
+            // Obtener lecciones de la sección
+            const lecciones = await firstValueFrom(this.lessonService.getLessonsBySection(seccion.id));
 
-              // Verificar cuáles ha entregado el estudiante
-              for (const tarea of tareas) {
-                const entrega = await this.taskService.getSubmissionByStudentAndTask(
-                  this.currentUserId,
-                  tarea.id
-                );
-                if (entrega) {
-                  tareasEntregadas++;
+            for (const leccion of lecciones) {
+              // Obtener tareas de la lección
+              if (leccion.tareas && leccion.tareas.length > 0) {
+                totalTareas += leccion.tareas.length;
+
+                // Verificar cuáles ha entregado el estudiante
+                for (const tareaId of leccion.tareas) {
+                  const entrega = await this.taskService.getSubmissionByStudentAndTask(
+                    this.currentUserId,
+                    tareaId
+                  );
+                  if (entrega) {
+                    tareasEntregadas++;
+                  }
                 }
               }
             }

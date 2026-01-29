@@ -58,9 +58,9 @@ export class EntregarTareaComponent implements OnInit {
         return;
       }
 
-      // Cargar la sección para mostrar el nombre
-      const seccionSnapshot = await this.sectionService.getSectionById(this.tarea.seccionId);
-      this.seccion = seccionSnapshot;
+      // Cargar la lección para mostrar el nombre
+      const lessonSnapshot = await this.sectionService.getSectionById(this.tarea.leccionId);
+      this.seccion = lessonSnapshot;
 
       // Verificar si ya hay una entrega
       this.entrega = await this.taskService.getSubmissionByStudentAndTask(

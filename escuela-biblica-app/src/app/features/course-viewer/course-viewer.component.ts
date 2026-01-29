@@ -15,12 +15,12 @@ import { Tarea, EntregaTarea } from '../../core/models/task.model';
 
 interface SeccionExpandida extends Seccion {
   expanded: boolean;
-  elementos: ElementoConDetalles[];
+  lecciones: LeccionConTareas[];
 }
 
-interface ElementoConDetalles extends ElementoSeccion {
-  titulo: string;
-  detalles?: Leccion | Tarea;
+interface LeccionConTareas extends Leccion {
+  tareasData: Tarea[]; // Array completo de objetos Tarea (diferente de tareas: string[])
+  expanded: boolean; // Para expandir/colapsar lista de tareas
 }
 
 @Component({
@@ -100,53 +100,52 @@ export class CourseViewerComponent implements OnInit {
       // Cargar secciones
       const seccionesData = await firstValueFrom(this.sectionService.getSectionsByCourse(cursoId));
 
-      // Cargar elementos de cada sección
+      // Cargar lecciones de cada sección con sus tareas
       this.secciones = await Promise.all(
         seccionesData.map(async (seccion) => {
-          const elementosConDetalles: ElementoConDetalles[] = await Promise.all(
-            seccion.elementos.map(async (elemento) => {
-              let titulo = '';
-              let detalles: Leccion | Tarea | undefined;
-
-              if (elemento.tipo === 'leccion') {
+          const lecciones: LeccionConTareas[] = await Promise.all(
+            seccion.elementos
+              .filter(elemento => elemento.tipo === 'leccion')
+              .map(async (elemento) => {
                 const leccion = await this.lessonService.getLessonById(elemento.id);
-                if (leccion) {
-                  titulo = leccion.titulo;
-                  detalles = leccion;
-                }
-              } else if (elemento.tipo === 'tarea') {
-                const tarea = await this.taskService.getTaskById(elemento.id);
-                if (tarea) {
-                  titulo = tarea.titulo;
-                  // Convertir Timestamps de Firestore a Date
-                  detalles = {
-                    ...tarea,
-                    fechaInicio: tarea.fechaInicio instanceof Date ? tarea.fechaInicio : (tarea.fechaInicio as any).toDate(),
-                    fechaFin: tarea.fechaFin instanceof Date ? tarea.fechaFin : (tarea.fechaFin as any).toDate()
-                  };
-                }
-              }
+                if (!leccion) return null;
 
-              return {
-                ...elemento,
-                titulo,
-                detalles
-              };
-            })
-          );
+                // Cargar tareas de esta lección
+                const tareasIds = leccion.tareas || [];
+                const tareasData: Tarea[] = await Promise.all(
+                  tareasIds.map(async (tareaId) => {
+                    const tarea = await this.taskService.getTaskById(tareaId);
+                    if (!tarea) return null;
+
+                    // Convertir Timestamps de Firestore a Date
+                    return {
+                      ...tarea,
+                      fechaInicio: tarea.fechaInicio instanceof Date ? tarea.fechaInicio : (tarea.fechaInicio as any).toDate(),
+                      fechaFin: tarea.fechaFin instanceof Date ? tarea.fechaFin : (tarea.fechaFin as any).toDate()
+                    };
+                  })
+                ).then(tareas => tareas.filter((t): t is Tarea => t !== null));
+
+                return {
+                  ...leccion,
+                  tareasData,
+                  expanded: false
+                };
+              })
+          ).then(lecciones => lecciones.filter((l): l is LeccionConTareas => l !== null));
 
           return {
             ...seccion,
             expanded: false,
-            elementos: elementosConDetalles
+            lecciones
           };
         })
       );
 
-      // Cargar automáticamente el primer elemento de la primera sección
-      if (this.secciones.length > 0 && this.secciones[0].elementos.length > 0) {
+      // Cargar automáticamente la primera lección de la primera sección
+      if (this.secciones.length > 0 && this.secciones[0].lecciones.length > 0) {
         this.secciones[0].expanded = true;
-        await this.loadContenido(this.secciones[0], this.secciones[0].elementos[0]);
+        await this.loadLeccion(this.secciones[0], this.secciones[0].lecciones[0]);
       }
 
     } catch (error) {
@@ -161,31 +160,29 @@ export class CourseViewerComponent implements OnInit {
     seccion.expanded = !seccion.expanded;
   }
 
-  async loadContenido(seccion: SeccionExpandida, elemento: ElementoConDetalles) {
-    if (!elemento.detalles) return;
+  toggleLeccion(leccion: LeccionConTareas) {
+    leccion.expanded = !leccion.expanded;
+  }
 
-    let elementoConvertido = elemento.detalles;
-
-    // Convertir fechas de Timestamp a Date si es una tarea
-    if (elemento.tipo === 'tarea') {
-      const tarea = elemento.detalles as Tarea;
-      elementoConvertido = {
-        ...tarea,
-        fechaInicio: tarea.fechaInicio instanceof Date ? tarea.fechaInicio : (tarea.fechaInicio as any).toDate(),
-        fechaFin: tarea.fechaFin instanceof Date ? tarea.fechaFin : (tarea.fechaFin as any).toDate()
-      };
-    }
-
+  async loadLeccion(seccion: SeccionExpandida, leccion: LeccionConTareas) {
     this.contenidoActual = {
-      tipo: elemento.tipo,
+      tipo: 'leccion',
       seccionTitulo: seccion.titulo,
-      elemento: elementoConvertido,
+      elemento: leccion,
+      entrega: null
+    };
+  }
+
+  async loadTarea(seccion: SeccionExpandida, tarea: Tarea) {
+    this.contenidoActual = {
+      tipo: 'tarea',
+      seccionTitulo: seccion.titulo,
+      elemento: tarea,
       entrega: null
     };
 
-    // Si es tarea y es estudiante, cargar su entrega
-    if (elemento.tipo === 'tarea' && this.userRole === 'estudiante') {
-      const tarea = elementoConvertido as Tarea;
+    // Si es estudiante, cargar su entrega
+    if (this.userRole === 'estudiante') {
       this.contenidoActual.entrega = await this.taskService.getSubmissionByStudentAndTask(
         this.currentUser.id,
         tarea.id
@@ -261,7 +258,11 @@ export class CourseViewerComponent implements OnInit {
   }
 
   verEntregas(tareaId: string) {
-    this.router.navigate(['/secciones', this.contenidoActual.elemento?.['seccionId'], 'tareas']);
+    // Navegar a la gestión de tareas del profesor
+    const tarea = this.getTareaActual();
+    if (tarea) {
+      this.router.navigate(['/tareas', tareaId, 'calificar']);
+    }
   }
 
   goToDashboard() {

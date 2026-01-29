@@ -14,7 +14,7 @@ import {
   orderBy
 } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
-import { Seccion } from '../models/section.model';
+import { Seccion, ElementoSeccion } from '../models/section.model';
 import { CourseService } from './course.service';
 
 @Injectable({
@@ -150,13 +150,13 @@ export class SectionService {
   async addElementToSection(
     sectionId: string,
     elementId: string,
-    tipo: 'leccion' | 'tarea' | 'examen'
+    tipo: 'leccion' | 'examen'
   ): Promise<void> {
     try {
       const section = await this.getSectionById(sectionId);
       if (!section) throw new Error('Sección no encontrada');
 
-      const elementos = [
+      const elementos: ElementoSeccion[] = [
         ...section.elementos,
         {
           id: elementId,

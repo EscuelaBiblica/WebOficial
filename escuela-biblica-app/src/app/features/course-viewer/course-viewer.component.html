@@ -39,20 +39,48 @@
               <span class="section-number">{{ i + 1 }}.</span>
               <span class="section-title">{{ seccion.titulo }}</span>
             </div>
-            <span class="badge bg-secondary">{{ seccion.elementos.length }}</span>
+            <span class="badge bg-secondary">{{ seccion.lecciones.length }}</span>
           </div>
 
-          <!-- Elementos de la Sección -->
+          <!-- Lecciones de la Sección -->
           <div class="section-content" *ngIf="seccion.expanded">
-            <div class="elemento-item"
-                 *ngFor="let elemento of seccion.elementos"
-                 [class.active]="contenidoActual.elemento && elemento.id === contenidoActual.elemento.id"
-                 (click)="loadContenido(seccion, elemento)">
-              <i class="fas"
-                 [class.fa-book-open]="elemento.tipo === 'leccion'"
-                 [class.fa-tasks]="elemento.tipo === 'tarea'"
-                 [class.fa-file-alt]="elemento.tipo === 'examen'"></i>
-              <span class="elemento-titulo">{{ elemento.titulo }}</span>
+            <!-- Lección -->
+            <div class="leccion-item" *ngFor="let leccion of seccion.lecciones">
+              <!-- Header de Lección -->
+              <div class="leccion-header"
+                   [class.active]="contenidoActual.tipo === 'leccion' && contenidoActual.elemento?.id === leccion.id">
+                <div class="leccion-info" (click)="loadLeccion(seccion, leccion)">
+                  <i class="fas fa-book-open"></i>
+                  <span class="leccion-titulo">{{ leccion.titulo }}</span>
+                </div>
+                <div class="leccion-actions">
+                  <span class="badge bg-primary"
+                        *ngIf="leccion.tareasData.length > 0"
+                        (click)="toggleLeccion(leccion)"
+                        style="cursor: pointer;"
+                        title="Click para ver/ocultar tareas">
+                    {{ leccion.tareasData.length }} tarea{{ leccion.tareasData.length !== 1 ? 's' : '' }}
+                  </span>
+                  <i class="fas ms-2"
+                     *ngIf="leccion.tareasData.length > 0"
+                     [class.fa-chevron-down]="!leccion.expanded"
+                     [class.fa-chevron-up]="leccion.expanded"
+                     (click)="toggleLeccion(leccion)"
+                     style="cursor: pointer;"
+                     title="Click para ver/ocultar tareas"></i>
+                </div>
+              </div>
+
+              <!-- Tareas de la Lección -->
+              <div class="tareas-list" *ngIf="leccion.expanded && leccion.tareasData.length > 0">
+                <div class="tarea-item"
+                     *ngFor="let tarea of leccion.tareasData"
+                     [class.active]="contenidoActual.tipo === 'tarea' && contenidoActual.elemento?.id === tarea.id"
+                     (click)="loadTarea(seccion, tarea); $event.stopPropagation()">
+                  <i class="fas fa-tasks"></i>
+                  <span class="tarea-titulo">{{ tarea.titulo }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

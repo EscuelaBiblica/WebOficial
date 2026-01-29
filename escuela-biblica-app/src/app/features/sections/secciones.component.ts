@@ -150,8 +150,10 @@ export class SeccionesComponent implements OnInit {
     this.router.navigate(['/secciones', seccionId, 'lecciones']);
   }
 
-  goToTasks(seccionId: string) {
-    this.router.navigate(['/secciones', seccionId, 'tareas']);
+  goToExams(seccionId: string) {
+    // TODO: Implementar navegación a exámenes cuando se cree el componente
+    alert('Sistema de exámenes próximamente');
+    // this.router.navigate(['/secciones', seccionId, 'examenes']);
   }
 
   goToDashboard() {

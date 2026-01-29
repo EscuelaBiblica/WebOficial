@@ -89,6 +89,12 @@
                     <td class="text-center">
                       <div class="btn-group" role="group">
                         <button
+                          class="btn btn-sm btn-outline-success"
+                          (click)="goToTasks(leccion.id)"
+                          title="Gestionar tareas">
+                          <i class="fas fa-tasks"></i>
+                        </button>
+                        <button
                           class="btn btn-sm btn-outline-info"
                           (click)="viewLesson(leccion)"
                           title="Ver lección">

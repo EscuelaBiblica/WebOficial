@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TaskService } from '../../core/services/task.service';
-import { SectionService } from '../../core/services/section.service';
+import { LessonService } from '../../core/services/lesson.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Tarea, EntregaTarea } from '../../core/models/task.model';
-import { Seccion } from '../../core/models/section.model';
+import { Leccion } from '../../core/models/lesson.model';
 
 @Component({
   selector: 'app-tareas',
@@ -16,7 +16,7 @@ import { Seccion } from '../../core/models/section.model';
   styleUrl: './tareas.component.scss'
 })
 export class TareasComponent implements OnInit {
-  seccion: Seccion | null = null;
+  leccion: Leccion | null = null;
   tareas: Tarea[] = [];
   loading = true;
 
@@ -44,38 +44,43 @@ export class TareasComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private taskService: TaskService,
-    private sectionService: SectionService,
+    private lessonService: LessonService,
     private authService: AuthService
   ) {}
 
   ngOnInit() {
-    const seccionId = this.route.snapshot.paramMap.get('seccionId');
-    if (seccionId) {
-      this.loadSeccion(seccionId);
-      this.loadTareas(seccionId);
+    const leccionId = this.route.snapshot.paramMap.get('leccionId');
+    if (leccionId) {
+      this.loadLesson(leccionId);
+      this.loadTareas(leccionId);
     }
   }
 
-  async loadSeccion(seccionId: string) {
+  async loadLesson(leccionId: string) {
     try {
-      this.seccion = await this.sectionService.getSectionById(seccionId);
+      this.leccion = await this.lessonService.getLessonById(leccionId);
     } catch (error) {
-      console.error('Error cargando sección:', error);
+      console.error('Error cargando lección:', error);
     }
   }
 
-  loadTareas(seccionId: string) {
+  async loadTareas(leccionId: string) {
     this.loading = true;
-    this.taskService.getTasksBySection(seccionId).subscribe({
-      next: (tareas) => {
-        this.tareas = tareas;
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error cargando tareas:', error);
-        this.loading = false;
-      }
-    });
+    try {
+      this.taskService.getTasksByLesson(leccionId).subscribe({
+        next: (tareas) => {
+          this.tareas = tareas;
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error cargando tareas:', error);
+          this.loading = false;
+        }
+      });
+    } catch (error) {
+      console.error('Error cargando tareas:', error);
+      this.loading = false;
+    }
   }
 
   openCreateModal() {
@@ -102,7 +107,7 @@ export class TareasComponent implements OnInit {
   }
 
   async createTarea() {
-    if (!this.seccion || !this.newTarea.titulo) {
+    if (!this.leccion || !this.newTarea.titulo) {
       alert('Por favor completa el título de la tarea');
       return;
     }
@@ -118,7 +123,7 @@ export class TareasComponent implements OnInit {
         : [];
 
       await this.taskService.createTask({
-        seccionId: this.seccion.id,
+        leccionId: this.leccion.id,
         titulo: this.newTarea.titulo,
         descripcion: this.newTarea.descripcion,
         instrucciones: this.newTarea.instrucciones,
@@ -132,6 +137,10 @@ export class TareasComponent implements OnInit {
 
       alert('Tarea creada exitosamente');
       this.closeCreateModal();
+      // Recargar tareas
+      if (this.leccion) {
+        this.loadTareas(this.leccion.id);
+      }
     } catch (error) {
       console.error('Error creando tarea:', error);
       alert('Error al crear tarea');
@@ -270,9 +279,8 @@ export class TareasComponent implements OnInit {
   }
 
   goBack() {
-    if (this.seccion) {
-      this.router.navigate(['/cursos', this.seccion.cursoId, 'secciones']);
-    }
+    // Volver a gestión de lecciones o dashboard
+    this.router.navigate(['/profesor']);
   }
 
   logout() {

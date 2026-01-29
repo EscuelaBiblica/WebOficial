@@ -61,7 +61,7 @@ export const routes: Routes = [
     loadComponent: () => import('./features/lessons/lecciones.component').then(m => m.LeccionesComponent)
   },
   {
-    path: 'secciones/:seccionId/tareas',
+    path: 'lecciones/:leccionId/tareas',
     canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/tasks/tareas.component').then(m => m.TareasComponent)
   },

@@ -132,11 +132,8 @@ export class CalificarComponent implements OnInit {
   }
 
   goBack() {
-    if (this.tarea) {
-      this.router.navigate(['/secciones', this.tarea.seccionId, 'tareas']);
-    } else {
-      this.router.navigate(['/profesor']);
-    }
+    // Volver al dashboard del profesor
+    this.router.navigate(['/profesor']);
   }
 
   logout() {

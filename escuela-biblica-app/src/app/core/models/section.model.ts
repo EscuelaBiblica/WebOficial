@@ -11,6 +11,6 @@ export interface Seccion {
 
 export interface ElementoSeccion {
   id: string;
-  tipo: 'leccion' | 'tarea' | 'examen';
+  tipo: 'leccion' | 'examen'; // Las tareas ahora están dentro de lecciones
   orden: number;
 }

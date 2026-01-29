@@ -80,6 +80,7 @@ export class LessonService {
         tipo: lessonData.tipo!,
         contenido: lessonData.contenido || '',
         orden: lessonData.orden || 0,
+        tareas: [], // Inicializar array vacío de tareas
         fechaCreacion: new Date()
       };
 
@@ -128,6 +129,13 @@ export class LessonService {
       const lesson = await this.getLessonById(lessonId);
       if (!lesson) return;
 
+      // TODO: Eliminar todas las tareas asociadas
+      // if (lesson.tareas && lesson.tareas.length > 0) {
+      //   await Promise.all(lesson.tareas.map(tareaId =>
+      //     this.taskService.deleteTask(tareaId)
+      //   ));
+      // }
+
       // Eliminar referencia de la sección
       await this.sectionService.removeElementFromSection(lesson.seccionId, lessonId);
 
@@ -135,6 +143,41 @@ export class LessonService {
       await deleteDoc(lessonDocRef);
     } catch (error) {
       console.error('Error eliminando lección:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Agregar tarea al array de tareas de una lección
+   */
+  async addTaskToLesson(lessonId: string, tareaId: string): Promise<void> {
+    try {
+      const lesson = await this.getLessonById(lessonId);
+      if (!lesson) throw new Error('Lección no encontrada');
+
+      const tareas = lesson.tareas || [];
+      if (!tareas.includes(tareaId)) {
+        tareas.push(tareaId);
+        await this.updateLesson(lessonId, { tareas });
+      }
+    } catch (error) {
+      console.error('Error agregando tarea a lección:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Remover tarea del array de tareas de una lección
+   */
+  async removeTaskFromLesson(lessonId: string, tareaId: string): Promise<void> {
+    try {
+      const lesson = await this.getLessonById(lessonId);
+      if (!lesson) return;
+
+      const tareas = (lesson.tareas || []).filter(id => id !== tareaId);
+      await this.updateLesson(lessonId, { tareas });
+    } catch (error) {
+      console.error('Error removiendo tarea de lección:', error);
       throw error;
     }
   }

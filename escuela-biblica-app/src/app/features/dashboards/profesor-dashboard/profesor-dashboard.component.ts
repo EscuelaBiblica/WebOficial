@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseService } from '../../../core/services/course.service';
 import { SectionService } from '../../../core/services/section.service';
+import { LessonService } from '../../../core/services/lesson.service';
 import { TaskService } from '../../../core/services/task.service';
 import { Router } from '@angular/router';
 import { Curso } from '../../../core/models/course.model';
@@ -33,6 +34,7 @@ export class ProfesorDashboardComponent implements OnInit {
     private authService: AuthService,
     private courseService: CourseService,
     private sectionService: SectionService,
+    private lessonService: LessonService,
     private taskService: TaskService,
     private router: Router
   ) {}
@@ -63,12 +65,17 @@ export class ProfesorDashboardComponent implements OnInit {
           // Contar tareas pendientes de revisar
           let tareasRevisar = 0;
           for (const seccion of secciones) {
-            const tareas = await firstValueFrom(this.taskService.getTasksBySection(seccion.id));
-            if (tareas) {
-              for (const tarea of tareas) {
-                const entregas = await this.taskService.getSubmissionsByTask(tarea.id);
-                // Contar entregas no calificadas
-                tareasRevisar += entregas.filter(e => e.estado === 'entregada').length;
+            // Obtener lecciones de la sección
+            const lecciones = await firstValueFrom(this.lessonService.getLessonsBySection(seccion.id));
+
+            for (const leccion of lecciones) {
+              // Obtener tareas de la lección
+              if (leccion.tareas && leccion.tareas.length > 0) {
+                for (const tareaId of leccion.tareas) {
+                  const entregas = await this.taskService.getSubmissionsByTask(tareaId);
+                  // Contar entregas no calificadas
+                  tareasRevisar += entregas.filter(e => e.estado === 'entregada').length;
+                }
               }
             }
           }

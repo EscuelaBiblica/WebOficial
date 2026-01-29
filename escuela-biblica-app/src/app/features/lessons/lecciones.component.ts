@@ -299,6 +299,10 @@ export class LeccionesComponent implements OnInit {
     });
   }
 
+  goToTasks(leccionId: string) {
+    this.router.navigate(['/lecciones', leccionId, 'tareas']);
+  }
+
   goBack() {
     if (this.seccion) {
       this.router.navigate(['/cursos', this.seccion.cursoId, 'secciones']);

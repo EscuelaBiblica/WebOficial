@@ -1,6 +1,6 @@
 export interface Tarea {
   id: string;
-  seccionId: string;
+  leccionId: string; // Ahora las tareas pertenecen a lecciones
   titulo: string;
   descripcion: string;
   instrucciones: string;

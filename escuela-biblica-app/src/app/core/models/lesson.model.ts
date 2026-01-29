@@ -7,5 +7,6 @@ export interface Leccion {
   urlArchivo?: string;
   urlYoutube?: string;
   orden: number;
+  tareas: string[]; // IDs de tareas asociadas a esta lección
   fechaCreacion: Date;
 }

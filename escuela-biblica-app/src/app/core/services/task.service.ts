@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Firestore, collection, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, collectionData, getDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Tarea, EntregaTarea } from '../models/task.model';
-import { SectionService } from './section.service';
+import { LessonService } from './lesson.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,16 +13,16 @@ export class TaskService {
 
   constructor(
     private firestore: Firestore,
-    private sectionService: SectionService
+    private lessonService: LessonService
   ) {}
 
   /**
-   * Obtener tareas de una sección
+   * Obtener tareas de una lección
    */
-  getTasksBySection(seccionId: string): Observable<Tarea[]> {
+  getTasksByLesson(leccionId: string): Observable<Tarea[]> {
     const q = query(
       this.tareasCollection,
-      where('seccionId', '==', seccionId),
+      where('leccionId', '==', leccionId),
       orderBy('fechaCreacion', 'desc')
     );
     return collectionData(q, { idField: 'id' }) as Observable<Tarea[]>;
@@ -56,7 +56,7 @@ export class TaskService {
 
       const newTask: any = {
         id: tareaId,
-        seccionId: taskData.seccionId!,
+        leccionId: taskData.leccionId!,
         titulo: taskData.titulo!,
         descripcion: taskData.descripcion || '',
         instrucciones: taskData.instrucciones || '',
@@ -75,12 +75,8 @@ export class TaskService {
 
       await setDoc(tareaDocRef, newTask);
 
-      // Agregar tarea al array de elementos de la sección
-      await this.sectionService.addElementToSection(
-        taskData.seccionId!,
-        tareaId,
-        'tarea'
-      );
+      // Agregar tarea al array de tareas de la lección
+      await this.lessonService.addTaskToLesson(taskData.leccionId!, tareaId);
 
       return tareaId;
     } catch (error) {
@@ -116,8 +112,8 @@ export class TaskService {
         await this.deleteSubmission(entrega.id);
       }
 
-      // Remover de la sección
-      await this.sectionService.removeElementFromSection(tarea.seccionId, tareaId);
+      // Remover de la lección
+      await this.lessonService.removeTaskFromLesson(tarea.leccionId, tareaId);
 
       // Eliminar tarea
       const tareaDocRef = doc(this.firestore, `tareas/${tareaId}`);
