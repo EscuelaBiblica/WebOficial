@@ -47,6 +47,15 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  async logout() {
+    try {
+      await this.authService.logout();
+      this.router.navigate(['/home']);
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  }
+
   setupSmoothScrolling() {
     const links = document.querySelectorAll('a[href^="#"]');
     links.forEach(link => {

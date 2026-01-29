@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { ExamService } from '../../core/services/exam.service';
 import { Examen, IntentoExamen, Pregunta } from '../../core/models/exam.model';
+import { Curso } from '../../core/models/course.model';
 
 @Component({
   selector: 'app-resultado-examen',
@@ -21,7 +23,8 @@ export class ResultadoExamenComponent implements OnInit {
   constructor(
     private examService: ExamService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -139,6 +142,6 @@ export class ResultadoExamenComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/']);
+    this.location.back();
   }
 }
