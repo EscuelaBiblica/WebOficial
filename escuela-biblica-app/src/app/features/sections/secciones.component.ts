@@ -150,6 +150,10 @@ export class SeccionesComponent implements OnInit {
     this.router.navigate(['/secciones', seccionId, 'lecciones']);
   }
 
+  goToTasks(seccionId: string) {
+    this.router.navigate(['/secciones', seccionId, 'tareas']);
+  }
+
   goBack() {
     this.router.navigate(['/cursos']);
   }

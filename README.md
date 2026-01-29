@@ -616,22 +616,24 @@ interface ProgresoEstudiante {
 - [x] Subida de imágenes de cursos (Cloudinary)
 - [x] Sincronización automática cursosInscritos/cursosAsignados
 
-### **Fase 5: Secciones y Lecciones (Semana 7-8)** ⏳ SIGUIENTE FASE
-- [ ] CRUD de secciones
-- [ ] Creación de lecciones (texto, imagen, PDF, YouTube)
-- [ ] Editor de texto enriquecido
-- [ ] Subida de archivos
-- [ ] Vista de lecciones para estudiantes
+### **Fase 5: Secciones y Lecciones (Semana 7-8)** ✅ COMPLETADA
+- [x] CRUD de secciones
+- [x] Creación de lecciones (texto, imagen, PDF, YouTube)
+- [x] Editor de texto enriquecido
+- [x] Subida de archivos (imágenes a Cloudinary)
+- [x] Vista de lecciones para estudiantes
+- [x] Integración con cursos y navegación fluida
+- [x] Sanitización de URLs para seguridad
 
-### **Fase 6: Sistema de Tareas (Semana 9-10)**
-- [ ] Creación de tareas
-- [ ] Configuración de fechas y entregas
-- [ ] Interfaz de envío para estudiantes
-- [ ] Subida de archivos
-- [ ] Calificación de tareas
-- [ ] Retroalimentación
+### **Fase 6: Sistema de Tareas (Semana 9-10)** ✅ COMPLETADA
+- [x] Creación de tareas
+- [x] Configuración de fechas y entregas
+- [x] Interfaz de envío para estudiantes
+- [x] Subida de archivos
+- [x] Calificación de tareas
+- [x] Retroalimentación
 
-### **Fase 7: Sistema de Exámenes (Semana 11-13)**
+### **Fase 7: Sistema de Exámenes (Semana 11-13)** ⏳ SIGUIENTE FASE
 - [ ] Creación de exámenes
 - [ ] Banco de preguntas
 - [ ] Importación desde Excel

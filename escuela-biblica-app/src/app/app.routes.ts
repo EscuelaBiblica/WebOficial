@@ -56,6 +56,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/lessons/lecciones.component').then(m => m.LeccionesComponent)
   },
   {
+    path: 'secciones/:seccionId/tareas',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/tasks/tareas.component').then(m => m.TareasComponent)
+  },
+  {
+    path: 'tareas/:tareaId/calificar/:entregaId',
+    canActivate: [authGuard, profesorGuard],
+    loadComponent: () => import('./features/tasks/calificar.component').then(m => m.CalificarComponent)
+  },
+  {
+    path: 'tareas/:tareaId/entregar',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/tasks/entregar-tarea.component').then(m => m.EntregarTareaComponent)
+  },
+  {
     path: 'profesor',
     canActivate: [authGuard, profesorGuard],
     loadComponent: () => import('./features/dashboards/profesor-dashboard/profesor-dashboard.component').then(m => m.ProfesorDashboardComponent)
