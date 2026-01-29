@@ -36,6 +36,7 @@ export class CourseViewerComponent implements OnInit {
   currentUser: any = null;
   userRole: string = '';
   loading: boolean = true;
+  sidebarOpen: boolean = false; // Para controlar menú en móviles
 
   // Contenido actual
   contenidoActual: {
@@ -173,6 +174,7 @@ export class CourseViewerComponent implements OnInit {
       elemento: leccion,
       entrega: null
     };
+    this.closeSidebarOnMobile(); // Cerrar sidebar en móviles
   }
 
   async loadTarea(seccion: SeccionExpandida, tarea: Tarea) {
@@ -204,6 +206,18 @@ export class CourseViewerComponent implements OnInit {
       }
     } else {
       console.log('No es estudiante, no se carga entrega');
+    }
+    this.closeSidebarOnMobile(); // Cerrar sidebar en móviles
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  closeSidebarOnMobile() {
+    // Solo cerrar automáticamente en móviles (ancho < 768px)
+    if (window.innerWidth < 768) {
+      this.sidebarOpen = false;
     }
   }
 

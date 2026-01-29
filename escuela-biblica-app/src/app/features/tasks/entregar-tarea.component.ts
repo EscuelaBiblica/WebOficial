@@ -62,6 +62,18 @@ export class EntregarTareaComponent implements OnInit {
         return;
       }
 
+      // Convertir Timestamps a Date
+      if (this.tarea.fechaInicio) {
+        this.tarea.fechaInicio = this.tarea.fechaInicio instanceof Date
+          ? this.tarea.fechaInicio
+          : (this.tarea.fechaInicio as any).toDate();
+      }
+      if (this.tarea.fechaFin) {
+        this.tarea.fechaFin = this.tarea.fechaFin instanceof Date
+          ? this.tarea.fechaFin
+          : (this.tarea.fechaFin as any).toDate();
+      }
+
       // Cargar la lección para mostrar el nombre
       this.leccion = await this.lessonService.getLessonById(this.tarea.leccionId);
 

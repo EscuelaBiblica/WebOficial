@@ -2,11 +2,17 @@
   <!-- Navbar -->
   <nav class="navbar navbar-dark bg-primary">
     <div class="container-fluid">
-      <button class="btn btn-outline-light me-2" (click)="goBack()">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <span class="navbar-brand mb-0 h1" *ngIf="curso">
-        <i class="fas fa-book"></i> {{ curso.titulo }}
+      <div class="d-flex align-items-center">
+        <button class="btn btn-outline-light me-2" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <!-- Botón hamburguesa para móviles -->
+        <button class="btn btn-outline-light me-2 d-md-none" (click)="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      <span class="navbar-brand mb-0 h1 flex-grow-1 text-center text-md-start" *ngIf="curso">
+        <i class="fas fa-book d-none d-md-inline"></i> {{ curso.titulo }}
       </span>
       <button class="btn btn-outline-light" (click)="logout()">
         <i class="fas fa-sign-out-alt"></i>
@@ -24,8 +30,13 @@
 
   <!-- Main Content -->
   <div class="main-container" *ngIf="!loading && curso">
+    <!-- Overlay para cerrar menú en móviles -->
+    <div class="sidebar-overlay"
+         *ngIf="sidebarOpen"
+         (click)="toggleSidebar()"></div>
+
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" [class.open]="sidebarOpen">
       <div class="sidebar-header">
         <h5><i class="fas fa-list"></i> Contenido del Curso</h5>
       </div>
