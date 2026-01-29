@@ -1,0 +1,396 @@
+import { Injectable } from '@angular/core';
+import { Firestore, collection, doc, addDoc, updateDoc, deleteDoc, getDoc, getDocs, query, where, Timestamp, writeBatch } from '@angular/fire/firestore';
+import { Observable, from, map, switchMap, combineLatest, of } from 'rxjs';
+import {
+  ConfiguracionCalificacion,
+  CalificacionEstudiante,
+  ProgresoEstudiante,
+  EstadisticaCurso,
+  LibroCalificaciones,
+  FilaLibroCalificaciones,
+  ColumnaCalificacion
+} from '../models/grading.model';
+import { Calificacion } from '../models/grade.model';
+import { IntentoExamen } from '../models/exam.model';
+import { Tarea } from '../models/task.model';
+import { Examen } from '../models/exam.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class GradingService {
+  private configuracionCollection = 'configuracionCalificaciones';
+  private calificacionesCollection = 'calificacionesEstudiantes';
+  private progresoCollection = 'progresoEstudiantes';
+
+  constructor(private firestore: Firestore) {}
+
+  // ========== CONFIGURACIÓN DE CALIFICACIONES ==========
+
+  async createConfiguracion(config: ConfiguracionCalificacion): Promise<string> {
+    // Validar que las ponderaciones sumen 100
+    if (config.ponderacionTareas + config.ponderacionExamenes !== 100) {
+      throw new Error('Las ponderaciones deben sumar 100%');
+    }
+
+    const docRef = await addDoc(collection(this.firestore, this.configuracionCollection), {
+      ...config,
+      fechaCreacion: Timestamp.now(),
+      fechaModificacion: Timestamp.now()
+    });
+    return docRef.id;
+  }
+
+  async updateConfiguracion(id: string, config: Partial<ConfiguracionCalificacion>): Promise<void> {
+    // Validar ponderaciones si se actualizan
+    if (config.ponderacionTareas !== undefined || config.ponderacionExamenes !== undefined) {
+      const docSnap = await getDoc(doc(this.firestore, this.configuracionCollection, id));
+      const currentConfig = docSnap.data() as ConfiguracionCalificacion;
+
+      const newPonderacionTareas = config.ponderacionTareas ?? currentConfig.ponderacionTareas;
+      const newPonderacionExamenes = config.ponderacionExamenes ?? currentConfig.ponderacionExamenes;
+
+      if (newPonderacionTareas + newPonderacionExamenes !== 100) {
+        throw new Error('Las ponderaciones deben sumar 100%');
+      }
+    }
+
+    const docRef = doc(this.firestore, this.configuracionCollection, id);
+    await updateDoc(docRef, {
+      ...config,
+      fechaModificacion: Timestamp.now()
+    });
+  }
+
+  async getConfiguracionByCurso(cursoId: string): Promise<ConfiguracionCalificacion | null> {
+    const q = query(
+      collection(this.firestore, this.configuracionCollection),
+      where('cursoId', '==', cursoId)
+    );
+
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+
+    const doc = snapshot.docs[0];
+    return { id: doc.id, ...doc.data() } as ConfiguracionCalificacion;
+  }
+
+  // ========== CÁLCULO DE CALIFICACIONES ==========
+
+  async calcularCalificacionEstudiante(estudianteId: string, cursoId: string): Promise<CalificacionEstudiante> {
+    // Obtener configuración del curso
+    const config = await this.getConfiguracionByCurso(cursoId);
+    if (!config) {
+      throw new Error('No existe configuración de calificaciones para este curso');
+    }
+
+    // Obtener todas las calificaciones de tareas
+    const qTareas = query(
+      collection(this.firestore, 'calificaciones'),
+      where('estudianteId', '==', estudianteId),
+      where('cursoId', '==', cursoId)
+    );
+    const tareasSnapshot = await getDocs(qTareas);
+    const calificacionesTareas = tareasSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Calificacion));
+
+    // Obtener todos los intentos de exámenes (tomar el mejor intento)
+    const qExamenes = query(
+      collection(this.firestore, 'intentosExamenes'),
+      where('estudianteId', '==', estudianteId)
+    );
+    const examenesSnapshot = await getDocs(qExamenes);
+    const intentosExamenes = examenesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as IntentoExamen));
+
+    // Filtrar y agrupar intentos por examen (tomar el mejor)
+    const mejoresIntentosMap = new Map<string, IntentoExamen>();
+    intentosExamenes.forEach(intento => {
+      if (intento.estado === 'finalizado' && intento.calificacion !== undefined) {
+        const mejor = mejoresIntentosMap.get(intento.examenId);
+        if (!mejor || (intento.calificacion ?? 0) > (mejor.calificacion ?? 0)) {
+          mejoresIntentosMap.set(intento.examenId, intento);
+        }
+      }
+    });
+
+    // Calcular promedio de tareas
+    const promedioTareas = calificacionesTareas.length > 0
+      ? calificacionesTareas.reduce((sum, cal) => sum + cal.puntosFinal, 0) / calificacionesTareas.length
+      : 0;
+
+    // Calcular promedio de exámenes
+    const promedioExamenes = mejoresIntentosMap.size > 0
+      ? Array.from(mejoresIntentosMap.values()).reduce((sum, intento) => sum + (intento.calificacion ?? 0), 0) / mejoresIntentosMap.size
+      : 0;
+
+    // Calcular calificación final ponderada
+    const calificacionFinal =
+      (promedioTareas * config.ponderacionTareas / 100) +
+      (promedioExamenes * config.ponderacionExamenes / 100);
+
+    // Determinar estado
+    const estado = calificacionFinal >= config.notaMinima ? 'aprobado' :
+                   (calificacionesTareas.length === 0 && mejoresIntentosMap.size === 0) ? 'en_progreso' : 'desaprobado';
+
+    return {
+      estudianteId,
+      cursoId,
+      calificaciones: [],
+      promedioTareas,
+      promedioExamenes,
+      calificacionFinal: Math.round(calificacionFinal * 100) / 100,
+      estado,
+      fechaActualizacion: new Date()
+    };
+  }
+
+  // ========== LIBRO DE CALIFICACIONES ==========
+
+  async getLibroCalificaciones(cursoId: string): Promise<LibroCalificaciones> {
+    // Obtener configuración
+    const config = await this.getConfiguracionByCurso(cursoId);
+    if (!config) {
+      throw new Error('No existe configuración de calificaciones para este curso');
+    }
+
+    // Obtener curso
+    const cursoDoc = await getDoc(doc(this.firestore, 'cursos', cursoId));
+    const curso = cursoDoc.data();
+    const estudiantesIds: string[] = curso?.['estudiantes'] || [];
+
+    // Obtener información de estudiantes
+    const estudiantesPromises = estudiantesIds.map(async (id) => {
+      const userDoc = await getDoc(doc(this.firestore, 'users', id));
+      return { id, ...userDoc.data() } as any;
+    });
+    const estudiantesData = await Promise.all(estudiantesPromises);
+
+    // Obtener todas las tareas y exámenes del curso
+    const seccionesQuery = query(
+      collection(this.firestore, 'secciones'),
+      where('cursoId', '==', cursoId)
+    );
+    const seccionesSnapshot = await getDocs(seccionesQuery);
+    const seccionesIds = seccionesSnapshot.docs.map(doc => doc.id);
+
+    // Obtener tareas
+    const tareasPromises = seccionesIds.map(seccionId =>
+      getDocs(query(collection(this.firestore, 'tareas'), where('seccionId', '==', seccionId)))
+    );
+    const tareasSnapshots = await Promise.all(tareasPromises);
+    const tareas = tareasSnapshots.flatMap(snapshot =>
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any))
+    );
+
+    // Obtener exámenes
+    const examenesPromises = seccionesIds.map(seccionId =>
+      getDocs(query(collection(this.firestore, 'examenes'), where('seccionId', '==', seccionId)))
+    );
+    const examenesSnapshots = await Promise.all(examenesPromises);
+    const examenes = examenesSnapshots.flatMap(snapshot =>
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any))
+    );
+
+    // Construir columnas
+    const columnas: ColumnaCalificacion[] = [
+      ...tareas.map((t, idx) => ({
+        id: t.id!,
+        tipo: 'tarea' as const,
+        titulo: t['titulo'],
+        puntosMaximos: 100,
+        orden: idx
+      })),
+      ...examenes.map((e, idx) => ({
+        id: e.id!,
+        tipo: 'examen' as const,
+        titulo: e['titulo'],
+        puntosMaximos: 100,
+        orden: tareas.length + idx
+      }))
+    ];
+
+    // Obtener calificaciones de todos los estudiantes
+    const filasPromises = estudiantesData.map(async (estudiante) => {
+      const calificacion = await this.calcularCalificacionEstudiante(estudiante.id, cursoId);
+
+      // Obtener calificaciones individuales de tareas
+      const tareasMap: { [key: string]: number | null } = {};
+      for (const tarea of tareas) {
+        const qCal = query(
+          collection(this.firestore, 'calificaciones'),
+          where('estudianteId', '==', estudiante.id),
+          where('tareaId', '==', tarea.id)
+        );
+        const calSnapshot = await getDocs(qCal);
+        tareasMap[tarea.id!] = calSnapshot.empty ? null : calSnapshot.docs[0].data()['puntosFinal'];
+      }
+
+      // Obtener calificaciones individuales de exámenes (mejor intento)
+      const examenesMap: { [key: string]: number | null } = {};
+      for (const examen of examenes) {
+        const qIntento = query(
+          collection(this.firestore, 'intentosExamenes'),
+          where('estudianteId', '==', estudiante.id),
+          where('examenId', '==', examen.id),
+          where('estado', '==', 'finalizado')
+        );
+        const intentosSnapshot = await getDocs(qIntento);
+        if (!intentosSnapshot.empty) {
+          const mejorIntento = intentosSnapshot.docs
+            .map(d => d.data())
+            .reduce((mejor, actual) =>
+              (actual['calificacion'] ?? 0) > (mejor['calificacion'] ?? 0) ? actual : mejor
+            );
+          examenesMap[examen.id!] = mejorIntento['calificacion'] ?? null;
+        } else {
+          examenesMap[examen.id!] = null;
+        }
+      }
+
+      const fila: FilaLibroCalificaciones = {
+        estudianteId: estudiante.id,
+        nombreEstudiante: `${estudiante['nombre']} ${estudiante['apellido']}`,
+        email: estudiante['email'],
+        tareas: tareasMap,
+        examenes: examenesMap,
+        promedioTareas: calificacion.promedioTareas,
+        promedioExamenes: calificacion.promedioExamenes,
+        calificacionFinal: calificacion.calificacionFinal,
+        estado: calificacion.estado
+      };
+
+      return fila;
+    });
+
+    const filas = await Promise.all(filasPromises);
+
+    return {
+      cursoId,
+      cursoTitulo: curso?.['titulo'] || 'Sin título',
+      estudiantes: filas,
+      configuracion: config,
+      columnas
+    };
+  }
+
+  // ========== PROGRESO DEL ESTUDIANTE ==========
+
+  async calcularProgreso(estudianteId: string, cursoId: string): Promise<ProgresoEstudiante> {
+    // Obtener secciones del curso
+    const seccionesQuery = query(
+      collection(this.firestore, 'secciones'),
+      where('cursoId', '==', cursoId)
+    );
+    const seccionesSnapshot = await getDocs(seccionesQuery);
+    const seccionesIds = seccionesSnapshot.docs.map(doc => doc.id);
+
+    // Obtener todas las lecciones
+    const leccionesPromises = seccionesIds.map(seccionId =>
+      getDocs(query(collection(this.firestore, 'lecciones'), where('seccionId', '==', seccionId)))
+    );
+    const leccionesSnapshots = await Promise.all(leccionesPromises);
+    const leccionesTotales = leccionesSnapshots.reduce((sum, snapshot) => sum + snapshot.size, 0);
+
+    // Obtener todas las tareas
+    const tareasPromises = seccionesIds.map(seccionId =>
+      getDocs(query(collection(this.firestore, 'tareas'), where('seccionId', '==', seccionId)))
+    );
+    const tareasSnapshots = await Promise.all(tareasPromises);
+    const tareas = tareasSnapshots.flatMap(snapshot => snapshot.docs.map(doc => doc.id));
+
+    // Obtener entregas de tareas
+    const entregasQuery = query(
+      collection(this.firestore, 'entregas'),
+      where('estudianteId', '==', estudianteId)
+    );
+    const entregasSnapshot = await getDocs(entregasQuery);
+    const tareasEntregadas = entregasSnapshot.docs
+      .map(doc => doc.data()['tareaId'])
+      .filter((id: string) => tareas.includes(id));
+
+    // Obtener todos los exámenes
+    const examenesPromises = seccionesIds.map(seccionId =>
+      getDocs(query(collection(this.firestore, 'examenes'), where('seccionId', '==', seccionId)))
+    );
+    const examenesSnapshots = await Promise.all(examenesPromises);
+    const examenes = examenesSnapshots.flatMap(snapshot => snapshot.docs.map(doc => doc.id));
+
+    // Obtener intentos de exámenes finalizados
+    const intentosQuery = query(
+      collection(this.firestore, 'intentosExamenes'),
+      where('estudianteId', '==', estudianteId),
+      where('estado', '==', 'finalizado')
+    );
+    const intentosSnapshot = await getDocs(intentosQuery);
+    const examenesRealizados = [...new Set(
+      intentosSnapshot.docs
+        .map(doc => doc.data()['examenId'])
+        .filter((id: string) => examenes.includes(id))
+    )];
+
+    // Calcular calificación actual
+    const calificacion = await this.calcularCalificacionEstudiante(estudianteId, cursoId);
+
+    // Calcular porcentaje de avance
+    const totalElementos = leccionesTotales + tareas.length + examenes.length;
+    const elementosCompletados = leccionesTotales + tareasEntregadas.length + examenesRealizados.length; // Asumimos lecciones como vistas
+    const porcentajeAvance = totalElementos > 0 ? Math.round((elementosCompletados / totalElementos) * 100) : 0;
+
+    return {
+      estudianteId,
+      cursoId,
+      porcentajeAvance,
+      leccionesCompletadas: [], // TODO: implementar tracking de lecciones vistas
+      leccionesTotales,
+      tareasEntregadas,
+      tareasTotales: tareas.length,
+      examenesRealizados,
+      examenesTotales: examenes.length,
+      calificacionActual: calificacion.calificacionFinal,
+      ultimaActividad: new Date()
+    };
+  }
+
+  // ========== ESTADÍSTICAS DEL CURSO ==========
+
+  async getEstadisticasCurso(cursoId: string): Promise<EstadisticaCurso> {
+    const libro = await this.getLibroCalificaciones(cursoId);
+    const config = libro.configuracion;
+
+    const totalEstudiantes = libro.estudiantes.length;
+    const estudiantesAprobados = libro.estudiantes.filter(e => e.estado === 'aprobado').length;
+    const estudiantesDesaprobados = libro.estudiantes.filter(e => e.estado === 'desaprobado').length;
+    const estudiantesEnProgreso = libro.estudiantes.filter(e => e.estado === 'en_progreso').length;
+
+    const promedioGeneral = totalEstudiantes > 0
+      ? libro.estudiantes.reduce((sum, e) => sum + e.calificacionFinal, 0) / totalEstudiantes
+      : 0;
+
+    const tasaAprobacion = totalEstudiantes > 0
+      ? (estudiantesAprobados / totalEstudiantes) * 100
+      : 0;
+
+    // Distribución de notas según escala
+    const escala = config.escalaCalificacion;
+    const distribucion = {
+      excelente: libro.estudiantes.filter(e => e.calificacionFinal >= (escala.excelente ?? 90)).length,
+      bueno: libro.estudiantes.filter(e =>
+        e.calificacionFinal >= (escala.bueno ?? 75) && e.calificacionFinal < (escala.excelente ?? 90)
+      ).length,
+      regular: libro.estudiantes.filter(e =>
+        e.calificacionFinal >= (escala.regular ?? config.notaMinima) && e.calificacionFinal < (escala.bueno ?? 75)
+      ).length,
+      desaprobado: libro.estudiantes.filter(e => e.calificacionFinal < config.notaMinima).length
+    };
+
+    return {
+      cursoId,
+      totalEstudiantes,
+      estudiantesAprobados,
+      estudiantesDesaprobados,
+      estudiantesEnProgreso,
+      promedioGeneral: Math.round(promedioGeneral * 100) / 100,
+      tasaAprobacion: Math.round(tasaAprobacion * 100) / 100,
+      distribucionNotas: distribucion
+    };
+  }
+}

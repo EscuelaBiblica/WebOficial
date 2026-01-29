@@ -51,6 +51,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/sections/secciones.component').then(m => m.SeccionesComponent)
   },
   {
+    path: 'cursos/:cursoId/configurar-calificaciones',
+    canActivate: [authGuard, profesorGuard],
+    loadComponent: () => import('./features/grades/configurar-calificaciones/configurar-calificaciones.component').then(m => m.ConfigurarCalificacionesComponent)
+  },
+  {
+    path: 'cursos/:cursoId/calificaciones',
+    canActivate: [authGuard, profesorGuard],
+    loadComponent: () => import('./features/grades/libro-calificaciones/libro-calificaciones.component').then(m => m.LibroCalificacionesComponent)
+  },
+  {
     path: 'curso/:cursoId',
     canActivate: [authGuard],
     loadComponent: () => import('./features/course-viewer/course-viewer.component').then(m => m.CourseViewerComponent)

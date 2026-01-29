@@ -122,6 +122,81 @@ service cloud.firestore {
       // Eliminar: Solo admins
       allow delete: if isAdmin();
     }
+
+    // Intentos de exámenes (nueva colección con nombre diferente)
+    match /intentosExamenes/{intentoId} {
+      // Leer: El estudiante dueño del intento, profesores y admins
+      allow read: if isAuthenticated() && 
+                   (resource.data.estudianteId == request.auth.uid || 
+                    isProfesor() || 
+                    isAdmin());
+      
+      // Crear: Cualquier estudiante autenticado puede crear un intento
+      allow create: if isAuthenticated() && 
+                     request.resource.data.estudianteId == request.auth.uid;
+      
+      // Actualizar: El estudiante dueño (para guardar respuestas), profesores y admins
+      allow update: if isAuthenticated() && 
+                     (resource.data.estudianteId == request.auth.uid || 
+                      isProfesor() || 
+                      isAdmin());
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // ==================== REGLAS PARA SISTEMA DE CALIFICACIONES ====================
+    
+    // Reglas para configuración de calificaciones
+    match /configuracionCalificaciones/{configId} {
+      // Leer: Cualquier usuario autenticado
+      allow read: if isAuthenticated();
+      
+      // Crear/Actualizar: Solo profesores y admins
+      allow create: if isProfesor() || isAdmin();
+      allow update: if isProfesor() || isAdmin();
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para calificaciones de estudiantes (calculadas)
+    match /calificacionesEstudiantes/{calificacionId} {
+      // Leer: El estudiante dueño, profesores y admins
+      allow read: if isAuthenticated() && 
+                   (resource.data.estudianteId == request.auth.uid || 
+                    isProfesor() || 
+                    isAdmin());
+      
+      // Crear/Actualizar: Solo profesores y admins (cálculos automáticos)
+      allow create: if isProfesor() || isAdmin();
+      allow update: if isProfesor() || isAdmin();
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para progreso de estudiantes
+    match /progresoEstudiantes/{progresoId} {
+      // Leer: El estudiante dueño, profesores y admins
+      allow read: if isAuthenticated() && 
+                   (resource.data.estudianteId == request.auth.uid || 
+                    isProfesor() || 
+                    isAdmin());
+      
+      // Crear/Actualizar: El estudiante dueño (al completar actividades), profesores y admins
+      allow create: if isAuthenticated() && 
+                     (request.resource.data.estudianteId == request.auth.uid || 
+                      isProfesor() || 
+                      isAdmin());
+      allow update: if isAuthenticated() && 
+                     (resource.data.estudianteId == request.auth.uid || 
+                      isProfesor() || 
+                      isAdmin());
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
     
     // ====================================================================
   }

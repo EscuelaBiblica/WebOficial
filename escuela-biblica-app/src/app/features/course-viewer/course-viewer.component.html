@@ -41,6 +41,25 @@
         <h5><i class="fas fa-list"></i> Contenido del Curso</h5>
       </div>
 
+      <!-- Accesos Rápidos a Calificaciones -->
+      <div class="quick-actions" *ngIf="userRole === 'profesor' || userRole === 'admin'">
+        <button class="btn-quick-action" (click)="verLibroCalificaciones()">
+          <i class="fas fa-book"></i>
+          <span>Libro de Calificaciones</span>
+        </button>
+        <button class="btn-quick-action" (click)="configurarCalificaciones()">
+          <i class="fas fa-cog"></i>
+          <span>Configurar Ponderaciones</span>
+        </button>
+      </div>
+
+      <div class="quick-actions" *ngIf="userRole === 'estudiante'">
+        <button class="btn-quick-action" (click)="verMiProgreso()">
+          <i class="fas fa-chart-line"></i>
+          <span>Mi Progreso y Calificaciones</span>
+        </button>
+      </div>
+
       <div class="sections-list">
         <div class="section-item" *ngFor="let seccion of secciones; let i = index">
           <!-- Sección Header -->

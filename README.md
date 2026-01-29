@@ -639,17 +639,20 @@ interface ProgresoEstudiante {
 - [x] Guardar calificaciones en colección separada
 - [x] Cálculo automático de puntos finales
 
-### **Fase 7: Sistema de Exámenes (Semana 11-13)** ⏳ SIGUIENTE FASE
-- [ ] Creación de exámenes (configuración completa)
-- [ ] Banco de preguntas con tipos múltiples
-- [ ] Importación desde Excel (.xlsx)
-- [ ] Interfaz de examen para estudiantes
-- [ ] Temporizador y límite de intentos
-- [ ] Calificación automática
-- [ ] Mostrar resultados y feedback
-- [ ] Integración con sistema de calificaciones
+### **Fase 7: Sistema de Exámenes (Semana 11-13)** ✅ COMPLETADA
+- [x] Creación de exámenes (configuración completa)
+- [x] Banco de preguntas con 5 tipos (multiple_unica, multiple_multiple, verdadero_falso, corta, completar)
+- [x] Importación desde Excel (.xlsx) con validación
+- [x] Descarga de plantilla Excel con ejemplos
+- [x] Interfaz de examen para estudiantes con autosave
+- [x] Temporizador y límite de intentos
+- [x] Calificación automática por tipo de pregunta
+- [x] Mostrar resultados y feedback detallado
+- [x] Vista de intentos para profesor/admin con estadísticas
+- [x] Edición manual de calificaciones
+- [x] Integración completa con course-viewer
 
-### **Fase 8: Calificaciones y Progreso (Semana 14-15)**
+### **Fase 8: Calificaciones y Progreso (Semana 14-15)** ⏳ EN PROGRESO
 - [ ] Configuración de ponderaciones
 - [ ] Libro de calificaciones
 - [ ] Cálculos automáticos

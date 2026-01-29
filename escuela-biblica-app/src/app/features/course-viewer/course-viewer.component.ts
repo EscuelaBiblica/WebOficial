@@ -440,4 +440,20 @@ export class CourseViewerComponent implements OnInit {
   isProfesorOrAdmin(): boolean {
     return this.userRole === 'profesor' || this.userRole === 'admin';
   }
+
+  // Navegación a calificaciones
+  verLibroCalificaciones(): void {
+    if (!this.curso?.id) return;
+    this.router.navigate(['/cursos', this.curso.id, 'calificaciones']);
+  }
+
+  configurarCalificaciones(): void {
+    if (!this.curso?.id) return;
+    this.router.navigate(['/cursos', this.curso.id, 'configurar-calificaciones']);
+  }
+
+  verMiProgreso(): void {
+    // TODO: Implementar vista de progreso del estudiante
+    alert('Vista de progreso del estudiante - Próximamente');
+  }
 }
