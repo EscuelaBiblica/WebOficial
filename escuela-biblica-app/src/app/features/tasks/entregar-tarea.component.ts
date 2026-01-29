@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TaskService } from '../../core/services/task.service';
 import { AuthService } from '../../core/services/auth.service';
-import { SectionService } from '../../core/services/section.service';
+import { LessonService } from '../../core/services/lesson.service';
 import { CloudinaryService } from '../../core/services/cloudinary.service';
 import { Tarea, EntregaTarea } from '../../core/models/task.model';
-import { Seccion } from '../../core/models/section.model';
+import { Leccion } from '../../core/models/lesson.model';
 
 @Component({
   selector: 'app-entregar-tarea',
@@ -18,17 +18,18 @@ import { Seccion } from '../../core/models/section.model';
 })
 export class EntregarTareaComponent implements OnInit {
   tarea: Tarea | null = null;
-  seccion: Seccion | null = null;
+  leccion: Leccion | null = null;
   entrega: EntregaTarea | null = null;
   contenidoTexto: string = '';
   archivos: string[] = [];
   uploadingFile: boolean = false;
   loading: boolean = false;
   currentUser: any = null;
+  cursoId: string | null = null; // Para navegación de regreso
 
   constructor(
     private taskService: TaskService,
-    private sectionService: SectionService,
+    private lessonService: LessonService,
     private authService: AuthService,
     private cloudinaryService: CloudinaryService,
     private router: Router,
@@ -41,6 +42,9 @@ export class EntregarTareaComponent implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
+
+    // Obtener cursoId de los queryParams
+    this.cursoId = this.route.snapshot.queryParamMap.get('cursoId');
 
     const tareaId = this.route.snapshot.paramMap.get('tareaId');
     if (!tareaId) {
@@ -59,8 +63,7 @@ export class EntregarTareaComponent implements OnInit {
       }
 
       // Cargar la lección para mostrar el nombre
-      const lessonSnapshot = await this.sectionService.getSectionById(this.tarea.leccionId);
-      this.seccion = lessonSnapshot;
+      this.leccion = await this.lessonService.getLessonById(this.tarea.leccionId);
 
       // Verificar si ya hay una entrega
       this.entrega = await this.taskService.getSubmissionByStudentAndTask(
@@ -84,10 +87,21 @@ export class EntregarTareaComponent implements OnInit {
     const file = event.target.files[0];
     if (!file) return;
 
+    console.log('Archivo seleccionado:', file.name);
+    console.log('Archivos permitidos:', this.tarea?.archivosPermitidos);
+
     // Validar tipo de archivo si hay restricciones
     if (this.tarea?.archivosPermitidos && this.tarea.archivosPermitidos.length > 0) {
-      const extension = file.name.split('.').pop()?.toLowerCase();
-      if (!this.tarea.archivosPermitidos.includes(extension || '')) {
+      const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+      console.log('Extensión del archivo:', extension);
+
+      // Normalizar las extensiones permitidas (asegurar que tengan punto)
+      const extensionesPermitidas = this.tarea.archivosPermitidos.map(ext =>
+        ext.startsWith('.') ? ext.toLowerCase() : '.' + ext.toLowerCase()
+      );
+      console.log('Extensiones permitidas normalizadas:', extensionesPermitidas);
+
+      if (!extensionesPermitidas.includes(extension)) {
         alert(`Solo se permiten archivos: ${this.tarea.archivosPermitidos.join(', ')}`);
         return;
       }
@@ -126,14 +140,24 @@ export class EntregarTareaComponent implements OnInit {
     if (!this.tarea || !this.currentUser) return;
 
     // Validar según tipo de entrega
-    if (this.tarea.tipoEntrega === 'texto' || this.tarea.tipoEntrega === 'ambos') {
+    if (this.tarea.tipoEntrega === 'texto') {
+      // Solo requiere texto
       if (!this.contenidoTexto.trim()) {
         alert('Debes escribir una respuesta en texto');
         return;
       }
-    }
-
-    if (this.tarea.tipoEntrega === 'archivo' || this.tarea.tipoEntrega === 'ambos') {
+    } else if (this.tarea.tipoEntrega === 'archivo') {
+      // Solo requiere archivo
+      if (this.archivos.length === 0) {
+        alert('Debes adjuntar al menos un archivo');
+        return;
+      }
+    } else if (this.tarea.tipoEntrega === 'ambos') {
+      // Requiere ambos
+      if (!this.contenidoTexto.trim()) {
+        alert('Debes escribir una respuesta en texto');
+        return;
+      }
       if (this.archivos.length === 0) {
         alert('Debes adjuntar al menos un archivo');
         return;
@@ -262,9 +286,11 @@ export class EntregarTareaComponent implements OnInit {
   }
 
   goBack() {
-    if (this.seccion) {
-      this.router.navigate(['/estudiante']);
+    // Si tenemos cursoId, regresar al course viewer
+    if (this.cursoId) {
+      this.router.navigate(['/curso', this.cursoId]);
     } else {
+      // De lo contrario, ir al dashboard
       this.router.navigate(['/estudiante']);
     }
   }

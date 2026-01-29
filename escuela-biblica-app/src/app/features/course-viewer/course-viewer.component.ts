@@ -161,7 +161,9 @@ export class CourseViewerComponent implements OnInit {
   }
 
   toggleLeccion(leccion: LeccionConTareas) {
+    console.log('Toggle lección:', leccion.titulo, 'Estado actual:', leccion.expanded);
     leccion.expanded = !leccion.expanded;
+    console.log('Nuevo estado:', leccion.expanded);
   }
 
   async loadLeccion(seccion: SeccionExpandida, leccion: LeccionConTareas) {
@@ -174,6 +176,10 @@ export class CourseViewerComponent implements OnInit {
   }
 
   async loadTarea(seccion: SeccionExpandida, tarea: Tarea) {
+    console.log('Cargando tarea:', tarea.titulo);
+    console.log('User role:', this.userRole);
+    console.log('Current user:', this.currentUser);
+
     this.contenidoActual = {
       tipo: 'tarea',
       seccionTitulo: seccion.titulo,
@@ -183,10 +189,21 @@ export class CourseViewerComponent implements OnInit {
 
     // Si es estudiante, cargar su entrega
     if (this.userRole === 'estudiante') {
+      console.log('Cargando entrega del estudiante...');
       this.contenidoActual.entrega = await this.taskService.getSubmissionByStudentAndTask(
         this.currentUser.id,
         tarea.id
       );
+      console.log('Entrega cargada:', this.contenidoActual.entrega);
+
+      // Convertir Timestamp a Date
+      if (this.contenidoActual.entrega && this.contenidoActual.entrega.fechaEntrega) {
+        this.contenidoActual.entrega.fechaEntrega = this.contenidoActual.entrega.fechaEntrega instanceof Date
+          ? this.contenidoActual.entrega.fechaEntrega
+          : (this.contenidoActual.entrega.fechaEntrega as any).toDate();
+      }
+    } else {
+      console.log('No es estudiante, no se carga entrega');
     }
   }
 
@@ -254,15 +271,16 @@ export class CourseViewerComponent implements OnInit {
   }
 
   entregarTarea(tareaId: string) {
-    this.router.navigate(['/tareas', tareaId, 'entregar']);
+    this.router.navigate(['/tareas', tareaId, 'entregar'], {
+      queryParams: { cursoId: this.curso?.id }
+    });
   }
 
   verEntregas(tareaId: string) {
-    // Navegar a la gestión de tareas del profesor
-    const tarea = this.getTareaActual();
-    if (tarea) {
-      this.router.navigate(['/tareas', tareaId, 'calificar']);
-    }
+    // Por ahora, ir al dashboard del profesor
+    // TODO: Crear componente de lista de entregas
+    alert('Para ver las entregas, ve a tu Dashboard de Profesor donde podrás ver todas las entregas pendientes de calificar.');
+    this.router.navigate(['/profesor']);
   }
 
   goToDashboard() {

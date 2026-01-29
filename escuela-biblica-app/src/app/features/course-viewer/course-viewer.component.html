@@ -56,7 +56,7 @@
                 <div class="leccion-actions">
                   <span class="badge bg-primary"
                         *ngIf="leccion.tareasData.length > 0"
-                        (click)="toggleLeccion(leccion)"
+                        (click)="toggleLeccion(leccion); $event.stopPropagation()"
                         style="cursor: pointer;"
                         title="Click para ver/ocultar tareas">
                     {{ leccion.tareasData.length }} tarea{{ leccion.tareasData.length !== 1 ? 's' : '' }}
@@ -65,7 +65,7 @@
                      *ngIf="leccion.tareasData.length > 0"
                      [class.fa-chevron-down]="!leccion.expanded"
                      [class.fa-chevron-up]="leccion.expanded"
-                     (click)="toggleLeccion(leccion)"
+                     (click)="toggleLeccion(leccion); $event.stopPropagation()"
                      style="cursor: pointer;"
                      title="Click para ver/ocultar tareas"></i>
                 </div>
@@ -220,7 +220,9 @@
 
           <!-- Entrega del Estudiante -->
           <div class="mt-4" *ngIf="userRole === 'estudiante'">
-            <div class="card border-success" *ngIf="contenidoActual.entrega && contenidoActual.entrega.estado === 'calificada'">
+            <h5 class="mb-3"><i class="fas fa-paper-plane"></i> Tu Entrega</h5>
+
+            <div class="card border-success mb-3" *ngIf="contenidoActual.entrega && contenidoActual.entrega.estado === 'calificada'">
               <div class="card-header bg-success text-white">
                 <i class="fas fa-check-circle"></i> Tarea Calificada
               </div>
@@ -233,7 +235,7 @@
               </div>
             </div>
 
-            <div class="card border-info" *ngIf="contenidoActual.entrega && contenidoActual.entrega.estado !== 'calificada'">
+            <div class="card border-info mb-3" *ngIf="contenidoActual.entrega && contenidoActual.entrega.estado !== 'calificada'">
               <div class="card-header bg-info text-white">
                 <i class="fas fa-info-circle"></i> Ya entregaste esta tarea
               </div>
@@ -243,9 +245,18 @@
               </div>
             </div>
 
-            <button class="btn btn-primary btn-lg w-100 mt-3" (click)="entregarTarea(getTareaActual()!.id)" *ngIf="getTareaActual()">
+            <div class="alert alert-warning" *ngIf="!contenidoActual.entrega">
+              <i class="fas fa-exclamation-triangle"></i> Aún no has entregado esta tarea
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100" (click)="entregarTarea(getTareaActual()!.id)">
               <i class="fas fa-paper-plane"></i> {{ contenidoActual.entrega ? 'Modificar Entrega' : 'Entregar Tarea' }}
             </button>
+          </div>
+
+          <!-- Debug info (temporal) -->
+          <div class="mt-3 p-2 bg-light border" *ngIf="!userRole || userRole === ''">
+            <small class="text-danger">Debug: userRole no está definido. UserRole actual: "{{ userRole }}"</small>
           </div>
 
           <!-- Opciones del Profesor -->

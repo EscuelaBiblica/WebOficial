@@ -134,6 +134,8 @@
   gap: 0.5rem;
   flex: 1;
   cursor: pointer;
+  pointer-events: auto;
+  min-width: 0; // Previene que ocupe todo el espacio
 
   &:hover {
     .leccion-titulo {
@@ -148,11 +150,13 @@
   i {
     color: #6c757d;
     width: 16px;
+    pointer-events: none;
   }
 
   .leccion-titulo {
     color: #495057;
     font-size: 0.9rem;
+    pointer-events: none;
   }
 }
 
@@ -160,20 +164,33 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0; // No se encoja
+  pointer-events: auto;
 
   .badge {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
+    user-select: none;
+    pointer-events: auto;
+
+    &:hover {
+      background-color: #0b5ed7 !important;
+      transform: scale(1.05);
+    }
   }
 
   i {
     color: #6c757d;
     font-size: 0.8rem;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color 0.2s, transform 0.2s;
+    user-select: none;
+    padding: 0.25rem;
+    pointer-events: auto;
 
     &:hover {
       color: #0d6efd;
+      transform: scale(1.2);
     }
   }
 }
