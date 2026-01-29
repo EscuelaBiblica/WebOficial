@@ -6,6 +6,7 @@ import { LessonService } from './lesson.service';
 import { GradeService } from './grade.service';
 import { AuthService } from './auth.service';
 import { SectionService } from './section.service';
+import { ProgressUnlockService } from './progress-unlock.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,8 @@ export class TaskService {
     private lessonService: LessonService,
     private gradeService: GradeService,
     private authService: AuthService,
-    private sectionService: SectionService
+    private sectionService: SectionService,
+    private progressUnlockService: ProgressUnlockService
   ) {}
 
   /**
@@ -198,6 +200,8 @@ export class TaskService {
         entregaData.tareaId!
       );
 
+      let entregaId: string;
+
       if (existingSubmission) {
         // Actualizar entrega existente
         const entregaDocRef = doc(this.firestore, `entregas/${existingSubmission.id}`);
@@ -207,10 +211,10 @@ export class TaskService {
           fechaEntrega: new Date(),
           estado: 'entregada'
         });
-        return existingSubmission.id;
+        entregaId = existingSubmission.id;
       } else {
         // Crear nueva entrega
-        const entregaId = doc(this.entregasCollection).id;
+        entregaId = doc(this.entregasCollection).id;
         const entregaDocRef = doc(this.firestore, `entregas/${entregaId}`);
 
         const newSubmission: any = {
@@ -229,8 +233,26 @@ export class TaskService {
         }
 
         await setDoc(entregaDocRef, newSubmission);
-        return entregaId;
       }
+
+      // 🆕 ACTUALIZAR PROGRESO DEL ESTUDIANTE
+      try {
+        const tarea = await this.getTaskById(entregaData.tareaId!);
+        if (tarea) {
+          const leccion = await this.lessonService.getLessonById(tarea.leccionId);
+          if (leccion && leccion.seccionId) {
+            await this.progressUnlockService.actualizarProgresoEstudiante(
+              leccion.seccionId,
+              entregaData.estudianteId!
+            );
+            console.log('✅ Progreso actualizado tras entregar tarea');
+          }
+        }
+      } catch (progressError) {
+        console.warn('⚠️ Error actualizando progreso (no crítico):', progressError);
+      }
+
+      return entregaId;
     } catch (error) {
       console.error('Error enviando tarea:', error);
       throw error;

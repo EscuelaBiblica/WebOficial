@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, doc, setDoc, updateDoc, deleteDoc, getDocs, getDoc, query, where, orderBy, Timestamp, addDoc } from '@angular/fire/firestore';
 import { Examen, Pregunta, IntentoExamen, RespuestaEstudiante } from '../models/exam.model';
+import { ProgressUnlockService } from './progress-unlock.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,10 @@ export class ExamService {
   private examenesCollection = collection(this.firestore, 'examenes');
   private intentosCollection = collection(this.firestore, 'intentos');
 
-  constructor(private firestore: Firestore) {}
+  constructor(
+    private firestore: Firestore,
+    private progressUnlockService: ProgressUnlockService
+  ) {}
 
   /**
    * Crear nuevo examen
@@ -230,6 +234,24 @@ export class ExamService {
       fechaFin: new Date(),
       estado: 'finalizado'
     });
+
+    // 🆕 ACTUALIZAR PROGRESO DEL ESTUDIANTE
+    try {
+      // Obtener datos del intento para sacar estudianteId y seccionId
+      const intentoDoc = await getDoc(doc(this.firestore, 'intentos', intentoId));
+      if (intentoDoc.exists()) {
+        const intentoData = intentoDoc.data() as IntentoExamen;
+        if (intentoData.estudianteId && examen.seccionId) {
+          await this.progressUnlockService.actualizarProgresoEstudiante(
+            examen.seccionId,
+            intentoData.estudianteId
+          );
+          console.log('✅ Progreso actualizado tras completar examen');
+        }
+      }
+    } catch (progressError) {
+      console.warn('⚠️ Error actualizando progreso (no crítico):', progressError);
+    }
 
     return calificacion;
   }

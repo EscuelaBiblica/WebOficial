@@ -112,6 +112,19 @@
   &:hover {
     background: #e9ecef;
   }
+
+  &.locked {
+    opacity: 0.7;
+    background: #fff3cd;
+
+    &:hover {
+      background: #ffecb5;
+    }
+
+    .section-title {
+      color: #856404;
+    }
+  }
 }
 
 .section-info {
@@ -135,6 +148,12 @@
     font-weight: 500;
     color: #212529;
   }
+}
+
+.section-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .section-content {

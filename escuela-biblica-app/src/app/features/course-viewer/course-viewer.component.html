@@ -63,13 +63,34 @@
       <div class="sections-list">
         <div class="section-item" *ngFor="let seccion of secciones; let i = index">
           <!-- Sección Header -->
-          <div class="section-header" (click)="toggleSeccion(seccion)">
+          <div class="section-header"
+               [class.locked]="userRole === 'estudiante' && seccion.progreso?.bloqueada"
+               (click)="toggleSeccion(seccion)">
             <div class="section-info">
               <i class="fas" [class.fa-chevron-right]="!seccion.expanded" [class.fa-chevron-down]="seccion.expanded"></i>
               <span class="section-number">{{ i + 1 }}.</span>
               <span class="section-title">{{ seccion.titulo }}</span>
+
+              <!-- Indicador de bloqueo -->
+              <i class="fas fa-lock ms-2 text-warning"
+                 *ngIf="userRole === 'estudiante' && seccion.progreso?.bloqueada"
+                 title="Sección bloqueada"></i>
+              <i class="fas fa-lock-open ms-2 text-success"
+                 *ngIf="userRole === 'estudiante' && !seccion.progreso?.bloqueada && seccion.desbloqueoProgresivo"
+                 title="Sección desbloqueada"></i>
             </div>
-            <span class="badge bg-secondary">{{ seccion.lecciones.length }}</span>
+
+            <div class="section-badges">
+              <!-- Badge de progreso (solo estudiantes) -->
+              <span class="badge bg-info me-1"
+                    *ngIf="userRole === 'estudiante' && seccion.progreso"
+                    title="Progreso en esta sección">
+                {{ seccion.progreso.porcentajeCompletado }}%
+              </span>
+
+              <!-- Badge de cantidad de lecciones -->
+              <span class="badge bg-secondary">{{ seccion.lecciones.length }}</span>
+            </div>
           </div>
 
           <!-- Lecciones de la Sección -->

@@ -74,6 +74,8 @@ export class SectionService {
         orden: sectionData.orden || 0,
         desbloqueoProgresivo: sectionData.desbloqueoProgresivo || false,
         prerequisitos: sectionData.prerequisitos || [],
+        requiereCompletarTodo: sectionData.requiereCompletarTodo || false,
+        porcentajeMinimo: sectionData.porcentajeMinimo || 70,
         elementos: []
       };
 

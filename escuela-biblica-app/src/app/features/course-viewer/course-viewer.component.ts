@@ -9,8 +9,9 @@ import { LessonService } from '../../core/services/lesson.service';
 import { TaskService } from '../../core/services/task.service';
 import { ExamService } from '../../core/services/exam.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ProgressUnlockService } from '../../core/services/progress-unlock.service';
 import { Curso } from '../../core/models/course.model';
-import { Seccion, ElementoSeccion } from '../../core/models/section.model';
+import { Seccion, ElementoSeccion, ProgresoSeccion } from '../../core/models/section.model';
 import { Leccion } from '../../core/models/lesson.model';
 import { Tarea, EntregaTarea } from '../../core/models/task.model';
 import { Examen, IntentoExamen } from '../../core/models/exam.model';
@@ -19,6 +20,7 @@ interface SeccionExpandida extends Seccion {
   expanded: boolean;
   lecciones: LeccionConTareas[];
   examenesData: ExamenConIntentos[];
+  progreso?: ProgresoSeccion;
 }
 
 interface ExamenConIntentos extends Examen {
@@ -68,7 +70,8 @@ export class CourseViewerComponent implements OnInit {
     private taskService: TaskService,
     private examService: ExamService,
     private authService: AuthService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private progressUnlockService: ProgressUnlockService
   ) {}
 
   async ngOnInit() {
@@ -111,6 +114,15 @@ export class CourseViewerComponent implements OnInit {
       // Cargar secciones
       const seccionesData = await firstValueFrom(this.sectionService.getSectionsByCourse(cursoId));
 
+      // Obtener estado de progreso si el usuario es estudiante
+      let estadoSecciones: Map<string, ProgresoSeccion> | undefined;
+      if (this.userRole === 'estudiante') {
+        estadoSecciones = await this.progressUnlockService.getEstadoSeccionesCurso(
+          cursoId,
+          this.currentUser.uid
+        );
+      }
+
       // Cargar lecciones y exámenes de cada sección
       this.secciones = await Promise.all(
         seccionesData.map(async (seccion) => {
@@ -149,19 +161,26 @@ export class CourseViewerComponent implements OnInit {
           // Cargar exámenes de esta sección
           const examenesData: ExamenConIntentos[] = await this.loadExamenesSeccion(seccion.id);
 
+          // Obtener progreso de esta sección
+          const progreso = estadoSecciones?.get(seccion.id);
+
           return {
             ...seccion,
             expanded: false,
             lecciones,
-            examenesData
+            examenesData,
+            progreso
           };
         })
       );
 
-      // Cargar automáticamente la primera lección de la primera sección
+      // Cargar automáticamente la primera lección de la primera sección (si no está bloqueada)
       if (this.secciones.length > 0 && this.secciones[0].lecciones.length > 0) {
-        this.secciones[0].expanded = true;
-        await this.loadLeccion(this.secciones[0], this.secciones[0].lecciones[0]);
+        const primeraSeccion = this.secciones[0];
+        if (!primeraSeccion.progreso?.bloqueada || this.userRole !== 'estudiante') {
+          primeraSeccion.expanded = true;
+          await this.loadLeccion(primeraSeccion, primeraSeccion.lecciones[0]);
+        }
       }
 
     } catch (error) {
@@ -172,7 +191,17 @@ export class CourseViewerComponent implements OnInit {
     }
   }
 
-  toggleSeccion(seccion: SeccionExpandida) {
+  async toggleSeccion(seccion: SeccionExpandida) {
+    // Verificar si está bloqueada y es estudiante
+    if (this.userRole === 'estudiante' && seccion.progreso?.bloqueada) {
+      const mensaje = await this.progressUnlockService.getMensajeBloqueo(
+        seccion.id,
+        this.currentUser.uid,
+        this.secciones
+      );
+      alert(mensaje);
+      return;
+    }
     seccion.expanded = !seccion.expanded;
   }
 
@@ -183,6 +212,17 @@ export class CourseViewerComponent implements OnInit {
   }
 
   async loadLeccion(seccion: SeccionExpandida, leccion: LeccionConTareas) {
+    // Verificar si la sección está bloqueada para estudiantes
+    if (this.userRole === 'estudiante' && seccion.progreso?.bloqueada) {
+      const mensaje = await this.progressUnlockService.getMensajeBloqueo(
+        seccion.id,
+        this.currentUser.uid,
+        this.secciones
+      );
+      alert(mensaje);
+      return;
+    }
+
     this.contenidoActual = {
       tipo: 'leccion',
       seccionTitulo: seccion.titulo,
@@ -193,6 +233,17 @@ export class CourseViewerComponent implements OnInit {
   }
 
   async loadTarea(seccion: SeccionExpandida, tarea: Tarea) {
+    // Verificar si la sección está bloqueada para estudiantes
+    if (this.userRole === 'estudiante' && seccion.progreso?.bloqueada) {
+      const mensaje = await this.progressUnlockService.getMensajeBloqueo(
+        seccion.id,
+        this.currentUser.uid,
+        this.secciones
+      );
+      alert(mensaje);
+      return;
+    }
+
     console.log('Cargando tarea:', tarea.titulo);
     console.log('User role:', this.userRole);
     console.log('Current user:', this.currentUser);
@@ -377,6 +428,17 @@ export class CourseViewerComponent implements OnInit {
   }
 
   async loadExamen(seccion: SeccionExpandida, examen: ExamenConIntentos) {
+    // Verificar si la sección está bloqueada para estudiantes
+    if (this.userRole === 'estudiante' && seccion.progreso?.bloqueada) {
+      const mensaje = await this.progressUnlockService.getMensajeBloqueo(
+        seccion.id,
+        this.currentUser.uid,
+        this.secciones
+      );
+      alert(mensaje);
+      return;
+    }
+
     this.contenidoActual = {
       tipo: 'examen',
       seccionTitulo: seccion.titulo,

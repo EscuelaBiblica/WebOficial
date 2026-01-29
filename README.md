@@ -652,21 +652,27 @@ interface ProgresoEstudiante {
 - [x] Edición manual de calificaciones
 - [x] Integración completa con course-viewer
 
-### **Fase 8: Calificaciones y Progreso (Semana 14-15)** ⏳ EN PROGRESO
-- [ ] Configuración de ponderaciones
-- [ ] Libro de calificaciones
-- [ ] Cálculos automáticos
-- [ ] Dashboard de progreso estudiante
-- [ ] Gráficas y estadísticas
-- [ ] Exportación de calificaciones
+### **Fase 8: Calificaciones y Progreso (Semana 14-15)** ✅ COMPLETADA
+- [x] Configuración de ponderaciones (tareas/exámenes)
+- [x] Libro de calificaciones con filtros
+- [x] Cálculos automáticos (promedio ponderado)
+- [x] Dashboard de progreso estudiante con gráficos
+- [x] Gráficas con Chart.js (distribución, comparación)
+- [x] Exportación de calificaciones a Excel
+- [x] Diseño responsive para móviles
+- [x] Acceso desde admin dashboard
+- [x] Firestore rules para seguridad
+- [x] Vista de progreso individual con estadísticas
 
-### **Fase 9: Desbloqueo Progresivo (Semana 16)**
-- [ ] Sistema de prerrequisitos
-- [ ] Lógica de desbloqueo
-- [ ] Indicadores visuales de progreso
-- [ ] Configuración por sección
+### **Fase 9: Desbloqueo Progresivo (Semana 16)** ✅ COMPLETADA
+- [x] Sistema de prerrequisitos
+- [x] Lógica de desbloqueo (ProgressUnlockService)
+- [x] Indicadores visuales de progreso (lock icons, badges, porcentajes)
+- [x] Configuración por sección (modales con prerequisitos)
+- [x] Integración en course-viewer
+- [x] Tabla de secciones con info de prerrequisitos
 
-### **Fase 10: Testing y Deploy (Semana 17-18)**
+### **Fase 10: Testing y Deploy (Semana 17-18)** 🎯 SIGUIENTE
 - [ ] Pruebas unitarias
 - [ ] Pruebas de integración
 - [ ] Pruebas de usuario

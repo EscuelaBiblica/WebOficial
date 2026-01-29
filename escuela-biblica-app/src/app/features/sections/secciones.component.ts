@@ -29,7 +29,10 @@ export class SeccionesComponent implements OnInit {
   newSection = {
     titulo: '',
     descripcion: '',
-    desbloqueoProgresivo: false
+    desbloqueoProgresivo: false,
+    prerequisitos: [] as string[],
+    requiereCompletarTodo: false,
+    porcentajeMinimo: 70
   };
 
   constructor(
@@ -74,7 +77,10 @@ export class SeccionesComponent implements OnInit {
     this.newSection = {
       titulo: '',
       descripcion: '',
-      desbloqueoProgresivo: false
+      desbloqueoProgresivo: false,
+      prerequisitos: [],
+      requiereCompletarTodo: false,
+      porcentajeMinimo: 70
     };
     this.showCreateModal = true;
   }
@@ -95,6 +101,9 @@ export class SeccionesComponent implements OnInit {
         titulo: this.newSection.titulo,
         descripcion: this.newSection.descripcion,
         desbloqueoProgresivo: this.newSection.desbloqueoProgresivo,
+        prerequisitos: this.newSection.prerequisitos,
+        requiereCompletarTodo: this.newSection.requiereCompletarTodo,
+        porcentajeMinimo: this.newSection.porcentajeMinimo,
         orden: this.secciones.length
       });
 
@@ -107,7 +116,12 @@ export class SeccionesComponent implements OnInit {
   }
 
   editSection(section: Seccion) {
-    this.selectedSection = { ...section };
+    this.selectedSection = {
+      ...section,
+      prerequisitos: section.prerequisitos || [],
+      requiereCompletarTodo: section.requiereCompletarTodo || false,
+      porcentajeMinimo: section.porcentajeMinimo || 70
+    };
     this.showEditModal = true;
   }
 
@@ -123,7 +137,10 @@ export class SeccionesComponent implements OnInit {
       await this.sectionService.updateSection(this.selectedSection.id, {
         titulo: this.selectedSection.titulo,
         descripcion: this.selectedSection.descripcion,
-        desbloqueoProgresivo: this.selectedSection.desbloqueoProgresivo
+        desbloqueoProgresivo: this.selectedSection.desbloqueoProgresivo,
+        prerequisitos: this.selectedSection.prerequisitos,
+        requiereCompletarTodo: this.selectedSection.requiereCompletarTodo,
+        porcentajeMinimo: this.selectedSection.porcentajeMinimo
       });
 
       alert('Sección actualizada correctamente');
@@ -176,5 +193,50 @@ export class SeccionesComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  // Helpers para prerrequisitos
+  togglePrerequisitoCreate(seccionId: string) {
+    const index = this.newSection.prerequisitos.indexOf(seccionId);
+    if (index > -1) {
+      this.newSection.prerequisitos.splice(index, 1);
+    } else {
+      this.newSection.prerequisitos.push(seccionId);
+    }
+  }
+
+  isPrerequisitoSelectedCreate(seccionId: string): boolean {
+    return this.newSection.prerequisitos.includes(seccionId);
+  }
+
+  togglePrerequisitoEdit(seccionId: string) {
+    if (!this.selectedSection) return;
+    if (!this.selectedSection.prerequisitos) {
+      this.selectedSection.prerequisitos = [];
+    }
+    const index = this.selectedSection.prerequisitos.indexOf(seccionId);
+    if (index > -1) {
+      this.selectedSection.prerequisitos.splice(index, 1);
+    } else {
+      this.selectedSection.prerequisitos.push(seccionId);
+    }
+  }
+
+  isPrerequisitoSelectedEdit(seccionId: string): boolean {
+    return this.selectedSection?.prerequisitos?.includes(seccionId) || false;
+  }
+
+  get seccionesDisponiblesParaPrerequisitos(): Seccion[] {
+    // Para crear: todas las secciones existentes
+    // Para editar: todas excepto la actual y sus dependientes
+    if (this.showEditModal && this.selectedSection) {
+      return this.secciones.filter(s => s.id !== this.selectedSection!.id);
+    }
+    return this.secciones;
+  }
+
+  getSeccionTitulo(seccionId: string): string {
+    const seccion = this.secciones.find(s => s.id === seccionId);
+    return seccion ? `${seccion.orden + 1}. ${seccion.titulo}` : 'Desconocida';
   }
 }
