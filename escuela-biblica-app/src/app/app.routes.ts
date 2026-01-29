@@ -46,6 +46,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/courses/cursos.component').then(m => m.CursosComponent)
   },
   {
+    path: 'cursos/:cursoId/secciones',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/sections/secciones.component').then(m => m.SeccionesComponent)
+  },
+  {
+    path: 'secciones/:seccionId/lecciones',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/lessons/lecciones.component').then(m => m.LeccionesComponent)
+  },
+  {
     path: 'profesor',
     canActivate: [authGuard, profesorGuard],
     loadComponent: () => import('./features/dashboards/profesor-dashboard/profesor-dashboard.component').then(m => m.ProfesorDashboardComponent)

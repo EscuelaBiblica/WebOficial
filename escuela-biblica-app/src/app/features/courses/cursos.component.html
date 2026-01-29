@@ -114,6 +114,12 @@
                     <td class="text-center">
                       <div class="btn-group" role="group">
                         <button
+                          class="btn btn-sm btn-outline-info"
+                          (click)="viewSections(curso.id)"
+                          title="Ver secciones">
+                          <i class="fas fa-list-alt"></i>
+                        </button>
+                        <button
                           class="btn btn-sm btn-outline-success"
                           (click)="openEnrollModal(curso)"
                           title="Inscribir estudiantes">

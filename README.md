@@ -586,32 +586,37 @@ interface ProgresoEstudiante {
 
 ## 🚦 Roadmap de Implementación
 
-### **Fase 1: Setup Inicial (Semana 1-2)**
-- [ ] Crear proyecto Angular 17
-- [ ] Configurar Firebase
-- [ ] Migrar páginas estáticas actuales
-- [ ] Implementar routing básico
-- [ ] Diseñar estructura de carpetas
+### **Fase 1: Setup Inicial (Semana 1-2)** ✅ COMPLETADA
+- [x] Crear proyecto Angular 17
+- [x] Configurar Firebase
+- [x] Migrar páginas estáticas actuales
+- [x] Implementar routing básico
+- [x] Diseñar estructura de carpetas
 
-### **Fase 2: Autenticación (Semana 3)**
-- [ ] Implementar login/registro
-- [ ] Crear guards por rol
-- [ ] Sistema de recuperación de contraseña
-- [ ] Perfiles de usuario
+### **Fase 2: Autenticación (Semana 3)** ✅ COMPLETADA
+- [x] Implementar login/registro
+- [x] Crear guards por rol
+- [x] Sistema de recuperación de contraseña
+- [x] Perfiles de usuario
+- [x] CRUD completo de usuarios (admin)
+- [x] Integración con Cloudinary para fotos de perfil
 
-### **Fase 3: Dashboard y Navegación (Semana 4)**
-- [ ] Dashboard de admin
-- [ ] Dashboard de profesor
-- [ ] Dashboard de estudiante
-- [ ] Navegación lateral y header
+### **Fase 3: Dashboard y Navegación (Semana 4)** ✅ COMPLETADA
+- [x] Dashboard de admin con estadísticas reales
+- [x] Dashboard de profesor
+- [x] Dashboard de estudiante
+- [x] Navegación y header
+- [x] Detección de sesión en home
 
-### **Fase 4: Gestión de Cursos (Semana 5-6)**
-- [ ] CRUD de cursos (admin)
-- [ ] Listado de cursos
-- [ ] Detalle de curso
-- [ ] Inscripción de estudiantes
+### **Fase 4: Gestión de Cursos (Semana 5-6)** ✅ COMPLETADA
+- [x] CRUD de cursos (admin)
+- [x] Listado de cursos con filtros
+- [x] Inscripción de estudiantes (modal multi-selección)
+- [x] Asignación de profesores
+- [x] Subida de imágenes de cursos (Cloudinary)
+- [x] Sincronización automática cursosInscritos/cursosAsignados
 
-### **Fase 5: Secciones y Lecciones (Semana 7-8)**
+### **Fase 5: Secciones y Lecciones (Semana 7-8)** ⏳ SIGUIENTE FASE
 - [ ] CRUD de secciones
 - [ ] Creación de lecciones (texto, imagen, PDF, YouTube)
 - [ ] Editor de texto enriquecido
