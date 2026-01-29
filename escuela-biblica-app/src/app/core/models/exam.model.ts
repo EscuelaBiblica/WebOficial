@@ -15,10 +15,12 @@ export interface Examen {
   fechaCreacion: Date;
 }
 
+export type TipoPregunta = 'multiple_unica' | 'multiple_multiple' | 'verdadero_falso' | 'corta' | 'completar';
+
 export interface Pregunta {
   id: string;
   texto: string;
-  tipo: 'multiple_unica' | 'multiple_multiple' | 'verdadero_falso' | 'corta' | 'completar';
+  tipo: TipoPregunta;
   opciones?: OpcionRespuesta[];
   respuestaCorrecta: string | string[];
   puntos: number;

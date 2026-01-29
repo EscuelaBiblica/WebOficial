@@ -93,6 +93,30 @@
                 </div>
               </div>
             </div>
+
+            <!-- Exámenes de la Sección -->
+            <div class="examenes-section" *ngIf="seccion.examenesData.length > 0">
+              <div class="examenes-header">
+                <i class="fas fa-clipboard-check"></i>
+                <span>Exámenes</span>
+              </div>
+              <div class="examen-item"
+                   *ngFor="let examen of seccion.examenesData"
+                   [class.active]="contenidoActual.tipo === 'examen' && contenidoActual.elemento?.id === examen.id"
+                   (click)="loadExamen(seccion, examen)">
+                <div class="examen-info">
+                  <i class="fas fa-file-alt"></i>
+                  <span class="examen-titulo">{{ examen.titulo }}</span>
+                </div>
+                <span class="badge"
+                      [class.bg-success]="getEstadoExamen(examen) === 'Disponible'"
+                      [class.bg-warning]="getEstadoExamen(examen) === 'Próximamente'"
+                      [class.bg-danger]="getEstadoExamen(examen) === 'Cerrado' || getEstadoExamen(examen) === 'Sin intentos'"
+                      [class.text-dark]="getEstadoExamen(examen) === 'Próximamente'">
+                  {{ getEstadoExamen(examen) }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -304,6 +328,185 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
+
+      <!-- Examen Content -->
+      <div class="content-wrapper" *ngIf="getExamenActual() as examen">
+        <div class="content-header">
+          <span class="badge mb-2"
+                [class.bg-success]="getEstadoExamen(examen) === 'Disponible'"
+                [class.bg-warning]="getEstadoExamen(examen) === 'Próximamente'"
+                [class.bg-danger]="getEstadoExamen(examen) === 'Cerrado' || getEstadoExamen(examen) === 'Sin intentos'"
+                [class.text-dark]="getEstadoExamen(examen) === 'Próximamente'">
+            <i class="fas fa-clipboard-check"></i> Examen - {{ getEstadoExamen(examen) }}
+          </span>
+          <h2>{{ examen.titulo }}</h2>
+          <p class="text-muted" *ngIf="contenidoActual.seccionTitulo">
+            <i class="fas fa-folder"></i> {{ contenidoActual.seccionTitulo }}
+          </p>
+        </div>
+
+        <div class="content-body">
+          <!-- Descripción -->
+          <div class="description-section" *ngIf="examen.descripcion">
+            <h5><i class="fas fa-info-circle"></i> Descripción</h5>
+            <p>{{ examen.descripcion }}</p>
+          </div>
+
+          <!-- Detalles del Examen -->
+          <div class="exam-details mt-4">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <strong><i class="fas fa-calendar-alt"></i> Disponible desde:</strong>
+                  <span>{{ examen.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="detail-item">
+                  <strong><i class="fas fa-calendar-times"></i> Cierra:</strong>
+                  <span>{{ examen.fechaFin | date:'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+                <div class="detail-item">
+                  <strong><i class="fas fa-clock"></i> Duración:</strong>
+                  <span class="badge bg-info">{{ examen.duracionMinutos }} minutos</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="detail-item">
+                  <strong><i class="fas fa-percentage"></i> Ponderación:</strong>
+                  <span class="badge bg-info">{{ examen.ponderacion }}%</span>
+                </div>
+                <div class="detail-item">
+                  <strong><i class="fas fa-chart-line"></i> Nota mínima:</strong>
+                  <span class="badge bg-warning text-dark">{{ examen.notaMinima }}%</span>
+                </div>
+                <div class="detail-item">
+                  <strong><i class="fas fa-question-circle"></i> Preguntas:</strong>
+                  <span class="badge bg-secondary">{{ examen.preguntas.length }}</span>
+                </div>
+                <div class="detail-item">
+                  <strong><i class="fas fa-redo"></i> Intentos permitidos:</strong>
+                  <span class="badge bg-primary">{{ examen.intentosPermitidos }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Opciones adicionales -->
+            <div class="row mt-3">
+              <div class="col-12">
+                <div class="alert alert-light border">
+                  <div class="d-flex gap-3 flex-wrap">
+                    <span *ngIf="examen.mezclarPreguntas">
+                      <i class="fas fa-random text-info"></i> Las preguntas se mezclarán
+                    </span>
+                    <span *ngIf="examen.mostrarRespuestas">
+                      <i class="fas fa-eye text-success"></i> Se mostrarán las respuestas correctas
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado del estudiante -->
+          <div class="student-status mt-4" *ngIf="userRole === 'estudiante'">
+            <!-- Intentos realizados -->
+            <div class="card border-primary mb-3">
+              <div class="card-header bg-primary text-white">
+                <i class="fas fa-chart-bar"></i> Tu Progreso
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <p class="mb-2">
+                      <strong><i class="fas fa-list-ol"></i> Intentos realizados:</strong>
+                      {{ examen.intentosPermitidos - examen.intentosRestantes }} / {{ examen.intentosPermitidos }}
+                    </p>
+                    <p class="mb-2">
+                      <strong><i class="fas fa-redo"></i> Intentos restantes:</strong>
+                      <span class="badge" [class.bg-success]="examen.intentosRestantes > 0" [class.bg-danger]="examen.intentosRestantes === 0">
+                        {{ examen.intentosRestantes }}
+                      </span>
+                    </p>
+                  </div>
+                  <div class="col-md-6" *ngIf="getMejorCalificacion(examen) !== null">
+                    <p class="mb-2">
+                      <strong><i class="fas fa-star"></i> Mejor calificación:</strong>
+                      <span class="badge bg-success">{{ getMejorCalificacion(examen)?.toFixed(2) }}%</span>
+                    </p>
+                    <p class="mb-0">
+                      <strong><i class="fas fa-calculator"></i> Puntos obtenidos:</strong>
+                      {{ ((getMejorCalificacion(examen) || 0) * examen.ponderacion / 100).toFixed(2) }} puntos
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Historial de intentos -->
+            <div class="card mb-3" *ngIf="examen.intentosUsuario.length > 0">
+              <div class="card-header">
+                <i class="fas fa-history"></i> Historial de Intentos
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th>Intento</th>
+                        <th>Fecha</th>
+                        <th>Calificación</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let intento of examen.intentosUsuario">
+                        <td>#{{ intento.numeroIntento }}</td>
+                        <td>{{ intento.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td>
+                          <span class="badge"
+                                *ngIf="intento.calificacion !== undefined"
+                                [class.bg-success]="intento.calificacion >= examen.notaMinima"
+                                [class.bg-danger]="intento.calificacion < examen.notaMinima">
+                            {{ intento.calificacion.toFixed(2) }}%
+                          </span>
+                          <span *ngIf="intento.calificacion === undefined">-</span>
+                        </td>
+                        <td>
+                          <span class="badge"
+                                [class.bg-success]="intento.estado === 'finalizado'"
+                                [class.bg-warning]="intento.estado === 'en_progreso'"
+                                [class.bg-danger]="intento.estado === 'tiempo_agotado'"
+                                [class.text-dark]="intento.estado === 'en_progreso'">
+                            {{ intento.estado === 'finalizado' ? 'Finalizado' : intento.estado === 'en_progreso' ? 'En Progreso' : 'Tiempo Agotado' }}
+                          </span>
+                        </td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary"
+                                  *ngIf="intento.estado === 'finalizado'"
+                                  (click)="verResultadosExamen(examen.id, intento.id)">
+                            <i class="fas fa-eye"></i> Ver Resultados
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón para tomar examen -->
+            <div class="alert alert-info" *ngIf="!isExamenDisponible(examen) && getEstadoExamen(examen) !== 'Disponible'">
+              <i class="fas fa-info-circle"></i>
+              {{ getEstadoExamen(examen) === 'Próximamente' ? 'Este examen aún no está disponible.' :
+                 getEstadoExamen(examen) === 'Cerrado' ? 'Este examen ya ha cerrado.' :
+                 'Has agotado todos tus intentos para este examen.' }}
+            </div>
+
+            <button class="btn btn-success btn-lg w-100"
+                    *ngIf="isExamenDisponible(examen)"
+                    (click)="tomarExamen(examen.id)">
+              <i class="fas fa-play"></i> Comenzar Examen
+            </button>
+          </div>
+        </div>
+      </div>

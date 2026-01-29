@@ -66,6 +66,31 @@ export const routes: Routes = [
     loadComponent: () => import('./features/tasks/tareas.component').then(m => m.TareasComponent)
   },
   {
+    path: 'secciones/:seccionId/examenes',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/exams/examenes.component').then(m => m.ExamenesComponent)
+  },
+  {
+    path: 'secciones/:seccionId/examenes/crear',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/exams/crear-examen.component').then(m => m.CrearExamenComponent)
+  },
+  {
+    path: 'secciones/:seccionId/examenes/:id/editar',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/exams/crear-examen.component').then(m => m.CrearExamenComponent)
+  },
+  {
+    path: 'examenes/:id/tomar',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/exams/tomar-examen.component').then(m => m.TomarExamenComponent)
+  },
+  {
+    path: 'examenes/:examenId/resultados/:intentoId',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/exams/resultado-examen.component').then(m => m.ResultadoExamenComponent)
+  },
+  {
     path: 'tareas/:tareaId/entregas',
     canActivate: [authGuard, profesorGuard],
     loadComponent: () => import('./features/tasks/lista-entregas.component').then(m => m.ListaEntregasComponent)

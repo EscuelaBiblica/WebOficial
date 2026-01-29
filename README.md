@@ -626,21 +626,28 @@ interface ProgresoEstudiante {
 - [x] Sanitización de URLs para seguridad
 
 ### **Fase 6: Sistema de Tareas (Semana 9-10)** ✅ COMPLETADA
-- [x] Creación de tareas
+- [x] Creación de tareas (CRUD completo)
 - [x] Configuración de fechas y entregas
 - [x] Interfaz de envío para estudiantes
-- [x] Subida de archivos
-- [x] Calificación de tareas
-- [x] Retroalimentación
+- [x] Subida de archivos (Cloudinary)
+- [x] Sistema de calificaciones con ponderación
+- [x] Retroalimentación personalizada
+- [x] Vista de lista de entregas para profesor
+- [x] Conversión de Timestamps
+- [x] Navegación fluida estudiante/profesor
+- [x] Mostrar calificación al estudiante con detalles
+- [x] Guardar calificaciones en colección separada
+- [x] Cálculo automático de puntos finales
 
 ### **Fase 7: Sistema de Exámenes (Semana 11-13)** ⏳ SIGUIENTE FASE
-- [ ] Creación de exámenes
-- [ ] Banco de preguntas
-- [ ] Importación desde Excel
+- [ ] Creación de exámenes (configuración completa)
+- [ ] Banco de preguntas con tipos múltiples
+- [ ] Importación desde Excel (.xlsx)
 - [ ] Interfaz de examen para estudiantes
-- [ ] Temporizador
+- [ ] Temporizador y límite de intentos
 - [ ] Calificación automática
-- [ ] Mostrar resultados
+- [ ] Mostrar resultados y feedback
+- [ ] Integración con sistema de calificaciones
 
 ### **Fase 8: Calificaciones y Progreso (Semana 14-15)**
 - [ ] Configuración de ponderaciones

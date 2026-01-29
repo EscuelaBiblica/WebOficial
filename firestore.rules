@@ -1,0 +1,128 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Función para verificar si el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Función para verificar si el usuario es admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol == 'admin';
+    }
+    
+    // Función para verificar si el usuario es profesor
+    function isProfesor() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol == 'profesor';
+    }
+    
+    // Función para verificar si el usuario es estudiante
+    function isEstudiante() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rol == 'estudiante';
+    }
+    
+    // Reglas para usuarios
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para cursos
+    match /cursos/{cursoId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Reglas para secciones
+    match /secciones/{seccionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isProfesor();
+      allow update: if isAdmin() || isProfesor();
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para lecciones
+    match /lecciones/{leccionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() || isProfesor();
+      allow update: if isAdmin() || isProfesor();
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para lecciones como subcolección (legacy)
+    match /cursos/{cursoId}/lecciones/{leccionId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isProfesor();
+    }
+    
+    // Reglas para tareas
+    match /tareas/{tareaId} {
+      allow read: if isAuthenticated();
+      allow create: if isProfesor() || isAdmin();
+      allow update: if isProfesor() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para entregas de tareas
+    match /entregas/{entregaId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      // Permitir actualización al estudiante dueño, profesores y admins
+      allow update: if isAuthenticated() && 
+                     (resource.data.estudianteId == request.auth.uid || 
+                      isProfesor() || 
+                      isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para calificaciones
+    match /calificaciones/{calificacionId} {
+      allow read: if isAuthenticated();
+      allow write: if isProfesor() || isAdmin();
+    }
+    
+    // ==================== NUEVAS REGLAS PARA EXÁMENES ====================
+    
+    // Reglas para exámenes
+    match /examenes/{examenId} {
+      // Cualquier usuario autenticado puede leer exámenes
+      allow read: if isAuthenticated();
+      
+      // Solo profesores y admins pueden crear, actualizar y eliminar exámenes
+      allow create: if isProfesor() || isAdmin();
+      allow update: if isProfesor() || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para intentos de exámenes
+    match /intentos/{intentoId} {
+      // Leer: El estudiante dueño del intento, profesores y admins
+      allow read: if isAuthenticated() && 
+                   (resource.data.estudianteId == request.auth.uid || 
+                    isProfesor() || 
+                    isAdmin());
+      
+      // Crear: Cualquier estudiante autenticado puede crear un intento
+      allow create: if isAuthenticated() && 
+                     request.resource.data.estudianteId == request.auth.uid;
+      
+      // Actualizar: El estudiante dueño (para guardar respuestas), profesores y admins
+      allow update: if isAuthenticated() && 
+                     (resource.data.estudianteId == request.auth.uid || 
+                      isProfesor() || 
+                      isAdmin());
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // ====================================================================
+  }
+}

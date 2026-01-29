@@ -7,15 +7,24 @@ import { CourseService } from '../../core/services/course.service';
 import { SectionService } from '../../core/services/section.service';
 import { LessonService } from '../../core/services/lesson.service';
 import { TaskService } from '../../core/services/task.service';
+import { ExamService } from '../../core/services/exam.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Curso } from '../../core/models/course.model';
 import { Seccion, ElementoSeccion } from '../../core/models/section.model';
 import { Leccion } from '../../core/models/lesson.model';
 import { Tarea, EntregaTarea } from '../../core/models/task.model';
+import { Examen, IntentoExamen } from '../../core/models/exam.model';
 
 interface SeccionExpandida extends Seccion {
   expanded: boolean;
   lecciones: LeccionConTareas[];
+  examenesData: ExamenConIntentos[];
+}
+
+interface ExamenConIntentos extends Examen {
+  intentosUsuario: IntentoExamen[];
+  disponible: boolean;
+  intentosRestantes: number;
 }
 
 interface LeccionConTareas extends Leccion {
@@ -42,7 +51,7 @@ export class CourseViewerComponent implements OnInit {
   contenidoActual: {
     tipo: 'leccion' | 'tarea' | 'examen' | null;
     seccionTitulo: string;
-    elemento: Leccion | Tarea | null;
+    elemento: Leccion | Tarea | ExamenConIntentos | null;
     entrega?: EntregaTarea | null;
   } = {
     tipo: null,
@@ -57,6 +66,7 @@ export class CourseViewerComponent implements OnInit {
     private sectionService: SectionService,
     private lessonService: LessonService,
     private taskService: TaskService,
+    private examService: ExamService,
     private authService: AuthService,
     private sanitizer: DomSanitizer
   ) {}
@@ -101,9 +111,10 @@ export class CourseViewerComponent implements OnInit {
       // Cargar secciones
       const seccionesData = await firstValueFrom(this.sectionService.getSectionsByCourse(cursoId));
 
-      // Cargar lecciones de cada sección con sus tareas
+      // Cargar lecciones y exámenes de cada sección
       this.secciones = await Promise.all(
         seccionesData.map(async (seccion) => {
+          // Cargar lecciones con sus tareas
           const lecciones: LeccionConTareas[] = await Promise.all(
             seccion.elementos
               .filter(elemento => elemento.tipo === 'leccion')
@@ -135,10 +146,14 @@ export class CourseViewerComponent implements OnInit {
               })
           ).then(lecciones => lecciones.filter((l): l is LeccionConTareas => l !== null));
 
+          // Cargar exámenes de esta sección
+          const examenesData: ExamenConIntentos[] = await this.loadExamenesSeccion(seccion.id);
+
           return {
             ...seccion,
             expanded: false,
-            lecciones
+            lecciones,
+            examenesData
           };
         })
       );
@@ -235,6 +250,13 @@ export class CourseViewerComponent implements OnInit {
     return null;
   }
 
+  getExamenActual(): ExamenConIntentos | null {
+    if (this.contenidoActual.tipo === 'examen') {
+      return this.contenidoActual.elemento as ExamenConIntentos;
+    }
+    return null;
+  }
+
   getYoutubeEmbedUrl(url: string): SafeResourceUrl {
     if (!url) {
       console.warn('URL de YouTube vacía');
@@ -316,5 +338,79 @@ export class CourseViewerComponent implements OnInit {
   isTaskOverdue(tarea: Tarea): boolean {
     if (!tarea.fechaFin) return false;
     return new Date(tarea.fechaFin) < new Date();
+  }
+
+  async loadExamenesSeccion(seccionId: string): Promise<ExamenConIntentos[]> {
+    try {
+      const examenes = await this.examService.getExamsBySection(seccionId);
+
+      // Para cada examen, obtener los intentos del usuario actual (si es estudiante)
+      const examenesConIntentos: ExamenConIntentos[] = await Promise.all(
+        examenes.map(async (examen) => {
+          let intentosUsuario: IntentoExamen[] = [];
+
+          if (this.userRole === 'estudiante') {
+            intentosUsuario = await this.examService.getAttemptsByStudentAndExam(
+              this.currentUser.id,
+              examen.id
+            );
+          }
+
+          const disponible = this.examService.isExamAvailable(examen);
+          const intentosRealizados = intentosUsuario.filter(i => i.estado === 'finalizado').length;
+          const intentosRestantes = examen.intentosPermitidos - intentosRealizados;
+
+          return {
+            ...examen,
+            intentosUsuario,
+            disponible,
+            intentosRestantes
+          };
+        })
+      );
+
+      return examenesConIntentos;
+    } catch (error) {
+      console.error('Error cargando exámenes de la sección:', error);
+      return [];
+    }
+  }
+
+  async loadExamen(seccion: SeccionExpandida, examen: ExamenConIntentos) {
+    this.contenidoActual = {
+      tipo: 'examen',
+      seccionTitulo: seccion.titulo,
+      elemento: examen,
+      entrega: null
+    };
+    this.closeSidebarOnMobile();
+  }
+
+  tomarExamen(examenId: string) {
+    this.router.navigate(['/examenes', examenId, 'tomar']);
+  }
+
+  verResultadosExamen(examenId: string, intentoId: string) {
+    this.router.navigate(['/examenes', examenId, 'resultados', intentoId]);
+  }
+
+  isExamenDisponible(examen: ExamenConIntentos): boolean {
+    return examen.disponible && examen.intentosRestantes > 0;
+  }
+
+  getEstadoExamen(examen: ExamenConIntentos): string {
+    if (!examen.disponible) {
+      const ahora = new Date();
+      if (ahora < examen.fechaInicio) return 'Próximamente';
+      if (ahora > examen.fechaFin) return 'Cerrado';
+    }
+    if (examen.intentosRestantes <= 0) return 'Sin intentos';
+    return 'Disponible';
+  }
+
+  getMejorCalificacion(examen: ExamenConIntentos): number | null {
+    const intentosFinalizados = examen.intentosUsuario.filter(i => i.estado === 'finalizado' && i.calificacion !== undefined);
+    if (intentosFinalizados.length === 0) return null;
+    return Math.max(...intentosFinalizados.map(i => i.calificacion!));
   }
 }

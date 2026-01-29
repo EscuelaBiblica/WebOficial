@@ -241,6 +241,76 @@
   }
 }
 
+/* Exámenes */
+.examenes-section {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #dee2e6;
+
+  .examenes-header {
+    padding: 0.5rem 1rem;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+
+    i {
+      color: #0d6efd;
+    }
+  }
+
+  .examen-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+
+    .examen-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+
+      i {
+        color: #6c757d;
+        width: 16px;
+      }
+
+      .examen-titulo {
+        color: #495057;
+        font-size: 0.9rem;
+      }
+    }
+
+    &:hover {
+      background: #f8f9fa;
+      border-left-color: #0d6efd;
+    }
+
+    &.active {
+      background: white;
+      border-left-color: #0d6efd;
+
+      .examen-info {
+        .examen-titulo {
+          color: #0d6efd;
+          font-weight: 500;
+        }
+
+        i {
+          color: #0d6efd;
+        }
+      }
+    }
+  }
+}
+
 /* Content Area */
 .content-area {
   flex: 1;
@@ -383,6 +453,32 @@
   padding: 1.5rem;
   border-radius: 0.5rem;
   border-left: 4px solid #0d6efd;
+}
+
+/* Exam Details */
+.exam-details {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  border-left: 4px solid #28a745;
+}
+
+.student-status {
+  .table {
+    margin-bottom: 0;
+
+    th {
+      background: #f8f9fa;
+      color: #495057;
+      font-weight: 600;
+      border-top: none;
+    }
+
+    td, th {
+      vertical-align: middle;
+      padding: 0.75rem;
+    }
+  }
 }
 
 .detail-item {
