@@ -47,17 +47,22 @@ export const routes: Routes = [
   },
   {
     path: 'cursos/:cursoId/secciones',
-    canActivate: [authGuard],
+    canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/sections/secciones.component').then(m => m.SeccionesComponent)
   },
   {
-    path: 'secciones/:seccionId/lecciones',
+    path: 'curso/:cursoId',
     canActivate: [authGuard],
+    loadComponent: () => import('./features/course-viewer/course-viewer.component').then(m => m.CourseViewerComponent)
+  },
+  {
+    path: 'secciones/:seccionId/lecciones',
+    canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/lessons/lecciones.component').then(m => m.LeccionesComponent)
   },
   {
     path: 'secciones/:seccionId/tareas',
-    canActivate: [authGuard],
+    canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/tasks/tareas.component').then(m => m.TareasComponent)
   },
   {

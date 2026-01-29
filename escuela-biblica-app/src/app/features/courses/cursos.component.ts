@@ -332,6 +332,7 @@ export class CursosComponent implements OnInit {
   }
 
   goToDashboard() {
+    // Solo accesible para admins
     this.router.navigate(['/admin']);
   }
 

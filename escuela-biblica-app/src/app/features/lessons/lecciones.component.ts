@@ -283,9 +283,22 @@ export class LeccionesComponent implements OnInit {
     const match = url.match(regExp);
     return (match && match[7].length === 11) ? match[7] : null;
   }
+
   goToDashboard() {
-    this.router.navigate(['/admin']);
+    this.authService.getCurrentUserProfile().then(currentUser => {
+      if (currentUser) {
+        const userRole = currentUser.rol;
+        if (userRole === 'admin') {
+          this.router.navigate(['/admin']);
+        } else if (userRole === 'profesor') {
+          this.router.navigate(['/profesor']);
+        } else if (userRole === 'estudiante') {
+          this.router.navigate(['/estudiante']);
+        }
+      }
+    });
   }
+
   goBack() {
     if (this.seccion) {
       this.router.navigate(['/cursos', this.seccion.cursoId, 'secciones']);

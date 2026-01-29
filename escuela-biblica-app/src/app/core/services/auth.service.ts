@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { 
-  Auth, 
-  signInWithEmailAndPassword, 
+import {
+  Auth,
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   user,
@@ -10,12 +10,12 @@ import {
   signInWithPopup,
   GoogleAuthProvider
 } from '@angular/fire/auth';
-import { 
-  Firestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc 
+import {
+  Firestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc
 } from '@angular/fire/firestore';
 import { Observable, from, of, switchMap } from 'rxjs';
 import { UserModel, UserRole } from '../models/user.model';
@@ -26,10 +26,10 @@ import { UserModel, UserRole } from '../models/user.model';
 export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
-  
+
   // Observable del usuario autenticado
   user$ = user(this.auth);
-  
+
   // Observable del perfil completo del usuario
   userProfile$: Observable<UserModel | null> = this.user$.pipe(
     switchMap(user => {
@@ -59,10 +59,10 @@ export class AuthService {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(this.auth, provider);
-      
+
       // Verificar si el usuario ya existe en Firestore
       const userDoc = await this.getUserProfile(result.user.uid);
-      
+
       // Si no existe, crear perfil básico
       if (!userDoc) {
         await this.createUserProfile(result.user.uid, {
@@ -73,7 +73,7 @@ export class AuthService {
           fotoPerfil: result.user.photoURL || undefined
         });
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error en login con Google:', error);
@@ -85,23 +85,23 @@ export class AuthService {
    * Registro de nuevo usuario (solo Admin puede usar esto)
    */
   async register(
-    email: string, 
-    password: string, 
+    email: string,
+    password: string,
     userData: Partial<UserModel>
   ): Promise<UserCredential> {
     try {
       const userCredential = await createUserWithEmailAndPassword(
-        this.auth, 
-        email, 
+        this.auth,
+        email,
         password
       );
-      
+
       // Crear perfil en Firestore
       await this.createUserProfile(userCredential.user.uid, {
         email,
         ...userData
       });
-      
+
       return userCredential;
     } catch (error) {
       console.error('Error en registro:', error);
@@ -128,7 +128,7 @@ export class AuthService {
     try {
       const userDocRef = doc(this.firestore, `users/${uid}`);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (userDoc.exists()) {
         return userDoc.data() as UserModel;
       }
@@ -143,7 +143,7 @@ export class AuthService {
    * Crear perfil de usuario en Firestore
    */
   private async createUserProfile(
-    uid: string, 
+    uid: string,
     data: Partial<UserModel>
   ): Promise<void> {
     try {
@@ -160,7 +160,7 @@ export class AuthService {
         cursosInscritos: [],
         cursosAsignados: []
       };
-      
+
       await setDoc(userDocRef, userData);
     } catch (error) {
       console.error('Error creando perfil:', error);
@@ -182,10 +182,19 @@ export class AuthService {
   }
 
   /**
-   * Obtener usuario actual
+   * Obtener usuario actual de Firebase Auth
    */
   getCurrentUser(): User | null {
     return this.auth.currentUser;
+  }
+
+  /**
+   * Obtener perfil completo del usuario actual con datos de Firestore
+   */
+  async getCurrentUserProfile(): Promise<UserModel | null> {
+    const user = this.auth.currentUser;
+    if (!user) return null;
+    return this.getUserProfile(user.uid);
   }
 
   /**

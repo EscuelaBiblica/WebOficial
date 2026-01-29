@@ -88,7 +88,7 @@ export class ProfesorDashboardComponent implements OnInit {
   }
 
   verCurso(cursoId: string) {
-    this.router.navigate(['/cursos', cursoId, 'secciones']);
+    this.router.navigate(['/curso', cursoId]);
   }
 
   goToDashboard() {

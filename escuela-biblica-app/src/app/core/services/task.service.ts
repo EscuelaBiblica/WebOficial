@@ -279,7 +279,7 @@ export class TaskService {
    */
   isTaskOverdue(tarea: Tarea): boolean {
     const now = new Date();
-    const fechaFin = tarea.fechaFin instanceof Date ? tarea.fechaFin : new Date(tarea.fechaFin);
+    const fechaFin = tarea.fechaFin instanceof Date ? tarea.fechaFin : (tarea.fechaFin as any).toDate();
     return now > fechaFin;
   }
 
@@ -288,8 +288,8 @@ export class TaskService {
    */
   isTaskAvailable(tarea: Tarea): boolean {
     const now = new Date();
-    const fechaInicio = tarea.fechaInicio instanceof Date ? tarea.fechaInicio : new Date(tarea.fechaInicio);
-    const fechaFin = tarea.fechaFin instanceof Date ? tarea.fechaFin : new Date(tarea.fechaFin);
+    const fechaInicio = tarea.fechaInicio instanceof Date ? tarea.fechaInicio : (tarea.fechaInicio as any).toDate();
+    const fechaFin = tarea.fechaFin instanceof Date ? tarea.fechaFin : (tarea.fechaFin as any).toDate();
     return now >= fechaInicio && now <= fechaFin;
   }
 }
