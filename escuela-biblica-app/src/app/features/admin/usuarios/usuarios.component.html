@@ -2,7 +2,7 @@
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">
+      <a class="navbar-brand" style="cursor: pointer;" (click)="goToDashboard()">
         <img src="assets/img/logo.svg" alt="Logo" height="40">
       </a>
       <div class="d-flex align-items-center">
@@ -31,17 +31,17 @@
       <div class="col-md-4 mb-3">
         <div class="input-group">
           <span class="input-group-text"><i class="fas fa-search"></i></span>
-          <input 
-            type="text" 
-            class="form-control" 
+          <input
+            type="text"
+            class="form-control"
             placeholder="Buscar por nombre, apellido o email..."
             [(ngModel)]="searchTerm"
             (ngModelChange)="applyFilters()">
         </div>
       </div>
       <div class="col-md-3 mb-3">
-        <select 
-          class="form-select" 
+        <select
+          class="form-select"
           [(ngModel)]="filterRole"
           (ngModelChange)="applyFilters()">
           <option value="todos">Todos los roles</option>
@@ -51,7 +51,7 @@
         </select>
       </div>
       <div class="col-md-3 mb-3">
-        <select 
+        <select
           class="form-select"
           [(ngModel)]="filterStatus"
           (ngModelChange)="applyFilters()">
@@ -100,10 +100,10 @@
                         <div class="user-avatar me-2" *ngIf="!user.fotoPerfil">
                           {{ user.nombre.charAt(0) }}{{ user.apellido.charAt(0) }}
                         </div>
-                        <img 
-                          *ngIf="user.fotoPerfil" 
-                          [src]="user.fotoPerfil" 
-                          [alt]="user.nombre" 
+                        <img
+                          *ngIf="user.fotoPerfil"
+                          [src]="user.fotoPerfil"
+                          [alt]="user.nombre"
                           class="user-avatar-img me-2">
                         <div>
                           <strong>{{ user.nombre }} {{ user.apellido }}</strong>
@@ -133,20 +133,20 @@
                     </td>
                     <td class="text-center">
                       <div class="btn-group" role="group">
-                        <button 
-                          class="btn btn-sm btn-outline-info" 
+                        <button
+                          class="btn btn-sm btn-outline-info"
                           (click)="viewUser(user)"
                           title="Ver detalles">
                           <i class="fas fa-eye"></i>
                         </button>
-                        <button 
-                          class="btn btn-sm btn-outline-primary" 
+                        <button
+                          class="btn btn-sm btn-outline-primary"
                           (click)="editUser(user)"
                           title="Editar">
                           <i class="fas fa-edit"></i>
                         </button>
-                        <button 
-                          class="btn btn-sm btn-outline-warning" 
+                        <button
+                          class="btn btn-sm btn-outline-warning"
                           (click)="toggleStatus(user)"
                           [title]="user.activo ? 'Desactivar' : 'Activar'">
                           <i class="fas" [ngClass]="user.activo ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
@@ -208,9 +208,9 @@
             <div class="text-center mb-2" *ngIf="imagePreviewEdit">
               <img [src]="imagePreviewEdit" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;">
             </div>
-            <input 
-              type="file" 
-              class="form-control" 
+            <input
+              type="file"
+              class="form-control"
               accept="image/*"
               (change)="onImageSelectedEdit($event)"
               [disabled]="uploadingImage">
@@ -273,9 +273,9 @@
             <div class="text-center mb-2" *ngIf="imagePreviewCreate">
               <img [src]="imagePreviewCreate" class="img-thumbnail" style="max-width: 150px; max-height: 150px; object-fit: cover;">
             </div>
-            <input 
-              type="file" 
-              class="form-control" 
+            <input
+              type="file"
+              class="form-control"
               accept="image/*"
               (change)="onImageSelectedCreate($event)"
               [disabled]="uploadingImage">

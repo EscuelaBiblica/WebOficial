@@ -1,7 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { CourseService } from '../../../core/services/course.service';
+import { SectionService } from '../../../core/services/section.service';
+import { TaskService } from '../../../core/services/task.service';
 import { Router } from '@angular/router';
+import { Curso } from '../../../core/models/course.model';
+import { Seccion } from '../../../core/models/section.model';
+import { EntregaTarea } from '../../../core/models/task.model';
+
+interface CursoConEstadisticas extends Curso {
+  totalSecciones: number;
+  tareasRevisar: number;
+}
 
 @Component({
   selector: 'app-profesor-dashboard',
@@ -12,48 +24,75 @@ import { Router } from '@angular/router';
 })
 export class ProfesorDashboardComponent implements OnInit {
   userName: string = '';
-  cursos: any[] = [];
+  cursos: CursoConEstadisticas[] = [];
+  loading: boolean = true;
+  currentUserId: string = '';
 
   constructor(
     private authService: AuthService,
+    private courseService: CourseService,
+    private sectionService: SectionService,
+    private taskService: TaskService,
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.authService.userProfile$.subscribe(profile => {
+  async ngOnInit() {
+    this.authService.userProfile$.subscribe(async profile => {
       if (profile) {
         this.userName = profile.nombre + ' ' + profile.apellido;
-        this.cargarCursosAsignados();
+        this.currentUserId = profile.id || '';
+        await this.cargarCursosAsignados();
       }
     });
   }
 
-  cargarCursosAsignados() {
-    // Datos de ejemplo - En producción esto vendría de Firestore
-    this.cursos = [
-      {
-        id: 1,
-        titulo: 'Evangelismo Personal',
-        nivel: 'Básico',
-        estudiantes: 15,
-        proximaClase: new Date('2026-02-02'),
-        imagen: 'assets/img/portfolio/1.png',
-        tareasRevisar: 5
-      },
-      {
-        id: 2,
-        titulo: 'Homilética',
-        nivel: 'Avanzado',
-        estudiantes: 12,
-        proximaClase: new Date('2026-02-02'),
-        imagen: 'assets/img/portfolio/9.png',
-        tareasRevisar: 3
-      }
-    ];
+  async cargarCursosAsignados() {
+    this.loading = true;
+    try {
+      // Obtener cursos del profesor
+      const cursosProfesor = await this.courseService.getCoursesByProfesor(this.currentUserId);
+
+      // Cargar estadísticas para cada curso
+      this.cursos = await Promise.all(
+        cursosProfesor.map(async curso => {
+          // Contar secciones
+          const secciones = await firstValueFrom(this.sectionService.getSectionsByCourse(curso.id));
+          const totalSecciones = secciones.length;
+
+          // Contar tareas pendientes de revisar
+          let tareasRevisar = 0;
+          for (const seccion of secciones) {
+            const tareas = await firstValueFrom(this.taskService.getTasksBySection(seccion.id));
+            if (tareas) {
+              for (const tarea of tareas) {
+                const entregas = await this.taskService.getSubmissionsByTask(tarea.id);
+                // Contar entregas no calificadas
+                tareasRevisar += entregas.filter(e => e.estado === 'entregada').length;
+              }
+            }
+          }
+
+          return {
+            ...curso,
+            totalSecciones,
+            tareasRevisar
+          };
+        })
+      );
+    } catch (error) {
+      console.error('Error cargando cursos:', error);
+      alert('Error al cargar los cursos');
+    } finally {
+      this.loading = false;
+    }
   }
 
-  verCurso(cursoId: number) {
-    this.router.navigate(['/profesor/curso', cursoId]);
+  verCurso(cursoId: string) {
+    this.router.navigate(['/cursos', cursoId, 'secciones']);
+  }
+
+  goToDashboard() {
+    // Ya estamos en el dashboard
   }
 
   logout() {

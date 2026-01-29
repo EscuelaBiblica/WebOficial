@@ -1,7 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { CourseService } from '../../../core/services/course.service';
+import { SectionService } from '../../../core/services/section.service';
+import { TaskService } from '../../../core/services/task.service';
+import { UserService } from '../../../core/services/user.service';
 import { Router } from '@angular/router';
+import { Curso } from '../../../core/models/course.model';
+import { User } from '../../../core/models/user.model';
+
+interface CursoConProgreso extends Curso {
+  progreso: number;
+  profesorNombre: string;
+  tareasEntregadas: number;
+  totalTareas: number;
+}
 
 @Component({
   selector: 'app-estudiante-dashboard',
@@ -12,57 +26,97 @@ import { Router } from '@angular/router';
 })
 export class EstudianteDashboardComponent implements OnInit {
   userName: string = '';
-  cursos: any[] = [];
+  cursos: CursoConProgreso[] = [];
+  loading: boolean = true;
+  currentUserId: string = '';
 
   constructor(
     private authService: AuthService,
+    private courseService: CourseService,
+    private sectionService: SectionService,
+    private taskService: TaskService,
+    private userService: UserService,
     private router: Router
   ) {}
 
-  ngOnInit() {
-    this.authService.userProfile$.subscribe(profile => {
+  async ngOnInit() {
+    this.authService.userProfile$.subscribe(async profile => {
       if (profile) {
         this.userName = profile.nombre + ' ' + profile.apellido;
-        this.cargarCursosInscritos();
+        this.currentUserId = profile.id || '';
+        await this.cargarCursosInscritos();
       }
     });
   }
 
-  cargarCursosInscritos() {
-    // Datos de ejemplo - En producción esto vendría de Firestore
-    this.cursos = [
-      {
-        id: 1,
-        titulo: 'Evangelismo Personal',
-        nivel: 'Básico',
-        progreso: 75,
-        profesor: 'Hernán Pérez',
-        imagen: 'assets/img/portfolio/1.png',
-        proximaClase: new Date('2026-02-02')
-      },
-      {
-        id: 2,
-        titulo: 'Vida Cristiana',
-        nivel: 'Básico',
-        progreso: 45,
-        profesor: 'Cristian Villafuerte',
-        imagen: 'assets/img/portfolio/2.jpg',
-        proximaClase: new Date('2026-02-02')
-      },
-      {
-        id: 3,
-        titulo: 'Métodos de Evangelismo General',
-        nivel: 'Avanzado',
-        progreso: 30,
-        profesor: 'Eben Ezer Cayo',
-        imagen: 'assets/img/portfolio/6.png',
-        proximaClase: new Date('2026-02-02')
-      }
-    ];
+  async cargarCursosInscritos() {
+    this.loading = true;
+    try {
+      // Obtener cursos donde el estudiante está inscrito
+      const cursosEstudiante = await this.courseService.getCoursesByEstudiante(this.currentUserId);
+
+      // Cargar progreso y estadísticas para cada curso
+      this.cursos = await Promise.all(
+        cursosEstudiante.map(async curso => {
+          // Obtener nombre del profesor
+          let profesorNombre = 'Sin asignar';
+          if (curso.profesorId) {
+            const profesor = await this.userService.getUserById(curso.profesorId);
+            if (profesor) {
+              profesorNombre = `${profesor.nombre} ${profesor.apellido}`;
+            }
+          }
+
+          // Calcular progreso del curso
+          const secciones = await firstValueFrom(this.sectionService.getSectionsByCourse(curso.id));
+          let totalTareas = 0;
+          let tareasEntregadas = 0;
+
+          for (const seccion of secciones) {
+            // Obtener tareas de la sección
+            const tareas = await firstValueFrom(this.taskService.getTasksBySection(seccion.id));
+            if (tareas) {
+              totalTareas += tareas.length;
+
+              // Verificar cuáles ha entregado el estudiante
+              for (const tarea of tareas) {
+                const entrega = await this.taskService.getSubmissionByStudentAndTask(
+                  this.currentUserId,
+                  tarea.id
+                );
+                if (entrega) {
+                  tareasEntregadas++;
+                }
+              }
+            }
+          }
+
+          // Calcular progreso (porcentaje de tareas entregadas)
+          const progreso = totalTareas > 0 ? Math.round((tareasEntregadas / totalTareas) * 100) : 0;
+
+          return {
+            ...curso,
+            progreso,
+            profesorNombre,
+            tareasEntregadas,
+            totalTareas
+          };
+        })
+      );
+    } catch (error) {
+      console.error('Error cargando cursos:', error);
+      alert('Error al cargar los cursos');
+    } finally {
+      this.loading = false;
+    }
   }
 
-  verCurso(cursoId: number) {
-    this.router.navigate(['/estudiante/curso', cursoId]);
+  verCurso(cursoId: string) {
+    this.router.navigate(['/cursos', cursoId, 'secciones']);
+  }
+
+  goToDashboard() {
+    // Ya estamos en el dashboard
   }
 
   logout() {

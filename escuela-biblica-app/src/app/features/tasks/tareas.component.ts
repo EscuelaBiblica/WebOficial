@@ -254,6 +254,10 @@ export class TareasComponent implements OnInit {
     }
   }
 
+  goToDashboard() {
+    this.router.navigate(['/admin']);
+  }
+
   goBack() {
     if (this.seccion) {
       this.router.navigate(['/cursos', this.seccion.cursoId, 'secciones']);

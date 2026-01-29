@@ -283,7 +283,9 @@ export class LeccionesComponent implements OnInit {
     const match = url.match(regExp);
     return (match && match[7].length === 11) ? match[7] : null;
   }
-
+  goToDashboard() {
+    this.router.navigate(['/admin']);
+  }
   goBack() {
     if (this.seccion) {
       this.router.navigate(['/cursos', this.seccion.cursoId, 'secciones']);

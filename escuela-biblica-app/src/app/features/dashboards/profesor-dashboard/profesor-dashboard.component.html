@@ -2,7 +2,7 @@
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">
+      <a class="navbar-brand" style="cursor: pointer;" (click)="goToDashboard()">
         <img src="assets/img/logo.svg" alt="Logo" height="40">
       </a>
       <span class="navbar-text text-white me-3">
@@ -33,24 +33,38 @@
       </div>
     </div>
 
-    <div class="row g-4">
+    <!-- Loading -->
+    <div class="row" *ngIf="loading">
+      <div class="col-12">
+        <div class="text-center py-5">
+          <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-3 text-muted">Cargando tus cursos...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4" *ngIf="!loading">
       <div class="col-md-6 col-lg-4" *ngFor="let curso of cursos">
         <div class="card h-100 shadow-sm curso-card">
-          <img [src]="curso.imagen" class="card-img-top" [alt]="curso.titulo" style="height: 200px; object-fit: cover;">
+          <img [src]="curso.imagen || 'assets/img/portfolio/1.png'" class="card-img-top" [alt]="curso.titulo" style="height: 200px; object-fit: cover;">
           <div class="card-body">
-            <span class="badge bg-secondary mb-2">{{ curso.nivel }}</span>
             <h5 class="card-title">{{ curso.titulo }}</h5>
+            <p class="card-text text-muted" style="min-height: 60px;">
+              {{ curso.descripcion }}
+            </p>
             <p class="card-text text-muted mb-2">
-              <i class="fas fa-users"></i> {{ curso.estudiantes }} estudiantes
+              <i class="fas fa-users"></i> {{ curso.estudiantes.length }} estudiante{{ curso.estudiantes.length !== 1 ? 's' : '' }}
             </p>
-            <p class="card-text text-muted mb-3">
-              <i class="fas fa-calendar"></i> Próxima clase: {{ curso.proximaClase | date:'dd/MM/yyyy' }}
+            <p class="card-text text-muted mb-2">
+              <i class="fas fa-list"></i> {{ curso.totalSecciones }} sección{{ curso.totalSecciones !== 1 ? 'es' : '' }}
             </p>
-            
+
             <!-- Tareas pendientes -->
             <div class="mb-3" *ngIf="curso.tareasRevisar > 0">
               <div class="alert alert-warning py-2 mb-0">
-                <i class="fas fa-exclamation-circle"></i> {{ curso.tareasRevisar }} tareas por revisar
+                <i class="fas fa-exclamation-circle"></i> {{ curso.tareasRevisar }} tarea{{ curso.tareasRevisar !== 1 ? 's' : '' }} por revisar
               </div>
             </div>
 

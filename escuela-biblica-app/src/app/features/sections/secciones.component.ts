@@ -154,6 +154,10 @@ export class SeccionesComponent implements OnInit {
     this.router.navigate(['/secciones', seccionId, 'tareas']);
   }
 
+  goToDashboard() {
+    this.router.navigate(['/admin']);
+  }
+
   goBack() {
     this.router.navigate(['/cursos']);
   }

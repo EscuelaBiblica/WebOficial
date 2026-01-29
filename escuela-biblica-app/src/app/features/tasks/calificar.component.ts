@@ -127,6 +127,10 @@ export class CalificarComponent implements OnInit {
     }
   }
 
+  goToDashboard() {
+    this.router.navigate(['/profesor']);
+  }
+
   goBack() {
     if (this.tarea) {
       this.router.navigate(['/secciones', this.tarea.seccionId, 'tareas']);

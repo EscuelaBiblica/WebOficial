@@ -257,6 +257,10 @@ export class EntregarTareaComponent implements OnInit {
     }
   }
 
+  goToDashboard() {
+    this.router.navigate(['/estudiante']);
+  }
+
   goBack() {
     if (this.seccion) {
       this.router.navigate(['/estudiante']);

@@ -18,7 +18,7 @@ export class UsuariosComponent implements OnInit {
   usuarios: UserModel[] = [];
   usuariosFiltrados: UserModel[] = [];
   loading = true;
-  
+
   // Filtros
   searchTerm = '';
   filterRole: UserRole | 'todos' = 'todos';
@@ -29,7 +29,7 @@ export class UsuariosComponent implements OnInit {
   showEditModal = false;
   showCreateModal = false;
   showViewModal = false;
-  
+
   // Nuevo usuario
   newUser = {
     nombre: '',
@@ -39,7 +39,7 @@ export class UsuariosComponent implements OnInit {
     rol: 'estudiante' as UserRole,
     fotoPerfil: ''
   };
-  
+
   // Preview y upload de imágenes
   imagePreviewCreate: string | null = null;
   imagePreviewEdit: string | null = null;
@@ -63,10 +63,10 @@ export class UsuariosComponent implements OnInit {
         // Convertir Timestamps de Firebase a Date
         this.usuarios = users.map(user => ({
           ...user,
-          fechaRegistro: user.fechaRegistro instanceof Date 
-            ? user.fechaRegistro 
+          fechaRegistro: user.fechaRegistro instanceof Date
+            ? user.fechaRegistro
             : (user.fechaRegistro as any).toDate()
-        })).sort((a, b) => 
+        })).sort((a, b) =>
           new Date(b.fechaRegistro).getTime() - new Date(a.fechaRegistro).getTime()
         );
         this.applyFilters();
@@ -82,7 +82,7 @@ export class UsuariosComponent implements OnInit {
   applyFilters() {
     this.usuariosFiltrados = this.usuarios.filter(user => {
       // Filtro de búsqueda
-      const searchMatch = !this.searchTerm || 
+      const searchMatch = !this.searchTerm ||
         user.nombre.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         user.apellido.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(this.searchTerm.toLowerCase());
@@ -91,7 +91,7 @@ export class UsuariosComponent implements OnInit {
       const roleMatch = this.filterRole === 'todos' || user.rol === this.filterRole;
 
       // Filtro de estado
-      const statusMatch = this.filterStatus === 'todos' || 
+      const statusMatch = this.filterStatus === 'todos' ||
         (this.filterStatus === 'activos' && user.activo) ||
         (this.filterStatus === 'inactivos' && !user.activo);
 
@@ -170,7 +170,7 @@ export class UsuariosComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      
+
       if (!this.cloudinaryService.isValidImageFile(file)) {
         return;
       }
@@ -210,7 +210,7 @@ export class UsuariosComponent implements OnInit {
           fotoPerfil: this.newUser.fotoPerfil || null
         }
       );
-      
+
       alert('Usuario creado exitosamente');
       this.closeCreateModal();
       this.loadUsers();
@@ -251,7 +251,7 @@ export class UsuariosComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      
+
       if (!this.cloudinaryService.isValidImageFile(file)) {
         return;
       }
@@ -296,6 +296,10 @@ export class UsuariosComponent implements OnInit {
   }
 
   goBack() {
+    this.router.navigate(['/admin']);
+  }
+
+  goToDashboard() {
     this.router.navigate(['/admin']);
   }
 

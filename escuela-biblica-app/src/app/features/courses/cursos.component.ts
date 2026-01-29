@@ -331,6 +331,10 @@ export class CursosComponent implements OnInit {
     this.router.navigate(['/admin']);
   }
 
+  goToDashboard() {
+    this.router.navigate(['/admin']);
+  }
+
   viewSections(cursoId: string) {
     this.router.navigate(['/cursos', cursoId, 'secciones']);
   }
