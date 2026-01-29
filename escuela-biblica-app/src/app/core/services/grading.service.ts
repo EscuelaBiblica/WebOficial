@@ -14,6 +14,7 @@ import { Calificacion } from '../models/grade.model';
 import { IntentoExamen } from '../models/exam.model';
 import { Tarea } from '../models/task.model';
 import { Examen } from '../models/exam.model';
+import { AsistenciaService } from './asistencia.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,18 +24,23 @@ export class GradingService {
   private calificacionesCollection = 'calificacionesEstudiantes';
   private progresoCollection = 'progresoEstudiantes';
 
-  constructor(private firestore: Firestore) {}
+  constructor(
+    private firestore: Firestore,
+    private asistenciaService: AsistenciaService
+  ) {}
 
   // ========== CONFIGURACIÓN DE CALIFICACIONES ==========
 
   async createConfiguracion(config: ConfiguracionCalificacion): Promise<string> {
     // Validar que las ponderaciones sumen 100
-    if (config.ponderacionTareas + config.ponderacionExamenes !== 100) {
+    const ponderacionAsistencia = config.ponderacionAsistencia || 0;
+    if (config.ponderacionTareas + config.ponderacionExamenes + ponderacionAsistencia !== 100) {
       throw new Error('Las ponderaciones deben sumar 100%');
     }
 
     const docRef = await addDoc(collection(this.firestore, this.configuracionCollection), {
       ...config,
+      ponderacionAsistencia,
       fechaCreacion: Timestamp.now(),
       fechaModificacion: Timestamp.now()
     });
@@ -43,14 +49,15 @@ export class GradingService {
 
   async updateConfiguracion(id: string, config: Partial<ConfiguracionCalificacion>): Promise<void> {
     // Validar ponderaciones si se actualizan
-    if (config.ponderacionTareas !== undefined || config.ponderacionExamenes !== undefined) {
+    if (config.ponderacionTareas !== undefined || config.ponderacionExamenes !== undefined || config.ponderacionAsistencia !== undefined) {
       const docSnap = await getDoc(doc(this.firestore, this.configuracionCollection, id));
       const currentConfig = docSnap.data() as ConfiguracionCalificacion;
 
       const newPonderacionTareas = config.ponderacionTareas ?? currentConfig.ponderacionTareas;
       const newPonderacionExamenes = config.ponderacionExamenes ?? currentConfig.ponderacionExamenes;
+      const newPonderacionAsistencia = config.ponderacionAsistencia ?? (currentConfig.ponderacionAsistencia || 0);
 
-      if (newPonderacionTareas + newPonderacionExamenes !== 100) {
+      if (newPonderacionTareas + newPonderacionExamenes + newPonderacionAsistencia !== 100) {
         throw new Error('Las ponderaciones deben sumar 100%');
       }
     }
@@ -122,10 +129,16 @@ export class GradingService {
       ? Array.from(mejoresIntentosMap.values()).reduce((sum, intento) => sum + (intento.calificacion ?? 0), 0) / mejoresIntentosMap.size
       : 0;
 
+    // Calcular promedio de asistencia (0-1, luego se multiplica por 100 para la escala)
+    const promedioAsistencia = await this.asistenciaService.calcularPromedioAsistencia(cursoId, estudianteId);
+    const promedioAsistenciaEscala = promedioAsistencia * 100; // Convertir a escala 0-100
+
     // Calcular calificación final ponderada
+    const ponderacionAsistencia = config.ponderacionAsistencia || 0;
     const calificacionFinal =
       (promedioTareas * config.ponderacionTareas / 100) +
-      (promedioExamenes * config.ponderacionExamenes / 100);
+      (promedioExamenes * config.ponderacionExamenes / 100) +
+      (promedioAsistenciaEscala * ponderacionAsistencia / 100);
 
     // Determinar estado
     const estado = calificacionFinal >= config.notaMinima ? 'aprobado' :
@@ -246,6 +259,10 @@ export class GradingService {
         }
       }
 
+      // Obtener promedio de asistencia
+      const promedioAsistencia = await this.asistenciaService.calcularPromedioAsistencia(cursoId, estudiante.id);
+      const asistencias = await this.asistenciaService.getAsistenciasEstudiante(cursoId, estudiante.id);
+
       const fila: FilaLibroCalificaciones = {
         estudianteId: estudiante.id,
         nombreEstudiante: `${estudiante['nombre']} ${estudiante['apellido']}`,
@@ -254,6 +271,8 @@ export class GradingService {
         examenes: examenesMap,
         promedioTareas: calificacion.promedioTareas,
         promedioExamenes: calificacion.promedioExamenes,
+        promedioAsistencia: Math.round(promedioAsistencia * 100 * 100) / 100, // Convertir a escala 0-100 con 2 decimales
+        totalAsistencias: asistencias.length,
         calificacionFinal: calificacion.calificacionFinal,
         estado: calificacion.estado
       };

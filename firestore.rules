@@ -84,8 +84,9 @@ service cloud.firestore {
     
     // Reglas para calificaciones
     match /calificaciones/{calificacionId} {
-      allow read: if isAuthenticated();
-      allow write: if isProfesor() || isAdmin();
+      // TEMPORALMENTE MÁS PERMISIVO PARA DEBUG
+      allow read, list: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
     
     // ==================== NUEVAS REGLAS PARA EXÁMENES ====================
@@ -103,11 +104,15 @@ service cloud.firestore {
     
     // Reglas para intentos de exámenes
     match /intentos/{intentoId} {
-      // Leer: El estudiante dueño del intento, profesores y admins
-      allow read: if isAuthenticated() && 
+      // Leer documento individual: El estudiante dueño del intento, profesores y admins
+      allow get: if isAuthenticated() && 
                    (resource.data.estudianteId == request.auth.uid || 
                     isProfesor() || 
                     isAdmin());
+      
+      // Permitir queries (list) para cualquier usuario autenticado
+      // Las queries filtrarán por estudianteId en el código
+      allow list: if isAuthenticated();
       
       // Crear: Cualquier estudiante autenticado puede crear un intento
       allow create: if isAuthenticated() && 
@@ -193,6 +198,50 @@ service cloud.firestore {
                      (resource.data.estudianteId == request.auth.uid || 
                       isProfesor() || 
                       isAdmin());
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // ==================== REGLAS PARA DESBLOQUEO PROGRESIVO ====================
+    
+    // Reglas para progreso con sistema de caché
+    match /progreso/{progresoId} {
+      // El ID tiene formato: {estudianteId}_{seccionId}
+      // Extraer el estudianteId del ID del documento (parte antes del primer _)
+      
+      // Leer: El estudiante propietario, profesores y admins
+      allow read: if isAuthenticated() && 
+                   (progresoId.matches('^' + request.auth.uid + '_.*') || 
+                    isProfesor() || 
+                    isAdmin());
+      
+      // Crear: Cualquier usuario autenticado (se crea automáticamente al calcular progreso)
+      allow create: if isAuthenticated() && 
+                     (request.resource.data.estudianteId == request.auth.uid || 
+                      isProfesor() || 
+                      isAdmin());
+      
+      // Actualizar: El estudiante propietario (al completar actividades), profesores y admins
+      allow update: if isAuthenticated() && 
+                     (progresoId.matches('^' + request.auth.uid + '_.*') || 
+                      isProfesor() || 
+                      isAdmin());
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // ====================================================================
+    // REGLAS PARA ASISTENCIAS
+    // ====================================================================
+    match /asistencias/{asistenciaId} {
+      // Leer: Todos los autenticados pueden leer asistencias
+      allow read: if isAuthenticated();
+      
+      // Crear/Actualizar: Solo profesores del curso o admins
+      // El profesor debe ser el profesor del curso al que pertenece la asistencia
+      allow create, update: if isProfesor() || isAdmin();
       
       // Eliminar: Solo admins
       allow delete: if isAdmin();

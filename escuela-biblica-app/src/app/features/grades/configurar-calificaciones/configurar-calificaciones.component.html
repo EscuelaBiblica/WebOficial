@@ -24,7 +24,6 @@
             formControlName="ponderacionTareas"
             min="0"
             max="100"
-            (blur)="ajustarPonderaciones('tareas')"
             class="form-control">
           <div class="progress-bar">
             <div class="progress-fill tareas"
@@ -43,11 +42,28 @@
             formControlName="ponderacionExamenes"
             min="0"
             max="100"
-            (blur)="ajustarPonderaciones('examenes')"
             class="form-control">
           <div class="progress-bar">
             <div class="progress-fill examenes"
                  [style.width.%]="configForm.get('ponderacionExamenes')?.value || 0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="ponderacionAsistencia">
+            <i class="fas fa-user-check"></i> Asistencia (%)
+          </label>
+          <input
+            type="number"
+            id="ponderacionAsistencia"
+            formControlName="ponderacionAsistencia"
+            min="0"
+            max="100"
+            class="form-control">
+          <div class="progress-bar">
+            <div class="progress-fill asistencia"
+                 [style.width.%]="configForm.get('ponderacionAsistencia')?.value || 0">
             </div>
           </div>
         </div>
@@ -58,8 +74,11 @@
         Las ponderaciones deben sumar exactamente 100%
       </div>
 
-      <div class="total-ponderacion">
-        Total: {{ (configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) }}%
+      <div class="total-ponderacion"
+           [class.valid]="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) === 100"
+           [class.invalid]="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) !== 100">
+        Total: {{ (configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) }}%
+        <i class="fas fa-check-circle" *ngIf="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) === 100"></i>
       </div>
     </div>
 

@@ -119,7 +119,7 @@ export class CourseViewerComponent implements OnInit {
       if (this.userRole === 'estudiante') {
         estadoSecciones = await this.progressUnlockService.getEstadoSeccionesCurso(
           cursoId,
-          this.currentUser.uid
+          this.currentUser.id
         );
       }
 
@@ -196,7 +196,7 @@ export class CourseViewerComponent implements OnInit {
     if (this.userRole === 'estudiante' && seccion.progreso?.bloqueada) {
       const mensaje = await this.progressUnlockService.getMensajeBloqueo(
         seccion.id,
-        this.currentUser.uid,
+        this.currentUser.id,
         this.secciones
       );
       alert(mensaje);
@@ -216,7 +216,7 @@ export class CourseViewerComponent implements OnInit {
     if (this.userRole === 'estudiante' && seccion.progreso?.bloqueada) {
       const mensaje = await this.progressUnlockService.getMensajeBloqueo(
         seccion.id,
-        this.currentUser.uid,
+        this.currentUser.id,
         this.secciones
       );
       alert(mensaje);
@@ -237,7 +237,7 @@ export class CourseViewerComponent implements OnInit {
     if (this.userRole === 'estudiante' && seccion.progreso?.bloqueada) {
       const mensaje = await this.progressUnlockService.getMensajeBloqueo(
         seccion.id,
-        this.currentUser.uid,
+        this.currentUser.id,
         this.secciones
       );
       alert(mensaje);
@@ -432,7 +432,7 @@ export class CourseViewerComponent implements OnInit {
     if (this.userRole === 'estudiante' && seccion.progreso?.bloqueada) {
       const mensaje = await this.progressUnlockService.getMensajeBloqueo(
         seccion.id,
-        this.currentUser.uid,
+        this.currentUser.id,
         this.secciones
       );
       alert(mensaje);
@@ -512,6 +512,11 @@ export class CourseViewerComponent implements OnInit {
   configurarCalificaciones(): void {
     if (!this.curso?.id) return;
     this.router.navigate(['/cursos', this.curso.id, 'configurar-calificaciones']);
+  }
+
+  registrarAsistencia(): void {
+    if (!this.curso?.id) return;
+    this.router.navigate(['/cursos', this.curso.id, 'asistencia']);
   }
 
   verMiProgreso(): void {

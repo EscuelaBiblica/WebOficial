@@ -126,6 +126,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/tasks/entregar-tarea.component').then(m => m.EntregarTareaComponent)
   },
   {
+    path: 'cursos/:cursoId/asistencia',
+    canActivate: [authGuard, profesorGuard],
+    loadComponent: () => import('./features/registro-asistencia/registro-asistencia.component').then(m => m.RegistroAsistenciaComponent)
+  },
+  {
     path: 'profesor',
     canActivate: [authGuard, profesorGuard],
     loadComponent: () => import('./features/dashboards/profesor-dashboard/profesor-dashboard.component').then(m => m.ProfesorDashboardComponent)

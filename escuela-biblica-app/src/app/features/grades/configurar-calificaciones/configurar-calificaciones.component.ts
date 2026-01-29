@@ -36,6 +36,7 @@ export class ConfigurarCalificacionesComponent implements OnInit {
     this.configForm = this.fb.group({
       ponderacionTareas: [50, [Validators.required, Validators.min(0), Validators.max(100)]],
       ponderacionExamenes: [50, [Validators.required, Validators.min(0), Validators.max(100)]],
+      ponderacionAsistencia: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       notaMinima: [70, [Validators.required, Validators.min(0), Validators.max(100)]],
       escalaExcelente: [90, [Validators.min(0), Validators.max(100)]],
       escalaBueno: [75, [Validators.min(0), Validators.max(100)]],
@@ -51,8 +52,9 @@ export class ConfigurarCalificacionesComponent implements OnInit {
   validarPonderaciones(): void {
     const tareas = this.configForm.get('ponderacionTareas')?.value || 0;
     const examenes = this.configForm.get('ponderacionExamenes')?.value || 0;
+    const asistencia = this.configForm.get('ponderacionAsistencia')?.value || 0;
 
-    if (tareas + examenes !== 100) {
+    if (tareas + examenes + asistencia !== 100) {
       this.configForm.setErrors({ ponderacionInvalida: true });
     } else {
       if (this.configForm.hasError('ponderacionInvalida')) {
@@ -70,6 +72,7 @@ export class ConfigurarCalificacionesComponent implements OnInit {
         this.configForm.patchValue({
           ponderacionTareas: config.ponderacionTareas,
           ponderacionExamenes: config.ponderacionExamenes,
+          ponderacionAsistencia: config.ponderacionAsistencia || 0,
           notaMinima: config.notaMinima,
           escalaExcelente: config.escalaCalificacion.excelente || 90,
           escalaBueno: config.escalaCalificacion.bueno || 75,
@@ -95,6 +98,7 @@ export class ConfigurarCalificacionesComponent implements OnInit {
         cursoId: this.cursoId,
         ponderacionTareas: formValue.ponderacionTareas,
         ponderacionExamenes: formValue.ponderacionExamenes,
+        ponderacionAsistencia: formValue.ponderacionAsistencia || 0,
         notaMinima: formValue.notaMinima,
         escalaCalificacion: {
           aprobado: formValue.notaMinima,

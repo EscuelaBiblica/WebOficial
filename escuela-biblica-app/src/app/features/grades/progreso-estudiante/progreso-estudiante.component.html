@@ -115,6 +115,32 @@
           </div>
         </div>
 
+        <!-- Asistencia (solo si está configurada) -->
+        <div class="card-desglose" *ngIf="configuracion && configuracion.ponderacionAsistencia && configuracion.ponderacionAsistencia > 0">
+          <div class="desglose-header">
+            <i class="fas fa-user-check"></i>
+            <h3>Asistencia</h3>
+          </div>
+          <div class="desglose-contenido">
+            <div class="promedio-grande" [class]="getCalificacionClase(porcentajeAsistencia)">
+              {{ porcentajeAsistencia | number:'1.0-0' }}%
+            </div>
+            <div class="desglose-info">
+              <div class="info-item">
+                <span class="label">Registros:</span>
+                <span class="value">{{ totalAsistencias }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Ponderación:</span>
+                <span class="value">{{ configuracion!.ponderacionAsistencia }}%</span>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill asistencia" [style.width.%]="porcentajeAsistencia"></div>
+            </div>
+          </div>
+        </div>
+
         <!-- Gráfico Comparativo -->
         <div class="card-desglose grafico-card">
           <div class="desglose-header">
@@ -171,6 +197,53 @@
             <div class="stat-numero">{{ progreso.ultimaActividad | date:'short' }}</div>
             <div class="stat-label">Última Actividad</div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial de Asistencia (solo si está configurada) -->
+    <div class="seccion-asistencia" *ngIf="configuracion && configuracion.ponderacionAsistencia && configuracion.ponderacionAsistencia > 0 && asistencias.length > 0">
+      <h2><i class="fas fa-calendar-check"></i> Mi Historial de Asistencia</h2>
+
+      <div class="tabla-asistencia">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Puntos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let asistencia of asistencias">
+              <td>
+                <i class="fas fa-calendar-day"></i>
+                {{ asistencia.fecha | date:'dd/MM/yyyy' }}
+              </td>
+              <td>
+                <span class="badge-estado" [class]="getEstadoAsistenciaClase(asistencia.estado)">
+                  <i class="fas" [class]="getEstadoAsistenciaIcono(asistencia.estado)"></i>
+                  {{ getEstadoAsistenciaTexto(asistencia.estado) }}
+                </span>
+              </td>
+              <td>
+                <span class="puntaje">{{ asistencia.puntaje | number:'1.0-2' }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="resumen-asistencia">
+        <div class="resumen-item">
+          <i class="fas fa-chart-line"></i>
+          <span class="label">Promedio de Asistencia:</span>
+          <span class="valor" [class]="getCalificacionClase(porcentajeAsistencia)">{{ porcentajeAsistencia }}%</span>
+        </div>
+        <div class="resumen-item">
+          <i class="fas fa-percentage"></i>
+          <span class="label">Impacto en Calificación Final:</span>
+          <span class="valor">{{ configuracion!.ponderacionAsistencia }}%</span>
         </div>
       </div>
     </div>

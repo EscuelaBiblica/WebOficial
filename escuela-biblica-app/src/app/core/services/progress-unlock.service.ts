@@ -71,10 +71,21 @@ export class ProgressUnlockService {
    */
   async calcularProgresoSeccion(seccionId: string, estudianteId: string): Promise<ProgresoSeccion> {
     try {
+      console.log('🔍 [PROGRESO] Iniciando cálculo para:', { seccionId, estudianteId });
+
+      // Validar que estudianteId no sea undefined o null
+      if (!estudianteId) {
+        console.error('❌ [PROGRESO] estudianteId es undefined o null');
+        throw new Error('estudianteId es requerido para calcular progreso');
+      }
+
       // Primero, intentar leer el progreso guardado
       const progresoDocId = `${estudianteId}_${seccionId}`;
       const progresoDocRef = doc(this.firestore, 'progreso', progresoDocId);
+
+      console.log('📖 [PROGRESO] Intentando leer documento de progreso:', progresoDocId);
       const progresoDoc = await getDoc(progresoDocRef);
+      console.log('✅ [PROGRESO] Documento leído exitosamente');
 
       // Si existe y es reciente (menos de 5 minutos), usarlo
       if (progresoDoc.exists()) {
@@ -84,6 +95,7 @@ export class ProgressUnlockService {
         const CINCO_MINUTOS = 5 * 60 * 1000;
 
         if (tiempoTranscurrido < CINCO_MINUTOS) {
+          console.log('✅ [PROGRESO] Usando datos en caché (menos de 5 minutos)');
           // Usar datos en caché
           return {
             seccionId: data.seccionId,
@@ -98,17 +110,24 @@ export class ProgressUnlockService {
         }
       }
 
+      console.log('🔄 [PROGRESO] Caché expirado o no existe, calculando desde cero...');
+
       // Si no existe o está desactualizado, calcular de nuevo
       // Obtener la sección
+      console.log('📖 [PROGRESO] Leyendo sección:', seccionId);
       const seccionDoc = await getDoc(doc(this.firestore, 'secciones', seccionId));
       if (!seccionDoc.exists()) {
+        console.error('❌ [PROGRESO] Sección no encontrada');
         throw new Error('Sección no encontrada');
       }
+      console.log('✅ [PROGRESO] Sección leída exitosamente');
 
       const seccion = { id: seccionDoc.id, ...seccionDoc.data() } as Seccion;
 
       // Contar elementos totales
       const totalElementos = seccion.elementos.length;
+      console.log('📊 [PROGRESO] Total elementos en sección:', totalElementos);
+
       if (totalElementos === 0) {
         const progresoCompleto = {
           seccionId,
@@ -121,6 +140,7 @@ export class ProgressUnlockService {
           cumpleRequisitos: true
         };
 
+        console.log('💾 [PROGRESO] Guardando progreso (sección vacía)...');
         // Guardar en BD
         await this.guardarProgreso(progresoCompleto);
         return progresoCompleto;
@@ -131,26 +151,42 @@ export class ProgressUnlockService {
       // TODO: Implementar tracking de lecciones vistas
 
       // Obtener tareas entregadas
-      const tareasQuery = query(
-        collection(this.firestore, 'calificaciones'),
-        where('estudianteId', '==', estudianteId),
-        where('tipo', '==', 'tarea')
-      );
-      const tareasSnapshot = await getDocs(tareasQuery);
-      const tareasEntregadas = tareasSnapshot.docs
-        .map(doc => (doc.data() as any).tareaId)
-        .filter(tareaId => seccion.elementos.some(e => e.id === tareaId));
+      let tareasEntregadas: string[] = [];
+      try {
+        console.log('📋 [PROGRESO] Consultando calificaciones (tareas)...');
+        const tareasQuery = query(
+          collection(this.firestore, 'calificaciones'),
+          where('estudianteId', '==', estudianteId),
+          where('tipo', '==', 'tarea')
+        );
+        const tareasSnapshot = await getDocs(tareasQuery);
+        console.log('✅ [PROGRESO] Calificaciones leídas:', tareasSnapshot.docs.length, 'documentos');
+        tareasEntregadas = tareasSnapshot.docs
+          .map(doc => (doc.data() as any).tareaId)
+          .filter(tareaId => seccion.elementos.some(e => e.id === tareaId));
+        console.log('✅ [PROGRESO] Tareas entregadas filtradas:', tareasEntregadas.length);
+      } catch (error) {
+        console.error('❌ [PROGRESO] Error obteniendo tareas entregadas:', error);
+      }
 
       // Obtener exámenes realizados
-      const examenesQuery = query(
-        collection(this.firestore, 'intentos'),
-        where('estudianteId', '==', estudianteId),
-        where('estado', '==', 'finalizado')
-      );
-      const examenesSnapshot = await getDocs(examenesQuery);
-      const examenesRealizados = examenesSnapshot.docs
-        .map(doc => (doc.data() as any).examenId)
-        .filter(examenId => seccion.elementos.some(e => e.id === examenId));
+      let examenesRealizados: string[] = [];
+      try {
+        console.log('📝 [PROGRESO] Consultando intentos (exámenes)...');
+        const examenesQuery = query(
+          collection(this.firestore, 'intentos'),
+          where('estudianteId', '==', estudianteId),
+          where('estado', '==', 'finalizado')
+        );
+        const examenesSnapshot = await getDocs(examenesQuery);
+        console.log('✅ [PROGRESO] Intentos leídos:', examenesSnapshot.docs.length, 'documentos');
+        examenesRealizados = examenesSnapshot.docs
+          .map(doc => (doc.data() as any).examenId)
+          .filter(examenId => seccion.elementos.some(e => e.id === examenId));
+        console.log('✅ [PROGRESO] Exámenes finalizados filtrados:', examenesRealizados.length);
+      } catch (error) {
+        console.error('❌ [PROGRESO] Error obteniendo exámenes realizados:', error);
+      }
 
       // Calcular elementos completados
       const elementosCompletados = new Set([

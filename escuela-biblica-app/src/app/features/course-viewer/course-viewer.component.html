@@ -51,6 +51,10 @@
           <i class="fas fa-cog"></i>
           <span>Configurar Ponderaciones</span>
         </button>
+        <button class="btn-quick-action" (click)="registrarAsistencia()">
+          <i class="fas fa-user-check"></i>
+          <span>Registrar Asistencia</span>
+        </button>
       </div>
 
       <div class="quick-actions" *ngIf="userRole === 'estudiante'">

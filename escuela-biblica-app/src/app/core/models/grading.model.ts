@@ -3,6 +3,7 @@ export interface ConfiguracionCalificacion {
   cursoId: string;
   ponderacionTareas: number; // Porcentaje (0-100)
   ponderacionExamenes: number; // Porcentaje (0-100)
+  ponderacionAsistencia?: number; // Porcentaje (0-100), default: 0
   notaMinima: number; // Nota mínima de aprobación (0-100)
   escalaCalificacion: EscalaCalificacion;
   fechaCreacion?: Date;
@@ -88,6 +89,8 @@ export interface FilaLibroCalificaciones {
   examenes: { [examenId: string]: number | null };
   promedioTareas: number;
   promedioExamenes: number;
+  promedioAsistencia?: number; // Promedio de asistencia (0-100)
+  totalAsistencias?: number; // Total de registros de asistencia
   calificacionFinal: number;
   estado: 'aprobado' | 'desaprobado' | 'en_progreso';
 }

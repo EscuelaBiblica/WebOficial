@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GradingService } from '../../../core/services/grading.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ProgresoEstudiante, CalificacionEstudiante } from '../../../core/models/grading.model';
+import { AsistenciaService } from '../../../core/services/asistencia.service';
+import { ProgresoEstudiante, CalificacionEstudiante, ConfiguracionCalificacion } from '../../../core/models/grading.model';
+import { Asistencia, EstadoAsistencia } from '../../../core/models/asistencia.model';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -21,6 +23,9 @@ export class ProgresoEstudianteComponent implements OnInit {
   estudianteId!: string;
   progreso?: ProgresoEstudiante;
   calificacion?: CalificacionEstudiante;
+  configuracion?: ConfiguracionCalificacion;
+  asistencias: Asistencia[] = [];
+  promedioAsistencia = 0;
   loading = false;
   cursoTitulo = '';
   chart?: Chart;
@@ -29,7 +34,8 @@ export class ProgresoEstudianteComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private gradingService: GradingService,
-    private authService: AuthService
+    private authService: AuthService,
+    private asistenciaService: AsistenciaService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -50,14 +56,22 @@ export class ProgresoEstudianteComponent implements OnInit {
   async loadData(): Promise<void> {
     this.loading = true;
     try {
-      // Cargar progreso y calificación en paralelo
-      const [progreso, calificacion] = await Promise.all([
+      // Cargar progreso, calificación y configuración en paralelo
+      const [progreso, calificacion, configuracion] = await Promise.all([
         this.gradingService.calcularProgreso(this.estudianteId, this.cursoId),
-        this.gradingService.calcularCalificacionEstudiante(this.estudianteId, this.cursoId)
+        this.gradingService.calcularCalificacionEstudiante(this.estudianteId, this.cursoId),
+        this.gradingService.getConfiguracionByCurso(this.cursoId)
       ]);
 
       this.progreso = progreso;
       this.calificacion = calificacion;
+      this.configuracion = configuracion || undefined;
+
+      // Cargar asistencias si la configuración lo incluye
+      if (this.configuracion?.ponderacionAsistencia && this.configuracion.ponderacionAsistencia > 0) {
+        this.asistencias = await this.asistenciaService.getAsistenciasEstudiante(this.cursoId, this.estudianteId);
+        this.promedioAsistencia = await this.asistenciaService.calcularPromedioAsistencia(this.cursoId, this.estudianteId);
+      }
 
       // Obtener título del curso
       // TODO: Agregar método en un servicio de cursos
@@ -80,6 +94,44 @@ export class ProgresoEstudianteComponent implements OnInit {
   get porcentajeExamenesCompletados(): number {
     if (!this.progreso || this.progreso.examenesTotales === 0) return 0;
     return Math.round((this.progreso.examenesRealizados.length / this.progreso.examenesTotales) * 100);
+  }
+
+  get porcentajeAsistencia(): number {
+    return Math.round(this.promedioAsistencia * 100);
+  }
+
+  get totalAsistencias(): number {
+    return this.asistencias.length;
+  }
+
+  getEstadoAsistenciaTexto(estado: EstadoAsistencia): string {
+    const textos: Record<EstadoAsistencia, string> = {
+      'P': 'Presente',
+      'T': 'Tardanza',
+      'F': 'Falta',
+      'J': 'Justificado'
+    };
+    return textos[estado];
+  }
+
+  getEstadoAsistenciaClase(estado: EstadoAsistencia): string {
+    const clases: Record<EstadoAsistencia, string> = {
+      'P': 'estado-presente',
+      'T': 'estado-tarde',
+      'F': 'estado-falta',
+      'J': 'estado-justificado'
+    };
+    return clases[estado];
+  }
+
+  getEstadoAsistenciaIcono(estado: EstadoAsistencia): string {
+    const iconos: Record<EstadoAsistencia, string> = {
+      'P': 'fa-check-circle',
+      'T': 'fa-clock',
+      'F': 'fa-times-circle',
+      'J': 'fa-exclamation-circle'
+    };
+    return iconos[estado];
   }
 
   getEstadoClase(): string {
@@ -124,7 +176,7 @@ export class ProgresoEstudianteComponent implements OnInit {
   }
 
   createChart(): void {
-    if (!this.calificacion || !this.chartCanvas) return;
+    if (!this.calificacion || !this.chartCanvas || !this.configuracion) return;
 
     // Destruir gráfico anterior si existe
     if (this.chart) {
@@ -134,21 +186,41 @@ export class ProgresoEstudianteComponent implements OnInit {
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
 
+    // Determinar qué componentes incluir en el gráfico
+    const labels: string[] = [];
+    const data: number[] = [];
+    const backgroundColor: string[] = [];
+    const borderColor: string[] = [];
+
+    // Siempre incluir tareas
+    labels.push('Tareas');
+    data.push(this.calificacion.promedioTareas);
+    backgroundColor.push('rgba(25, 118, 210, 0.7)');
+    borderColor.push('rgb(25, 118, 210)');
+
+    // Siempre incluir exámenes
+    labels.push('Exámenes');
+    data.push(this.calificacion.promedioExamenes);
+    backgroundColor.push('rgba(56, 142, 60, 0.7)');
+    borderColor.push('rgb(56, 142, 60)');
+
+    // Incluir asistencia si está configurada
+    if (this.configuracion.ponderacionAsistencia && this.configuracion.ponderacionAsistencia > 0) {
+      labels.push('Asistencia');
+      data.push(this.porcentajeAsistencia);
+      backgroundColor.push('rgba(255, 152, 0, 0.7)');
+      borderColor.push('rgb(255, 152, 0)');
+    }
+
     const config: ChartConfiguration = {
       type: 'doughnut',
       data: {
-        labels: ['Tareas', 'Exámenes'],
+        labels: labels,
         datasets: [{
           label: 'Calificaciones',
-          data: [this.calificacion.promedioTareas, this.calificacion.promedioExamenes],
-          backgroundColor: [
-            'rgba(25, 118, 210, 0.7)',
-            'rgba(56, 142, 60, 0.7)'
-          ],
-          borderColor: [
-            'rgb(25, 118, 210)',
-            'rgb(56, 142, 60)'
-          ],
+          data: data,
+          backgroundColor: backgroundColor,
+          borderColor: borderColor,
           borderWidth: 2
         }]
       },
@@ -167,7 +239,7 @@ export class ProgresoEstudianteComponent implements OnInit {
           },
           title: {
             display: true,
-            text: 'Comparación: Tareas vs Exámenes',
+            text: 'Comparación de Componentes',
             font: {
               size: 16,
               weight: 'bold'
