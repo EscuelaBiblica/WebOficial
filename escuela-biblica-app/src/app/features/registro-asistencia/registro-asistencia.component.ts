@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { CourseService } from '../../core/services/course.service';
 import { AsistenciaService } from '../../core/services/asistencia.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -19,12 +20,13 @@ import { RegistroAsistenciaEstudiante, EstadoAsistencia, estadoATexto, normaliza
 export class RegistroAsistenciaComponent implements OnInit {
   curso: Curso | null = null;
   estudiantes: RegistroAsistenciaEstudiante[] = [];
-  fechaSeleccionada: Date = new Date();
+  fechaSeleccionada: string | Date = new Date().toISOString().split('T')[0];
   existeRegistro: boolean = false;
   loading: boolean = true;
   guardando: boolean = false;
   currentUser: User | null = null;
   maxFecha: string = new Date().toISOString().split('T')[0]; // Fecha máxima = hoy
+  minFecha: string; // Fecha mínima = 1 año atrás
 
   // Para mostrar los nombres de los estados
   estadoATexto = estadoATexto;
@@ -35,7 +37,12 @@ export class RegistroAsistenciaComponent implements OnInit {
     private courseService: CourseService,
     private asistenciaService: AsistenciaService,
     private authService: AuthService
-  ) {}
+  ) {
+    // Calcular fecha mínima (1 año atrás desde hoy)
+    const fechaMinima = new Date();
+    fechaMinima.setFullYear(fechaMinima.getFullYear() - 1);
+    this.minFecha = fechaMinima.toISOString().split('T')[0];
+  }
 
   async ngOnInit() {
     this.currentUser = await this.authService.getCurrentUserProfile();
@@ -103,16 +110,17 @@ export class RegistroAsistenciaComponent implements OnInit {
 
     try {
       // Verificar si existe registro para la fecha seleccionada
+      const fecha = new Date(this.fechaSeleccionada);
       this.existeRegistro = await this.asistenciaService.existeRegistroDia(
         this.curso.id,
-        this.fechaSeleccionada
+        fecha
       );
 
       if (this.existeRegistro) {
         // Cargar asistencias existentes
         const asistencias = await this.asistenciaService.getAsistenciasDia(
           this.curso.id,
-          this.fechaSeleccionada
+          fecha
         );
 
         // Mapear asistencias a estudiantes
@@ -164,10 +172,11 @@ export class RegistroAsistenciaComponent implements OnInit {
     this.guardando = true;
 
     try {
+      const fecha = new Date(this.fechaSeleccionada);
       await this.asistenciaService.registrarAsistenciasMasivas(
         this.curso.id,
         this.estudiantes,
-        this.fechaSeleccionada,
+        fecha,
         this.currentUser.id
       );
 
@@ -197,8 +206,17 @@ export class RegistroAsistenciaComponent implements OnInit {
     }
   }
 
+  esFechaPasada(): boolean {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaSelec = new Date(this.fechaSeleccionada);
+    fechaSelec.setHours(0, 0, 0, 0);
+    return fechaSelec < hoy;
+  }
+
   getFechaFormateada(): string {
-    return this.fechaSeleccionada.toLocaleDateString('es-ES', {
+    const fecha = new Date(this.fechaSeleccionada);
+    return fecha.toLocaleDateString('es-ES', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -227,8 +245,8 @@ export class RegistroAsistenciaComponent implements OnInit {
   }
 
   goBack() {
-    if (this.curso) {
-      this.router.navigate(['/course-viewer', this.curso.id]);
+        if (this.curso) {
+      this.router.navigate(['/curso', this.curso.id]);
     } else {
       this.router.navigate(['/dashboard']);
     }

@@ -11,6 +11,15 @@
     </div>
   </div>
 
+  <!-- Información sobre fechas pasadas -->
+  <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
+    <i class="fas fa-info-circle fa-2x me-3"></i>
+    <div>
+      <strong>Registro flexible:</strong> Puedes registrar asistencia para la fecha de hoy o para fechas pasadas (hasta 1 año atrás).
+      Selecciona la fecha deseada en el calendario de abajo.
+    </div>
+  </div>
+
   <!-- Loading -->
   <div class="text-center py-5" *ngIf="loading">
     <div class="spinner-border text-primary" role="status">
@@ -34,14 +43,24 @@
             </p>
           </div>
           <div class="col-md-6">
-            <label class="form-label"><strong>Fecha:</strong></label>
+            <label class="form-label">
+              <strong>Fecha del Registro:</strong>
+              <i class="fas fa-info-circle ms-2 text-info"
+                 title="Puedes registrar asistencia para fechas pasadas (hasta 1 año atrás)"></i>
+            </label>
             <input
               type="date"
               class="form-control"
               [(ngModel)]="fechaSeleccionada"
               (change)="onFechaChange()"
+              [min]="minFecha"
               [max]="maxFecha">
-            <small class="text-muted">{{ getFechaFormateada() }}</small>
+            <small class="text-muted d-block mt-1">
+              {{ getFechaFormateada() }}
+              <span class="badge bg-info ms-2" *ngIf="esFechaPasada()">
+                <i class="fas fa-history"></i> Fecha pasada
+              </span>
+            </small>
 
             <div class="alert alert-info mt-2 py-2 small" *ngIf="existeRegistro">
               <i class="fas fa-info-circle"></i> Ya existe un registro para esta fecha. Puedes modificarlo.
