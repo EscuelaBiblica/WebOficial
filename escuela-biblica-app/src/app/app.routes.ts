@@ -81,6 +81,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/exams/crear-examen.component').then(m => m.CrearExamenComponent)
   },
   {
+    path: 'secciones/:seccionId/examenes/:examenId/intentos',
+    canActivate: [authGuard, profesorGuard],
+    loadComponent: () => import('./features/exams/lista-intentos.component').then(m => m.ListaIntentosComponent)
+  },
+  {
     path: 'examenes/:id/tomar',
     canActivate: [authGuard],
     loadComponent: () => import('./features/exams/tomar-examen.component').then(m => m.TomarExamenComponent)

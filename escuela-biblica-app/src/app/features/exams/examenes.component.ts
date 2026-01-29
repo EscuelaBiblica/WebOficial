@@ -87,7 +87,7 @@ export class ExamenesComponent implements OnInit {
   }
 
   viewAttempts(examenId: string) {
-    this.router.navigate(['/examenes', examenId, 'intentos']);
+    this.router.navigate(['/secciones', this.seccion?.id, 'examenes', examenId, 'intentos']);
   }
 
   formatDate(date: Date | undefined): string {

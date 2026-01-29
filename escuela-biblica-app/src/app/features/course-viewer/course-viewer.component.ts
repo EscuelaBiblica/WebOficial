@@ -394,6 +394,28 @@ export class CourseViewerComponent implements OnInit {
     this.router.navigate(['/examenes', examenId, 'resultados', intentoId]);
   }
 
+  verIntentosExamen(examenId: string) {
+    // Obtener seccionId del examen actual desde contenidoActual
+    let seccionId: string | undefined;
+
+    // Buscar en las secciones expandidas
+    for (const seccion of this.secciones) {
+      if (seccion.examenesData?.some((e: ExamenConIntentos) => e.id === examenId)) {
+        seccionId = seccion.id;
+        break;
+      }
+    }
+
+    console.log('Ver intentos - examenId:', examenId, 'seccionId:', seccionId);
+
+    if (seccionId) {
+      this.router.navigate(['/secciones', seccionId, 'examenes', examenId, 'intentos']);
+    } else {
+      console.error('No se encontró la sección para el examen:', examenId);
+      alert('Error: No se pudo determinar la sección del examen');
+    }
+  }
+
   isExamenDisponible(examen: ExamenConIntentos): boolean {
     return examen.disponible && examen.intentosRestantes > 0;
   }
@@ -412,5 +434,10 @@ export class CourseViewerComponent implements OnInit {
     const intentosFinalizados = examen.intentosUsuario.filter(i => i.estado === 'finalizado' && i.calificacion !== undefined);
     if (intentosFinalizados.length === 0) return null;
     return Math.max(...intentosFinalizados.map(i => i.calificacion!));
+  }
+
+  // Verificar si el usuario es profesor o admin
+  isProfesorOrAdmin(): boolean {
+    return this.userRole === 'profesor' || this.userRole === 'admin';
   }
 }

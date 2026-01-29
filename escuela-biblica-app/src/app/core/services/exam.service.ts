@@ -296,4 +296,16 @@ export class ExamService {
   generateQuestionId(): string {
     return `pregunta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
+
+  /**
+   * Actualizar calificación manualmente (solo profesor/admin)
+   */
+  async updateAttemptGrade(intentoId: string, nuevaCalificacion: number): Promise<void> {
+    const docRef = doc(this.firestore, 'intentos', intentoId);
+    await updateDoc(docRef, {
+      calificacion: nuevaCalificacion,
+      calificacionModificadaManualmente: true,
+      fechaModificacionCalificacion: Timestamp.now()
+    });
+  }
 }

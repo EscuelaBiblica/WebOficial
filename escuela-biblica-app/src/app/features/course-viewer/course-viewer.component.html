@@ -494,8 +494,8 @@
               </div>
             </div>
 
-            <!-- Botón para tomar examen -->
-            <div class="alert alert-info" *ngIf="!isExamenDisponible(examen) && getEstadoExamen(examen) !== 'Disponible'">
+            <!-- Botón para estudiantes -->
+            <div class="alert alert-info" *ngIf="userRole === 'estudiante' && !isExamenDisponible(examen) && getEstadoExamen(examen) !== 'Disponible'">
               <i class="fas fa-info-circle"></i>
               {{ getEstadoExamen(examen) === 'Próximamente' ? 'Este examen aún no está disponible.' :
                  getEstadoExamen(examen) === 'Cerrado' ? 'Este examen ya ha cerrado.' :
@@ -503,9 +503,16 @@
             </div>
 
             <button class="btn btn-success btn-lg w-100"
-                    *ngIf="isExamenDisponible(examen)"
+                    *ngIf="userRole === 'estudiante' && isExamenDisponible(examen)"
                     (click)="tomarExamen(examen.id)">
               <i class="fas fa-play"></i> Comenzar Examen
+            </button>
+          </div>
+
+          <!-- Opciones del Profesor -->
+          <div class="mt-4" *ngIf="userRole === 'profesor' && getExamenActual()">
+            <button class="btn btn-success me-2" (click)="verIntentosExamen(getExamenActual()!.id)">
+              <i class="fas fa-eye"></i> Ver Intentos
             </button>
           </div>
         </div>

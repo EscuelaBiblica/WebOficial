@@ -43,6 +43,8 @@ export interface IntentoExamen {
   respuestas: RespuestaEstudiante[];
   calificacion?: number;
   estado: 'en_progreso' | 'finalizado' | 'tiempo_agotado';
+  calificacionModificadaManualmente?: boolean;
+  fechaModificacionCalificacion?: Date;
 }
 
 export interface RespuestaEstudiante {
