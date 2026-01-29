@@ -29,6 +29,7 @@ export class EstudianteDashboardComponent implements OnInit {
   cursos: CursoConProgreso[] = [];
   loading: boolean = true;
   currentUserId: string = '';
+  cursosExpandidos: Set<string> = new Set();
 
   constructor(
     private authService: AuthService,
@@ -122,5 +123,34 @@ export class EstudianteDashboardComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  truncateText(text: string, maxLength: number = 100): string {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  }
+
+  toggleDescripcion(cursoId: string): void {
+    if (this.cursosExpandidos.has(cursoId)) {
+      this.cursosExpandidos.delete(cursoId);
+    } else {
+      this.cursosExpandidos.add(cursoId);
+    }
+  }
+
+  isExpanded(cursoId: string): boolean {
+    return this.cursosExpandidos.has(cursoId);
+  }
+
+  getDescripcion(curso: CursoConProgreso): string {
+    if (this.isExpanded(curso.id)) {
+      return curso.descripcion;
+    }
+    return this.truncateText(curso.descripcion);
+  }
+
+  shouldShowToggle(descripcion: string): boolean {
+    return !!(descripcion && descripcion.length > 100);
   }
 }

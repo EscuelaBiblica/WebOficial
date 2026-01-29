@@ -27,6 +27,7 @@ export class ProfesorDashboardComponent implements OnInit {
   cursos: CursoConEstadisticas[] = [];
   loading: boolean = true;
   currentUserId: string = '';
+  cursosExpandidos: Set<string> = new Set();
 
   constructor(
     private authService: AuthService,
@@ -98,5 +99,34 @@ export class ProfesorDashboardComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  truncateText(text: string, maxLength: number = 120): string {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  }
+
+  toggleDescripcion(cursoId: string): void {
+    if (this.cursosExpandidos.has(cursoId)) {
+      this.cursosExpandidos.delete(cursoId);
+    } else {
+      this.cursosExpandidos.add(cursoId);
+    }
+  }
+
+  isExpanded(cursoId: string): boolean {
+    return this.cursosExpandidos.has(cursoId);
+  }
+
+  getDescripcion(curso: CursoConEstadisticas): string {
+    if (this.isExpanded(curso.id)) {
+      return curso.descripcion;
+    }
+    return this.truncateText(curso.descripcion);
+  }
+
+  shouldShowToggle(descripcion: string): boolean {
+    return !!(descripcion && descripcion.length > 120);
   }
 }

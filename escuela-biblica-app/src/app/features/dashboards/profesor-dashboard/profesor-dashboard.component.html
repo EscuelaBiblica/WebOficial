@@ -51,9 +51,15 @@
           <img [src]="curso.imagen || 'assets/img/portfolio/1.png'" class="card-img-top" [alt]="curso.titulo" style="height: 200px; object-fit: cover;">
           <div class="card-body">
             <h5 class="card-title">{{ curso.titulo }}</h5>
-            <p class="card-text text-muted" style="min-height: 60px;">
-              {{ curso.descripcion }}
-            </p>
+            <div class="card-text text-muted" style="min-height: 60px;">
+              <p class="mb-1">{{ getDescripcion(curso) }}</p>
+              <a *ngIf="shouldShowToggle(curso.descripcion)"
+                 href="javascript:void(0)"
+                 class="text-primary small"
+                 (click)="toggleDescripcion(curso.id)">
+                {{ isExpanded(curso.id) ? 'Ver menos' : 'Ver más' }}
+              </a>
+            </div>
             <p class="card-text text-muted mb-2">
               <i class="fas fa-users"></i> {{ curso.estudiantes.length }} estudiante{{ curso.estudiantes.length !== 1 ? 's' : '' }}
             </p>
