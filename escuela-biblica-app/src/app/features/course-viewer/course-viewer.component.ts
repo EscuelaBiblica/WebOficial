@@ -208,8 +208,18 @@ export class CourseViewerComponent implements OnInit {
   }
 
   getYoutubeEmbedUrl(url: string): SafeResourceUrl {
+    if (!url) {
+      console.warn('URL de YouTube vacía');
+      return this.sanitizer.bypassSecurityTrustResourceUrl('');
+    }
+
+    console.log('URL de YouTube original:', url);
     const videoId = this.extractYoutubeVideoId(url);
+    console.log('Video ID extraído:', videoId);
+
     const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+    console.log('URL embed generada:', embedUrl);
+
     return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 
@@ -218,9 +228,32 @@ export class CourseViewerComponent implements OnInit {
   }
 
   private extractYoutubeVideoId(url: string): string | null {
-    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[7].length === 11) ? match[7] : null;
+    if (!url) return null;
+
+    // Intentar diferentes patrones de URL de YouTube
+    // https://www.youtube.com/watch?v=VIDEO_ID
+    // https://youtu.be/VIDEO_ID
+    // https://www.youtube.com/embed/VIDEO_ID
+    // https://www.youtube.com/v/VIDEO_ID
+    // https://youtube.com/live/VIDEO_ID
+
+    let videoId = null;
+
+    // Patrón para URLs completas
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/|youtube\.com\/live\/)([^#&?\n]+)/,
+      /^([a-zA-Z0-9_-]{11})$/ // Si es solo el ID
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        videoId = match[1];
+        break;
+      }
+    }
+
+    return videoId;
   }
 
   entregarTarea(tareaId: string) {
