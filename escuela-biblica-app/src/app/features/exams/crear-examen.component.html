@@ -126,9 +126,18 @@
     <div class="form-section preguntas-section">
       <div class="section-header">
         <h2><i class="fas fa-question-circle"></i> Preguntas ({{ preguntas.length }})</h2>
-        <button type="button" class="btn-add-pregunta" (click)="addPregunta()">
-          <i class="fas fa-plus"></i> Agregar Pregunta
-        </button>
+        <div class="header-actions">
+          <input type="file" #fileInput accept=".xlsx,.xls" style="display: none" (change)="onFileSelected($event)">
+          <button type="button" class="btn-download-template" (click)="descargarPlantillaExcel()">
+            <i class="fas fa-download"></i> Descargar Plantilla
+          </button>
+          <button type="button" class="btn-import-excel" (click)="fileInput.click()">
+            <i class="fas fa-file-excel"></i> Importar desde Excel
+          </button>
+          <button type="button" class="btn-add-pregunta" (click)="addPregunta()">
+            <i class="fas fa-plus"></i> Agregar Pregunta
+          </button>
+        </div>
       </div>
 
       <div formArrayName="preguntas" class="preguntas-list">

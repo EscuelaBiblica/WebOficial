@@ -5,6 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ExamService } from '../../core/services/exam.service';
 import { SectionService } from '../../core/services/section.service';
 import { Examen, Pregunta, OpcionRespuesta, TipoPregunta } from '../../core/models/exam.model';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-crear-examen',
@@ -196,6 +198,10 @@ export class CrearExamenComponent implements OnInit {
     return 'opt_' + Math.random().toString(36).substr(2, 9);
   }
 
+  generateId(): string {
+    return 'q_' + Math.random().toString(36).substr(2, 9);
+  }
+
   onTipoPreguntaChange(preguntaIndex: number): void {
     const pregunta = this.preguntas.at(preguntaIndex);
     const tipo = pregunta.get('tipo')?.value as TipoPregunta;
@@ -313,6 +319,266 @@ export class CrearExamenComponent implements OnInit {
 
       return pregunta;
     });
+  }
+
+  descargarPlantillaExcel(): void {
+    // Datos de ejemplo para la plantilla
+    const plantillaData = [
+      {
+        'Pregunta': '¿Cuál es la capital de Francia?',
+        'Tipo': 'multiple_unica',
+        'Opcion_A': 'Madrid',
+        'Opcion_B': 'París',
+        'Opcion_C': 'Londres',
+        'Opcion_D': 'Berlín',
+        'Respuesta_Correcta': 'B',
+        'Puntos': 1,
+        'Feedback': 'París es la capital de Francia'
+      },
+      {
+        'Pregunta': 'Seleccione los continentes que existen',
+        'Tipo': 'multiple_multiple',
+        'Opcion_A': 'África',
+        'Opcion_B': 'Atlantis',
+        'Opcion_C': 'Europa',
+        'Opcion_D': 'Asia',
+        'Respuesta_Correcta': 'A,C,D',
+        'Puntos': 2,
+        'Feedback': 'Los continentes reales son África, Europa y Asia'
+      },
+      {
+        'Pregunta': 'La Tierra es redonda',
+        'Tipo': 'verdadero_falso',
+        'Opcion_A': '',
+        'Opcion_B': '',
+        'Opcion_C': '',
+        'Opcion_D': '',
+        'Respuesta_Correcta': 'Verdadero',
+        'Puntos': 1,
+        'Feedback': 'La Tierra tiene forma esférica'
+      },
+      {
+        'Pregunta': '¿Cuántos días tiene un año bisiesto?',
+        'Tipo': 'corta',
+        'Opcion_A': '',
+        'Opcion_B': '',
+        'Opcion_C': '',
+        'Opcion_D': '',
+        'Respuesta_Correcta': '366',
+        'Puntos': 1,
+        'Feedback': 'Un año bisiesto tiene 366 días'
+      },
+      {
+        'Pregunta': 'El río más largo del mundo es el ___',
+        'Tipo': 'completar',
+        'Opcion_A': '',
+        'Opcion_B': '',
+        'Opcion_C': '',
+        'Opcion_D': '',
+        'Respuesta_Correcta': 'Nilo',
+        'Puntos': 1,
+        'Feedback': 'El río Nilo es el más largo del mundo'
+      }
+    ];
+
+    // Crear workbook y worksheet
+    const worksheet = XLSX.utils.json_to_sheet(plantillaData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Preguntas');
+
+    // Ajustar ancho de columnas
+    const columnWidths = [
+      { wch: 50 }, // Pregunta
+      { wch: 18 }, // Tipo
+      { wch: 25 }, // Opcion_A
+      { wch: 25 }, // Opcion_B
+      { wch: 25 }, // Opcion_C
+      { wch: 25 }, // Opcion_D
+      { wch: 20 }, // Respuesta_Correcta
+      { wch: 8 },  // Puntos
+      { wch: 40 }  // Feedback
+    ];
+    worksheet['!cols'] = columnWidths;
+
+    // Generar archivo Excel
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    // Descargar archivo
+    saveAs(blob, 'plantilla_preguntas_examen.xlsx');
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+        if (jsonData.length === 0) {
+          alert('El archivo Excel está vacío');
+          return;
+        }
+
+        let preguntasImportadas = 0;
+        const errores: string[] = [];
+
+        jsonData.forEach((row, index) => {
+          try {
+            // Validar campos requeridos
+            if (!row['Pregunta'] || !row['Tipo']) {
+              errores.push(`Fila ${index + 2}: Falta "Pregunta" o "Tipo"`);
+              return;
+            }
+
+            const tipo = row['Tipo'].toLowerCase().trim();
+            if (!['multiple_unica', 'multiple_multiple', 'verdadero_falso', 'corta', 'completar'].includes(tipo)) {
+              errores.push(`Fila ${index + 2}: Tipo "${row['Tipo']}" no válido`);
+              return;
+            }
+
+            // Crear pregunta base
+            const preguntaGroup = this.fb.group({
+              id: [this.generateId()],
+              tipo: [tipo as TipoPregunta, Validators.required],
+              texto: [row['Pregunta'], Validators.required],
+              puntos: [row['Puntos'] || 1, [Validators.required, Validators.min(0)]],
+              opciones: this.fb.array([]),
+              respuestaCorrecta: ['']
+            });
+
+            // Procesar según tipo de pregunta
+            if (tipo === 'multiple_unica' || tipo === 'multiple_multiple') {
+              const opciones: string[] = [];
+              ['Opcion_A', 'Opcion_B', 'Opcion_C', 'Opcion_D'].forEach(key => {
+                if (row[key]) opciones.push(row[key]);
+              });
+
+              if (opciones.length < 2) {
+                errores.push(`Fila ${index + 2}: Debe tener al menos 2 opciones`);
+                return;
+              }
+
+              // Agregar opciones al FormArray
+              const opcionesArray = preguntaGroup.get('opciones') as FormArray;
+              opciones.forEach((texto, idx) => {
+                opcionesArray.push(this.fb.group({
+                  id: [this.generateId()],
+                  texto: [texto, Validators.required],
+                  esCorrecta: [false]
+                }));
+              });
+
+              // Establecer respuestas correctas
+              const respuestaCorrecta = row['Respuesta_Correcta'];
+              if (!respuestaCorrecta) {
+                errores.push(`Fila ${index + 2}: Falta "Respuesta_Correcta"`);
+                return;
+              }
+
+              if (tipo === 'multiple_unica') {
+                // Para respuesta única, debe ser A, B, C o D
+                const letra = respuestaCorrecta.toString().toUpperCase().trim();
+                const indice = letra.charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
+
+                if (indice >= 0 && indice < opciones.length) {
+                  opcionesArray.at(indice).patchValue({ esCorrecta: true });
+                  preguntaGroup.patchValue({ respuestaCorrecta: opcionesArray.at(indice).value.id });
+                } else {
+                  errores.push(`Fila ${index + 2}: Respuesta "${letra}" no válida`);
+                  return;
+                }
+              } else {
+                // Para múltiples respuestas, puede ser "A,C" o "A, C"
+                const letras = respuestaCorrecta.toString().toUpperCase().split(',').map((l: string) => l.trim());
+                const idsCorrectos: string[] = [];
+
+                letras.forEach((letra: string) => {
+                  const indice = letra.charCodeAt(0) - 65;
+                  if (indice >= 0 && indice < opciones.length) {
+                    opcionesArray.at(indice).patchValue({ esCorrecta: true });
+                    idsCorrectos.push(opcionesArray.at(indice).value.id);
+                  }
+                });
+
+                if (idsCorrectos.length === 0) {
+                  errores.push(`Fila ${index + 2}: No se encontraron respuestas válidas`);
+                  return;
+                }
+                preguntaGroup.patchValue({ respuestaCorrecta: idsCorrectos.join(',') });
+              }
+            } else if (tipo === 'verdadero_falso') {
+              // Agregar opciones Verdadero/Falso
+              const opcionesArray = preguntaGroup.get('opciones') as FormArray;
+              const idVerdadero = this.generateId();
+              const idFalso = this.generateId();
+
+              opcionesArray.push(this.fb.group({
+                id: [idVerdadero],
+                texto: ['Verdadero', Validators.required],
+                esCorrecta: [false]
+              }));
+
+              opcionesArray.push(this.fb.group({
+                id: [idFalso],
+                texto: ['Falso', Validators.required],
+                esCorrecta: [false]
+              }));
+
+              const respuesta = row['Respuesta_Correcta'].toString().toLowerCase();
+              if (respuesta.includes('verdadero') || respuesta === 'v' || respuesta === 'true') {
+                opcionesArray.at(0).patchValue({ esCorrecta: true });
+                preguntaGroup.patchValue({ respuestaCorrecta: idVerdadero });
+              } else if (respuesta.includes('falso') || respuesta === 'f' || respuesta === 'false') {
+                opcionesArray.at(1).patchValue({ esCorrecta: true });
+                preguntaGroup.patchValue({ respuestaCorrecta: idFalso });
+              } else {
+                errores.push(`Fila ${index + 2}: Respuesta debe ser "Verdadero" o "Falso"`);
+                return;
+              }
+            } else if (tipo === 'corta' || tipo === 'completar') {
+              // Para respuestas cortas, guardar el texto de la respuesta
+              const respuesta = row['Respuesta_Correcta'];
+              if (!respuesta) {
+                errores.push(`Fila ${index + 2}: Falta "Respuesta_Correcta"`);
+                return;
+              }
+              preguntaGroup.patchValue({ respuestaCorrecta: respuesta.toString() });
+            }
+
+            // Agregar pregunta al formulario
+            this.preguntas.push(preguntaGroup);
+            preguntasImportadas++;
+          } catch (error) {
+            errores.push(`Fila ${index + 2}: Error al procesar - ${error}`);
+          }
+        });
+
+        // Mostrar resultado
+        let mensaje = `Se importaron ${preguntasImportadas} preguntas correctamente.`;
+        if (errores.length > 0) {
+          mensaje += `\n\nErrores encontrados:\n${errores.slice(0, 5).join('\n')}`;
+          if (errores.length > 5) {
+            mensaje += `\n... y ${errores.length - 5} errores más`;
+          }
+        }
+        alert(mensaje);
+
+      } catch (error) {
+        console.error('Error al procesar archivo:', error);
+        alert('Error al procesar el archivo Excel. Verifica que el formato sea correcto.');
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+    // Resetear el input para permitir seleccionar el mismo archivo nuevamente
+    event.target.value = '';
   }
 
   cancel(): void {
