@@ -318,4 +318,36 @@ export class CrearExamenComponent implements OnInit {
   cancel(): void {
     this.router.navigate(['/secciones', this.seccionId, 'examenes']);
   }
+
+  // Método para verificar si hay preguntas inválidas
+  hasInvalidPreguntas(): boolean {
+    return this.preguntas.controls.some(pregunta => pregunta.invalid);
+  }
+
+  // Método de debug para mostrar errores de validación
+  showValidationErrors(): void {
+    console.log('=== ESTADO DEL FORMULARIO ===');
+    console.log('Formulario válido:', this.examenForm.valid);
+    console.log('Errores generales:', this.examenForm.errors);
+
+    Object.keys(this.examenForm.controls).forEach(key => {
+      const control = this.examenForm.get(key);
+      if (control?.invalid) {
+        console.log(`Campo "${key}" inválido:`, control.errors);
+      }
+    });
+
+    console.log('\n=== PREGUNTAS ===');
+    this.preguntas.controls.forEach((pregunta, index) => {
+      if (pregunta.invalid) {
+        console.log(`Pregunta ${index + 1} inválida:`, pregunta.errors);
+        Object.keys(pregunta.value).forEach(key => {
+          const field = (pregunta as any).get(key);
+          if (field?.invalid) {
+            console.log(`  - Campo "${key}":`, field.errors);
+          }
+        });
+      }
+    });
+  }
 }

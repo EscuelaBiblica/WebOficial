@@ -245,6 +245,22 @@
       </div>
     </div>
 
+    <!-- Estado del Formulario (Debug) -->
+    <div class="form-debug" *ngIf="examenForm.invalid" style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <h4 style="color: #856404; margin: 0 0 10px 0;"><i class="fas fa-exclamation-triangle"></i> Campos Requeridos Faltantes:</h4>
+      <ul style="margin: 0; color: #856404;">
+        <li *ngIf="examenForm.get('titulo')?.invalid">✗ Título del examen</li>
+        <li *ngIf="examenForm.get('fechaInicio')?.invalid">✗ Fecha de inicio</li>
+        <li *ngIf="examenForm.get('fechaFin')?.invalid">✗ Fecha de fin</li>
+        <li *ngIf="examenForm.get('duracionMinutos')?.invalid">✗ Duración en minutos</li>
+        <li *ngIf="examenForm.get('intentosPermitidos')?.invalid">✗ Intentos permitidos</li>
+        <li *ngIf="examenForm.get('ponderacion')?.invalid">✗ Ponderación</li>
+        <li *ngIf="examenForm.get('notaMinima')?.invalid">✗ Nota mínima</li>
+        <li *ngIf="preguntas.length === 0">✗ Debe agregar al menos 1 pregunta</li>
+        <li *ngIf="hasInvalidPreguntas()">✗ Algunas preguntas tienen campos incompletos</li>
+      </ul>
+    </div>
+
     <!-- Acciones -->
     <div class="form-actions">
       <button type="button" class="btn-cancel" (click)="cancel()" [disabled]="loading">
