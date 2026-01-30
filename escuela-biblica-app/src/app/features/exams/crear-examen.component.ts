@@ -273,6 +273,8 @@ export class CrearExamenComponent implements OnInit {
         mostrarRespuestas: formValue.mostrarRespuestas,
         ponderacion: formValue.ponderacion,
         notaMinima: formValue.notaMinima,
+        esExamenFinal: formValue.esExamenFinal || false,
+        visible: formValue.visible !== false,
         preguntas: this.preparePreguntas(formValue.preguntas),
         fechaCreacion: new Date()
       };
