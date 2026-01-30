@@ -17,52 +17,42 @@
   <div class="row">
     <div class="col-12">
       <!-- Información de la Tarea -->
-      <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-          <h5 class="mb-0">
-            <i class="fas fa-clipboard-list"></i> {{ tarea.titulo }}
-          </h5>
-          <small>{{ leccion.titulo }}</small>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-8">
-              <div class="mb-3">
-                <h6><i class="fas fa-info-circle"></i> Descripción</h6>
-                <p>{{ tarea.descripcion || 'Sin descripción' }}</p>
-              </div>
-              <div class="mb-3">
-                <h6><i class="fas fa-list"></i> Instrucciones</h6>
-                <p style="white-space: pre-wrap;">{{ tarea.instrucciones || 'Sin instrucciones específicas' }}</p>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="info-box mb-2">
-                <strong>Tipo de entrega:</strong>
-                <span class="badge bg-secondary ms-2">{{ getTipoEntregaText(tarea.tipoEntrega) }}</span>
-              </div>
-              <div class="info-box mb-2">
-                <strong>Ponderación:</strong>
-                <span class="badge bg-info ms-2">{{ tarea.ponderacion }}%</span>
-              </div>
-              <div class="info-box mb-2">
-                <strong>Fecha inicio:</strong>
-                <div>{{ formatDate(tarea.fechaInicio) }}</div>
-              </div>
-              <div class="info-box mb-2">
-                <strong>Fecha límite:</strong>
-                <div [class.text-danger]="isOverdue()">{{ formatDate(tarea.fechaFin) }}</div>
-              </div>
-              <div class="info-box mb-2" *ngIf="tarea.archivosPermitidos && tarea.archivosPermitidos.length > 0">
-                <strong>Archivos permitidos:</strong>
-                <div>{{ tarea.archivosPermitidos.join(', ') }}</div>
-              </div>
-              <div class="info-box" *ngIf="tarea.tamanoMaximo">
-                <strong>Tamaño máximo:</strong>
-                <div>{{ tarea.tamanoMaximo }} MB</div>
-              </div>
-            </div>
+      <div class="card mb-3">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-0"><i class="fas fa-clipboard-list"></i> {{ tarea.titulo }}</h5>
+            <small class="opacity-75">{{ leccion.titulo }}</small>
           </div>
+          <span class="badge bg-light text-primary fs-6">{{ tarea.ponderacion }}%</span>
+        </div>
+        <div class="card-body py-2">
+          <!-- Info compacta en línea -->
+          <div class="compact-info mb-2">
+            <span class="info-item">
+              <i class="fas fa-calendar-check text-primary"></i>
+              <strong>Entrega:</strong> <span [class.text-danger]="isOverdue()">{{ formatDate(tarea.fechaFin) }}</span>
+            </span>
+            <span class="info-item">
+              <i class="fas fa-tag text-success"></i>
+              {{ getTipoEntregaText(tarea.tipoEntrega) }}
+            </span>
+            <span class="info-item" *ngIf="tarea.tamanoMaximo">
+              <i class="fas fa-file-alt text-info"></i>
+              Max: {{ tarea.tamanoMaximo }} MB
+            </span>
+          </div>
+
+          <!-- Detalles collapsibles -->
+          <details class="mt-2">
+            <summary class="cursor-pointer text-primary"><i class="fas fa-info-circle"></i> Ver instrucciones completas</summary>
+            <div class="mt-2 p-2 bg-light rounded">
+              <p class="mb-2"><strong>Descripción:</strong> {{ tarea.descripcion || 'Sin descripción' }}</p>
+              <p class="mb-0" style="white-space: pre-wrap;"><strong>Instrucciones:</strong><br>{{ tarea.instrucciones || 'Sin instrucciones específicas' }}</p>
+              <p class="mb-0 mt-2" *ngIf="tarea.archivosPermitidos && tarea.archivosPermitidos.length > 0">
+                <strong>Formatos permitidos:</strong> {{ tarea.archivosPermitidos.join(', ') }}
+              </p>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -95,39 +85,39 @@
       </div>
 
       <!-- Formulario de Entrega -->
-      <div class="card mb-4" *ngIf="canSubmit()">
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0">
+      <div class="card mb-3" *ngIf="canSubmit()">
+        <div class="card-header bg-success text-white py-2">
+          <h6 class="mb-0">
             <i class="fas fa-paper-plane"></i> {{ entrega ? 'Modificar Entrega' : 'Nueva Entrega' }}
-          </h5>
+          </h6>
         </div>
-        <div class="card-body">
+        <div class="card-body py-3">
           <form>
             <!-- Texto -->
-            <div class="mb-4" *ngIf="tarea.tipoEntrega === 'texto' || tarea.tipoEntrega === 'ambos'">
-              <label class="form-label">
+            <div class="mb-3" *ngIf="tarea.tipoEntrega === 'texto' || tarea.tipoEntrega === 'ambos'">
+              <label class="form-label fw-bold small">
                 <i class="fas fa-align-left"></i> Respuesta en Texto
                 <span class="text-danger" *ngIf="tarea.tipoEntrega === 'texto' || tarea.tipoEntrega === 'ambos'">*</span>
               </label>
               <textarea
-                class="form-control"
+                class="form-control form-control-sm"
                 [(ngModel)]="contenidoTexto"
                 name="contenidoTexto"
-                rows="8"
+                rows="6"
                 placeholder="Escribe tu respuesta aquí..."
                 [required]="tarea.tipoEntrega === 'texto' || tarea.tipoEntrega === 'ambos'"></textarea>
               <small class="text-muted">{{ contenidoTexto.length }} caracteres</small>
             </div>
 
             <!-- Archivos -->
-            <div class="mb-4" *ngIf="tarea.tipoEntrega === 'archivo' || tarea.tipoEntrega === 'ambos'">
-              <label class="form-label">
+            <div class="mb-3" *ngIf="tarea.tipoEntrega === 'archivo' || tarea.tipoEntrega === 'ambos'">
+              <label class="form-label fw-bold small">
                 <i class="fas fa-file-upload"></i> Archivos Adjuntos
                 <span class="text-danger" *ngIf="tarea.tipoEntrega === 'archivo' || tarea.tipoEntrega === 'ambos'">*</span>
               </label>
 
               <!-- Botón de subir -->
-              <div class="mb-3">
+              <div class="mb-2">
                 <input
                   type="file"
                   #fileInput
@@ -135,44 +125,33 @@
                   style="display: none">
                 <button
                   type="button"
-                  class="btn btn-outline-primary"
+                  class="btn btn-sm btn-outline-primary"
                   (click)="fileInput.click()"
                   [disabled]="uploadingFile">
-                  <span *ngIf="uploadingFile" class="spinner-border spinner-border-sm me-2"></span>
-                  <i *ngIf="!uploadingFile" class="fas fa-cloud-upload-alt me-2"></i>
+                  <span *ngIf="uploadingFile" class="spinner-border spinner-border-sm me-1"></span>
+                  <i *ngIf="!uploadingFile" class="fas fa-cloud-upload-alt me-1"></i>
                   {{ uploadingFile ? 'Subiendo...' : 'Subir Archivo' }}
                 </button>
-                <small class="d-block text-muted mt-2" *ngIf="tarea.archivosPermitidos && tarea.archivosPermitidos.length > 0">
-                  Archivos permitidos: {{ tarea.archivosPermitidos.join(', ') }}
-                </small>
-                <small class="d-block text-muted" *ngIf="tarea.tamanoMaximo">
-                  Tamaño máximo: {{ tarea.tamanoMaximo }} MB
-                </small>
               </div>
 
-              <!-- Lista de archivos -->
-              <div *ngIf="archivos.length > 0">
-                <h6>Archivos adjuntos ({{ archivos.length }}):</h6>
-                <ul class="list-group">
-                  <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let archivo of archivos; let i = index">
-                    <div>
-                      <i class="fas fa-file me-2"></i>
-                      <a [href]="archivo" target="_blank">{{ archivo }}</a>
-                    </div>
+              <!-- Lista de archivos compacta -->
+              <div *ngIf="archivos.length > 0" class="mb-2">
+                <small class="text-muted">{{ archivos.length }} archivo(s):</small>
+                <ul class="list-group list-group-sm mt-1">
+                  <li class="list-group-item py-1 px-2 d-flex justify-content-between align-items-center" *ngFor="let archivo of archivos; let i = index">
+                    <small class="text-truncate">
+                      <i class="fas fa-file me-1"></i>
+                      <a [href]="archivo" target="_blank">Archivo {{ i + 1 }}</a>
+                    </small>
                     <button
                       type="button"
-                      class="btn btn-sm btn-outline-danger"
+                      class="btn btn-sm btn-outline-danger py-0 px-1"
                       (click)="removeFile(i)"
                       [disabled]="uploadingFile || loading">
-                      <i class="fas fa-trash"></i>
+                      <i class="fas fa-times"></i>
                     </button>
                   </li>
                 </ul>
-              </div>
-
-              <div *ngIf="archivos.length === 0" class="text-muted text-center py-3 border rounded bg-light">
-                <i class="fas fa-inbox fa-2x mb-2"></i>
-                <p class="mb-0">No has adjuntado archivos aún</p>
               </div>
             </div>
 
@@ -200,38 +179,30 @@
       </div>
 
       <!-- Entrega actual (solo vista) -->
-      <div class="card mb-4" *ngIf="entrega && !canSubmit() && entrega.estado !== 'calificada'">
-        <div class="card-header bg-info text-white">
-          <h5 class="mb-0">
-            <i class="fas fa-eye"></i> Tu Entrega
-          </h5>
+      <div class="card mb-3" *ngIf="entrega && !canSubmit() && entrega.estado !== 'calificada'">
+        <div class="card-header bg-info text-white py-2">
+          <h6 class="mb-0">
+            <i class="fas fa-check-circle"></i> Entrega completada
+            <span class="badge bg-light text-info ms-2">{{ entrega.estado }}</span>
+            <small class="ms-2 opacity-75">{{ formatDate(entrega.fechaEntrega) }}</small>
+          </h6>
         </div>
-        <div class="card-body">
-          <div class="mb-3">
-            <strong>Estado:</strong>
-            <span class="badge ms-2" [ngClass]="getEstadoBadgeClass(entrega.estado)">
-              {{ entrega.estado }}
-            </span>
-          </div>
-          <div class="mb-3">
-            <strong>Fecha de entrega:</strong> {{ formatDate(entrega.fechaEntrega) }}
-          </div>
-
+        <div class="card-body py-2">
           <!-- Texto entregado -->
-          <div class="mb-3" *ngIf="entrega.contenidoTexto">
-            <h6>Texto entregado:</h6>
-            <div class="border p-3 bg-light rounded">
-              <p style="white-space: pre-wrap;">{{ entrega.contenidoTexto }}</p>
+          <div class="mb-2" *ngIf="entrega.contenidoTexto">
+            <small class="text-muted"><strong>Respuesta:</strong></small>
+            <div class="border p-2 bg-light rounded small">
+              <p class="mb-0" style="white-space: pre-wrap;">{{ entrega.contenidoTexto }}</p>
             </div>
           </div>
 
           <!-- Archivos entregados -->
           <div *ngIf="entrega.archivos && entrega.archivos.length > 0">
-            <h6>Archivos entregados:</h6>
-            <ul class="list-group">
-              <li class="list-group-item" *ngFor="let archivo of entrega.archivos">
-                <i class="fas fa-file me-2"></i>
-                <a [href]="archivo" target="_blank">{{ archivo }}</a>
+            <small class="text-muted"><strong>Archivos ({{ entrega.archivos.length }}):</strong></small>
+            <ul class="list-group list-group-sm mt-1">
+              <li class="list-group-item py-1 px-2" *ngFor="let archivo of entrega.archivos; let i = index">
+                <i class="fas fa-file me-1"></i>
+                <a [href]="archivo" target="_blank" class="small">Archivo {{ i + 1 }}</a>
               </li>
             </ul>
           </div>

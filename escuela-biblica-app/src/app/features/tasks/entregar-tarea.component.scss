@@ -5,10 +5,10 @@
 .card {
   border: none;
   box-shadow: 0 0 10px rgba(0,0,0,.1);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 
   .card-header {
-    border-bottom: 3px solid rgba(255,255,255,.2);
+    border-bottom: 2px solid rgba(255,255,255,.2);
     font-weight: 600;
 
     h5, h6 {
@@ -22,20 +22,52 @@
   }
 }
 
-.info-box {
-  padding: 0.5rem;
-  border-left: 3px solid #0d6efd;
-  padding-left: 0.75rem;
-  margin-bottom: 0.5rem;
+// Información compacta en línea
+.compact-info {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
 
-  strong {
-    display: block;
-    color: #495057;
-    margin-bottom: 0.25rem;
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    i {
+      font-size: 0.85rem;
+    }
+
+    strong {
+      margin-right: 0.25rem;
+    }
+  }
+}
+
+// Details/summary para instrucciones
+details {
+  summary {
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+
+    &:hover {
+      color: #0056b3;
+    }
   }
 
-  div {
-    color: #6c757d;
+  p {
+    font-size: 0.9rem;
+  }
+}
+
+// Lista compacta de archivos
+.list-group-sm {
+  font-size: 0.85rem;
+
+  .list-group-item {
+    padding: 0.25rem 0.5rem;
   }
 }
 
