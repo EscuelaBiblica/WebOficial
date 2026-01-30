@@ -123,6 +123,13 @@
           <!-- Columnas de Resumen -->
           <th class="col-promedio">Promedio Tareas</th>
           <th class="col-promedio">Promedio Exámenes</th>
+          <th class="col-promedio examen-final" *ngIf="libro.configuracion.ponderacionExamenFinal && libro.configuracion.ponderacionExamenFinal > 0">
+            <div class="header-content">
+              <i class="fas fa-star"></i>
+              Examen Final
+            </div>
+            <small>{{ libro.configuracion.ponderacionExamenFinal }}%</small>
+          </th>
           <th class="col-promedio" *ngIf="libro.configuracion.ponderacionAsistencia && libro.configuracion.ponderacionAsistencia > 0">
             <div class="header-content">
               <i class="fas fa-user-check"></i>
@@ -171,6 +178,11 @@
           <td class="col-promedio">
             <span [class]="getCalificacionClase(estudiante.promedioExamenes)">
               {{ estudiante.promedioExamenes | number:'1.0-2' }}
+            </span>
+          </td>
+          <td class="col-promedio examen-final" *ngIf="libro.configuracion.ponderacionExamenFinal && libro.configuracion.ponderacionExamenFinal > 0">
+            <span [class]="getCalificacionClase(estudiante.calificacionExamenFinal || 0)">
+              {{ (estudiante.calificacionExamenFinal || 0) | number:'1.0-2' }}
             </span>
           </td>
           <td class="col-promedio" *ngIf="libro.configuracion.ponderacionAsistencia && libro.configuracion.ponderacionAsistencia > 0">

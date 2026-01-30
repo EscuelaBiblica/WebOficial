@@ -57,6 +57,7 @@
                     <th>Fecha Inicio</th>
                     <th>Fecha Fin</th>
                     <th>Ponderación</th>
+                    <th class="text-center">Visible</th>
                     <th class="text-center">Acciones</th>
                   </tr>
                 </thead>
@@ -72,6 +73,16 @@
                     <td>{{ formatDate(tarea.fechaFin) }}</td>
                     <td>
                       <span class="badge bg-secondary">{{ tarea.ponderacion }}%</span>
+                    </td>
+                    <td class="text-center">
+                      <button
+                        class="btn btn-sm"
+                        [class.btn-success]="tarea.visible !== false"
+                        [class.btn-secondary]="tarea.visible === false"
+                        (click)="toggleVisibility(tarea)"
+                        title="Cambiar visibilidad">
+                        <i class="fas" [class.fa-eye]="tarea.visible !== false" [class.fa-eye-slash]="tarea.visible === false"></i>
+                      </button>
                     </td>
                     <td class="text-center">
                       <div class="btn-group" role="group">

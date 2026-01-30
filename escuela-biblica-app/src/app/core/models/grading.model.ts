@@ -2,7 +2,8 @@ export interface ConfiguracionCalificacion {
   id?: string;
   cursoId: string;
   ponderacionTareas: number; // Porcentaje (0-100)
-  ponderacionExamenes: number; // Porcentaje (0-100)
+  ponderacionExamenes: number; // Porcentaje (0-100) - Exámenes prácticos
+  ponderacionExamenFinal?: number; // Porcentaje (0-100) - Examen final
   ponderacionAsistencia?: number; // Porcentaje (0-100), default: 0
   notaMinima: number; // Nota mínima de aprobación (0-100)
   escalaCalificacion: EscalaCalificacion;
@@ -25,13 +26,14 @@ export interface CalificacionEstudiante {
   calificaciones: DetalleCalificacion[];
   promedioTareas: number;
   promedioExamenes: number;
+  promedioExamenFinal?: number; // Calificación del examen final (si existe)
   calificacionFinal: number;
   estado: 'aprobado' | 'desaprobado' | 'en_progreso';
   fechaActualizacion?: Date;
 }
 
 export interface DetalleCalificacion {
-  tipo: 'tarea' | 'examen';
+  tipo: 'tarea' | 'examen' | 'examen_final';
   elementoId: string;
   titulo: string;
   calificacion: number;
@@ -89,6 +91,7 @@ export interface FilaLibroCalificaciones {
   examenes: { [examenId: string]: number | null };
   promedioTareas: number;
   promedioExamenes: number;
+  calificacionExamenFinal?: number; // Calificación del examen final
   promedioAsistencia?: number; // Promedio de asistencia (0-100)
   totalAsistencias?: number; // Total de registros de asistencia
   calificacionFinal: number;
@@ -97,7 +100,7 @@ export interface FilaLibroCalificaciones {
 
 export interface ColumnaCalificacion {
   id: string;
-  tipo: 'tarea' | 'examen';
+  tipo: 'tarea' | 'examen' | 'examen_final';
   titulo: string;
   puntosMaximos: number;
   orden: number;

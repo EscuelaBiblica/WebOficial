@@ -11,6 +11,8 @@ export interface Examen {
   mezclarPreguntas: boolean;
   ponderacion: number; // %
   notaMinima: number;
+  esExamenFinal?: boolean; // true si es el examen final del curso
+  visible?: boolean; // Si es false o null, no se muestra a estudiantes
   preguntas: Pregunta[];
   fechaCreacion: Date;
 }

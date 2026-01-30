@@ -65,6 +65,8 @@ export class CrearExamenComponent implements OnInit {
       mostrarRespuestas: [false],
       ponderacion: [10, [Validators.required, Validators.min(0)]],
       notaMinima: [60, [Validators.required, Validators.min(0), Validators.max(100)]],
+      esExamenFinal: [false],
+      visible: [true],
       preguntas: this.fb.array([])
     });
   }
@@ -100,7 +102,9 @@ export class CrearExamenComponent implements OnInit {
           mezclarPreguntas: examen.mezclarPreguntas,
           mostrarRespuestas: examen.mostrarRespuestas,
           ponderacion: examen.ponderacion,
-          notaMinima: examen.notaMinima
+          notaMinima: examen.notaMinima,
+          esExamenFinal: examen.esExamenFinal || false,
+          visible: examen.visible !== false
         });
 
         // Cargar preguntas

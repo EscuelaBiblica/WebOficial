@@ -257,6 +257,17 @@ export class TareasComponent implements OnInit {
     }
   }
 
+  async toggleVisibility(tarea: Tarea) {
+    try {
+      const newVisibility = tarea.visible === false ? true : false;
+      await this.taskService.updateTask(tarea.id, { visible: newVisibility });
+      tarea.visible = newVisibility;
+    } catch (error) {
+      console.error('Error actualizando visibilidad:', error);
+      alert('Error al cambiar la visibilidad de la tarea');
+    }
+  }
+
   goToGrade(entrega: EntregaTarea) {
     if (this.selectedTarea) {
       this.router.navigate(['/tareas', this.selectedTarea.id, 'calificar', entrega.id]);

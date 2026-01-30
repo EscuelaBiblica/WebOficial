@@ -108,13 +108,25 @@
             <span class="badge bg-info me-1" *ngIf="examen.mezclarPreguntas">
               <i class="fas fa-random"></i> Aleatorio
             </span>
-            <span class="badge bg-success" *ngIf="examen.mostrarRespuestas">
+            <span class="badge bg-success me-1" *ngIf="examen.mostrarRespuestas">
               <i class="fas fa-eye"></i> Muestra respuestas
+            </span>
+            <span class="badge me-1" [class.bg-success]="examen.visible !== false" [class.bg-secondary]="examen.visible === false">
+              <i class="fas" [class.fa-eye]="examen.visible !== false" [class.fa-eye-slash]="examen.visible === false"></i>
+              {{ examen.visible !== false ? 'Visible' : 'Oculto' }}
             </span>
           </div>
         </div>
         <div class="card-footer bg-light">
           <div class="btn-group w-100" role="group">
+            <button
+              class="btn btn-sm"
+              [class.btn-success]="examen.visible !== false"
+              [class.btn-secondary]="examen.visible === false"
+              (click)="toggleVisibility(examen)"
+              title="Cambiar visibilidad">
+              <i class="fas" [class.fa-eye]="examen.visible !== false" [class.fa-eye-slash]="examen.visible === false"></i>
+            </button>
             <button class="btn btn-sm btn-outline-primary" (click)="editExam(examen.id)" title="Editar">
               <i class="fas fa-edit"></i>
             </button>

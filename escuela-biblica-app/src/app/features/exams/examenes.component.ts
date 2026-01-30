@@ -106,6 +106,17 @@ export class ExamenesComponent implements OnInit {
     return this.examService.isExamAvailable(examen);
   }
 
+  async toggleVisibility(examen: Examen) {
+    try {
+      const newVisibility = examen.visible === false ? true : false;
+      await this.examService.updateExam(examen.id, { visible: newVisibility });
+      examen.visible = newVisibility;
+    } catch (error) {
+      console.error('Error actualizando visibilidad:', error);
+      alert('Error al cambiar la visibilidad del examen');
+    }
+  }
+
   goBack() {
     if (this.seccion) {
       this.router.navigate(['/cursos', this.seccion.cursoId, 'secciones']);

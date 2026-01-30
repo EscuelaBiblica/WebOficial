@@ -89,11 +89,11 @@
           </div>
         </div>
 
-        <!-- Exámenes -->
+        <!-- Exámenes Prácticos -->
         <div class="card-desglose">
           <div class="desglose-header">
             <i class="fas fa-file-alt"></i>
-            <h3>Exámenes</h3>
+            <h3>Exámenes Prácticos</h3>
           </div>
           <div class="desglose-contenido">
             <div class="promedio-grande" [class]="getCalificacionClase(calificacion.promedioExamenes)">
@@ -111,6 +111,32 @@
             </div>
             <div class="progress-bar">
               <div class="progress-fill examenes" [style.width.%]="porcentajeExamenesCompletados"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Examen Final -->
+        <div class="card-desglose examen-final" *ngIf="configuracion && configuracion.ponderacionExamenFinal && configuracion.ponderacionExamenFinal > 0">
+          <div class="desglose-header">
+            <i class="fas fa-star"></i>
+            <h3>Examen Final</h3>
+          </div>
+          <div class="desglose-contenido">
+            <div class="promedio-grande" [class]="getCalificacionClase(calificacion.promedioExamenFinal || 0)">
+              {{ (calificacion.promedioExamenFinal || 0) | number:'1.0-2' }}
+            </div>
+            <div class="desglose-info">
+              <div class="info-item">
+                <span class="label">Estado:</span>
+                <span class="value">{{ (calificacion.promedioExamenFinal || 0) > 0 ? 'Completado' : 'Pendiente' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Ponderación:</span>
+                <span class="value">{{ configuracion!.ponderacionExamenFinal }}%</span>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill examen-final" [style.width.%]="(calificacion.promedioExamenFinal || 0) > 0 ? 100 : 0"></div>
             </div>
           </div>
         </div>

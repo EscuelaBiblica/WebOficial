@@ -148,7 +148,13 @@ export class CourseViewerComponent implements OnInit {
                       fechaFin: tarea.fechaFin instanceof Date ? tarea.fechaFin : (tarea.fechaFin as any).toDate()
                     };
                   })
-                ).then(tareas => tareas.filter((t): t is Tarea => t !== null));
+                ).then(tareas => tareas.filter((t): t is Tarea => {
+                  // Filtrar solo tareas visibles para estudiantes
+                  if (this.userRole === 'estudiante') {
+                    return t !== null && t.visible !== false;
+                  }
+                  return t !== null;
+                }));
 
                 return {
                   ...leccion,
@@ -395,9 +401,14 @@ export class CourseViewerComponent implements OnInit {
     try {
       const examenes = await this.examService.getExamsBySection(seccionId);
 
+      // Filtrar exámenes visibles para estudiantes
+      const examenesFiltrados = this.userRole === 'estudiante'
+        ? examenes.filter(e => e.visible !== false)
+        : examenes;
+
       // Para cada examen, obtener los intentos del usuario actual (si es estudiante)
       const examenesConIntentos: ExamenConIntentos[] = await Promise.all(
-        examenes.map(async (examen) => {
+        examenesFiltrados.map(async (examen) => {
           let intentosUsuario: IntentoExamen[] = [];
 
           if (this.userRole === 'estudiante') {

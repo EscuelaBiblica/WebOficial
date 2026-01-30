@@ -34,7 +34,7 @@
 
         <div class="form-group">
           <label for="ponderacionExamenes">
-            <i class="fas fa-file-alt"></i> Exámenes (%)
+            <i class="fas fa-file-alt"></i> Exámenes Prácticos (%)
           </label>
           <input
             type="number"
@@ -46,6 +46,24 @@
           <div class="progress-bar">
             <div class="progress-fill examenes"
                  [style.width.%]="configForm.get('ponderacionExamenes')?.value || 0">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="ponderacionExamenFinal">
+            <i class="fas fa-star"></i> Examen Final (%)
+          </label>
+          <input
+            type="number"
+            id="ponderacionExamenFinal"
+            formControlName="ponderacionExamenFinal"
+            min="0"
+            max="100"
+            class="form-control">
+          <div class="progress-bar">
+            <div class="progress-fill examen-final"
+                 [style.width.%]="configForm.get('ponderacionExamenFinal')?.value || 0">
             </div>
           </div>
         </div>
@@ -75,10 +93,10 @@
       </div>
 
       <div class="total-ponderacion"
-           [class.valid]="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) === 100"
-           [class.invalid]="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) !== 100">
-        Total: {{ (configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) }}%
-        <i class="fas fa-check-circle" *ngIf="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) === 100"></i>
+           [class.valid]="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionExamenFinal')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) === 100"
+           [class.invalid]="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionExamenFinal')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) !== 100">
+        Total: {{ (configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionExamenFinal')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) }}%
+        <i class="fas fa-check-circle" *ngIf="(configForm.get('ponderacionTareas')?.value || 0) + (configForm.get('ponderacionExamenes')?.value || 0) + (configForm.get('ponderacionExamenFinal')?.value || 0) + (configForm.get('ponderacionAsistencia')?.value || 0) === 100"></i>
       </div>
     </div>
 

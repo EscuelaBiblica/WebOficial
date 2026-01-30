@@ -34,9 +34,10 @@ export class ConfigurarCalificacionesComponent implements OnInit {
 
   initForm(): void {
     this.configForm = this.fb.group({
-      ponderacionTareas: [50, [Validators.required, Validators.min(0), Validators.max(100)]],
-      ponderacionExamenes: [50, [Validators.required, Validators.min(0), Validators.max(100)]],
-      ponderacionAsistencia: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+      ponderacionTareas: [25, [Validators.required, Validators.min(0), Validators.max(100)]],
+      ponderacionExamenes: [25, [Validators.required, Validators.min(0), Validators.max(100)]],
+      ponderacionExamenFinal: [25, [Validators.required, Validators.min(0), Validators.max(100)]],
+      ponderacionAsistencia: [25, [Validators.required, Validators.min(0), Validators.max(100)]],
       notaMinima: [70, [Validators.required, Validators.min(0), Validators.max(100)]],
       escalaExcelente: [90, [Validators.min(0), Validators.max(100)]],
       escalaBueno: [75, [Validators.min(0), Validators.max(100)]],
@@ -52,9 +53,10 @@ export class ConfigurarCalificacionesComponent implements OnInit {
   validarPonderaciones(): void {
     const tareas = this.configForm.get('ponderacionTareas')?.value || 0;
     const examenes = this.configForm.get('ponderacionExamenes')?.value || 0;
+    const examenFinal = this.configForm.get('ponderacionExamenFinal')?.value || 0;
     const asistencia = this.configForm.get('ponderacionAsistencia')?.value || 0;
 
-    if (tareas + examenes + asistencia !== 100) {
+    if (tareas + examenes + examenFinal + asistencia !== 100) {
       this.configForm.setErrors({ ponderacionInvalida: true });
     } else {
       if (this.configForm.hasError('ponderacionInvalida')) {
@@ -72,6 +74,7 @@ export class ConfigurarCalificacionesComponent implements OnInit {
         this.configForm.patchValue({
           ponderacionTareas: config.ponderacionTareas,
           ponderacionExamenes: config.ponderacionExamenes,
+          ponderacionExamenFinal: config.ponderacionExamenFinal || 0,
           ponderacionAsistencia: config.ponderacionAsistencia || 0,
           notaMinima: config.notaMinima,
           escalaExcelente: config.escalaCalificacion.excelente || 90,
@@ -98,6 +101,7 @@ export class ConfigurarCalificacionesComponent implements OnInit {
         cursoId: this.cursoId,
         ponderacionTareas: formValue.ponderacionTareas,
         ponderacionExamenes: formValue.ponderacionExamenes,
+        ponderacionExamenFinal: formValue.ponderacionExamenFinal || 0,
         ponderacionAsistencia: formValue.ponderacionAsistencia || 0,
         notaMinima: formValue.notaMinima,
         escalaCalificacion: {

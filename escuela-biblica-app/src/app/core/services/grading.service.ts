@@ -34,7 +34,8 @@ export class GradingService {
   async createConfiguracion(config: ConfiguracionCalificacion): Promise<string> {
     // Validar que las ponderaciones sumen 100
     const ponderacionAsistencia = config.ponderacionAsistencia || 0;
-    if (config.ponderacionTareas + config.ponderacionExamenes + ponderacionAsistencia !== 100) {
+    const ponderacionExamenFinal = config.ponderacionExamenFinal || 0;
+    if (config.ponderacionTareas + config.ponderacionExamenes + ponderacionAsistencia + ponderacionExamenFinal !== 100) {
       throw new Error('Las ponderaciones deben sumar 100%');
     }
 
@@ -49,15 +50,17 @@ export class GradingService {
 
   async updateConfiguracion(id: string, config: Partial<ConfiguracionCalificacion>): Promise<void> {
     // Validar ponderaciones si se actualizan
-    if (config.ponderacionTareas !== undefined || config.ponderacionExamenes !== undefined || config.ponderacionAsistencia !== undefined) {
+    if (config.ponderacionTareas !== undefined || config.ponderacionExamenes !== undefined ||
+        config.ponderacionAsistencia !== undefined || config.ponderacionExamenFinal !== undefined) {
       const docSnap = await getDoc(doc(this.firestore, this.configuracionCollection, id));
       const currentConfig = docSnap.data() as ConfiguracionCalificacion;
 
       const newPonderacionTareas = config.ponderacionTareas ?? currentConfig.ponderacionTareas;
       const newPonderacionExamenes = config.ponderacionExamenes ?? currentConfig.ponderacionExamenes;
       const newPonderacionAsistencia = config.ponderacionAsistencia ?? (currentConfig.ponderacionAsistencia || 0);
+      const newPonderacionExamenFinal = config.ponderacionExamenFinal ?? (currentConfig.ponderacionExamenFinal || 0);
 
-      if (newPonderacionTareas + newPonderacionExamenes + newPonderacionAsistencia !== 100) {
+      if (newPonderacionTareas + newPonderacionExamenes + newPonderacionAsistencia + newPonderacionExamenFinal !== 100) {
         throw new Error('Las ponderaciones deben sumar 100%');
       }
     }
@@ -108,26 +111,52 @@ export class GradingService {
     const examenesSnapshot = await getDocs(qExamenes);
     const intentosExamenes = examenesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as IntentoExamen));
 
+    // Obtener datos de los exámenes para saber cuáles son finales
+    const examenesIds = [...new Set(intentosExamenes.map(i => i.examenId))];
+    const examenesData = new Map<string, Examen>();
+    for (const examenId of examenesIds) {
+      const examenDoc = await getDoc(doc(this.firestore, 'examenes', examenId));
+      if (examenDoc.exists()) {
+        examenesData.set(examenId, { id: examenDoc.id, ...examenDoc.data() } as Examen);
+      }
+    }
+
     // Filtrar y agrupar intentos por examen (tomar el mejor)
-    const mejoresIntentosMap = new Map<string, IntentoExamen>();
-    intentosExamenes.forEach(intento => {
+    // Separar exámenes prácticos de examen final
+    const mejoresIntentosPracticosMap = new Map<string, IntentoExamen>();
+    let mejorIntentoFinal: IntentoExamen | null = null;
+
+    for (const intento of intentosExamenes) {
       if (intento.estado === 'finalizado' && intento.calificacion !== undefined) {
-        const mejor = mejoresIntentosMap.get(intento.examenId);
-        if (!mejor || (intento.calificacion ?? 0) > (mejor.calificacion ?? 0)) {
-          mejoresIntentosMap.set(intento.examenId, intento);
+        const examen = examenesData.get(intento.examenId);
+
+        if (examen?.esExamenFinal) {
+          // Es examen final, guardar el mejor
+          if (!mejorIntentoFinal || (intento.calificacion ?? 0) > (mejorIntentoFinal.calificacion ?? 0)) {
+            mejorIntentoFinal = intento;
+          }
+        } else {
+          // Es examen práctico, agrupar por examenId
+          const mejor = mejoresIntentosPracticosMap.get(intento.examenId);
+          if (!mejor || (intento.calificacion ?? 0) > (mejor.calificacion ?? 0)) {
+            mejoresIntentosPracticosMap.set(intento.examenId, intento);
+          }
         }
       }
-    });
+    }
 
     // Calcular promedio de tareas
     const promedioTareas = calificacionesTareas.length > 0
       ? calificacionesTareas.reduce((sum, cal) => sum + cal.puntosFinal, 0) / calificacionesTareas.length
       : 0;
 
-    // Calcular promedio de exámenes
-    const promedioExamenes = mejoresIntentosMap.size > 0
-      ? Array.from(mejoresIntentosMap.values()).reduce((sum, intento) => sum + (intento.calificacion ?? 0), 0) / mejoresIntentosMap.size
+    // Calcular promedio de exámenes prácticos (sin incluir final)
+    const promedioExamenes = mejoresIntentosPracticosMap.size > 0
+      ? Array.from(mejoresIntentosPracticosMap.values()).reduce((sum, intento) => sum + (intento.calificacion ?? 0), 0) / mejoresIntentosPracticosMap.size
       : 0;
+
+    // Calificación del examen final
+    const calificacionExamenFinal = mejorIntentoFinal ? (mejorIntentoFinal.calificacion ?? 0) : 0;
 
     // Calcular promedio de asistencia (0-1, luego se multiplica por 100 para la escala)
     const promedioAsistencia = await this.asistenciaService.calcularPromedioAsistencia(cursoId, estudianteId);
@@ -135,14 +164,17 @@ export class GradingService {
 
     // Calcular calificación final ponderada
     const ponderacionAsistencia = config.ponderacionAsistencia || 0;
+    const ponderacionExamenFinal = config.ponderacionExamenFinal || 0;
+
     const calificacionFinal =
       (promedioTareas * config.ponderacionTareas / 100) +
       (promedioExamenes * config.ponderacionExamenes / 100) +
+      (calificacionExamenFinal * ponderacionExamenFinal / 100) +
       (promedioAsistenciaEscala * ponderacionAsistencia / 100);
 
     // Determinar estado
     const estado = calificacionFinal >= config.notaMinima ? 'aprobado' :
-                   (calificacionesTareas.length === 0 && mejoresIntentosMap.size === 0) ? 'en_progreso' : 'desaprobado';
+                   (calificacionesTareas.length === 0 && mejoresIntentosPracticosMap.size === 0) ? 'en_progreso' : 'desaprobado';
 
     return {
       estudianteId,
@@ -150,6 +182,7 @@ export class GradingService {
       calificaciones: [],
       promedioTareas,
       promedioExamenes,
+      promedioExamenFinal: calificacionExamenFinal,
       calificacionFinal: Math.round(calificacionFinal * 100) / 100,
       estado,
       fechaActualizacion: new Date()
@@ -271,6 +304,7 @@ export class GradingService {
         examenes: examenesMap,
         promedioTareas: calificacion.promedioTareas,
         promedioExamenes: calificacion.promedioExamenes,
+        calificacionExamenFinal: calificacion.promedioExamenFinal,
         promedioAsistencia: Math.round(promedioAsistencia * 100 * 100) / 100, // Convertir a escala 0-100 con 2 decimales
         totalAsistencias: asistencias.length,
         calificacionFinal: calificacion.calificacionFinal,

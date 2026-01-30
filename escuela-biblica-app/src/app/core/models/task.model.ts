@@ -10,6 +10,7 @@ export interface Tarea {
   ponderacion: number; // %
   archivosPermitidos?: string[]; // ['.pdf', '.docx', '.jpg']
   tamanoMaximo: number; // MB
+  visible?: boolean; // Si es false o null, no se muestra a estudiantes
   fechaCreacion: Date;
 }
 
