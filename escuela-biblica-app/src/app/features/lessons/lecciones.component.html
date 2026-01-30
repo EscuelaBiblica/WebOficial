@@ -194,6 +194,52 @@
             <input type="url" class="form-control" [(ngModel)]="newLesson.urlYoutube" name="urlYoutube" placeholder="https://www.youtube.com/watch?v=...">
             <small class="text-muted">Ingresa la URL completa del video de YouTube</small>
           </div>
+
+          <!-- Pregunta de Retroalimentación (Opcional) -->
+          <div class="border-top pt-3 mt-4">
+            <h6 class="mb-3">
+              <i class="fas fa-question-circle text-primary"></i>
+              Pregunta de Retroalimentación (Opcional)
+            </h6>
+            <p class="text-muted small mb-3">
+              Agrega una pregunta de 2 opciones que el estudiante deberá responder correctamente antes de completar la lección.
+            </p>
+
+            <div class="mb-3">
+              <label class="form-label">Pregunta</label>
+              <textarea
+                class="form-control"
+                [(ngModel)]="newLesson.preguntaTexto"
+                name="preguntaTexto"
+                rows="2"
+                placeholder="Ej: ¿Cuál es el mensaje principal de esta lección?"></textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  <i class="fas fa-check-circle text-success"></i> Opción Correcta
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="newLesson.opcionCorrecta"
+                  name="opcionCorrecta"
+                  placeholder="Respuesta correcta">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  <i class="fas fa-times-circle text-danger"></i> Opción Incorrecta
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="newLesson.opcionIncorrecta"
+                  name="opcionIncorrecta"
+                  placeholder="Respuesta incorrecta">
+              </div>
+            </div>
+          </div>
         </form>
       </div>
       <div class="modal-footer">
@@ -256,6 +302,52 @@
           <div class="mb-3" *ngIf="selectedLesson.tipo === 'video'">
             <label class="form-label">URL de YouTube</label>
             <input type="url" class="form-control" [(ngModel)]="selectedLesson.urlYoutube" name="urlYoutube">
+          </div>
+
+          <!-- Pregunta de Retroalimentación (Opcional) -->
+          <div class="border-top pt-3 mt-4">
+            <h6 class="mb-3">
+              <i class="fas fa-question-circle text-primary"></i>
+              Pregunta de Retroalimentación (Opcional)
+            </h6>
+            <p class="text-muted small mb-3">
+              Agrega una pregunta de 2 opciones que el estudiante deberá responder correctamente antes de completar la lección.
+            </p>
+
+            <div class="mb-3">
+              <label class="form-label">Pregunta</label>
+              <textarea
+                class="form-control"
+                [(ngModel)]="selectedLesson.preguntaRetroalimentacion!.texto"
+                name="preguntaTextoEdit"
+                rows="2"
+                placeholder="Ej: ¿Cuál es el mensaje principal de esta lección?"></textarea>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  <i class="fas fa-check-circle text-success"></i> Opción Correcta
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="selectedLesson.preguntaRetroalimentacion!.opcionCorrecta"
+                  name="opcionCorrectaEdit"
+                  placeholder="Respuesta correcta">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">
+                  <i class="fas fa-times-circle text-danger"></i> Opción Incorrecta
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="selectedLesson.preguntaRetroalimentacion!.opcionIncorrecta"
+                  name="opcionIncorrectaEdit"
+                  placeholder="Respuesta incorrecta">
+              </div>
+            </div>
           </div>
         </form>
       </div>

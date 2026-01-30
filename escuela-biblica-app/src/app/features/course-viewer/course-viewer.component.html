@@ -575,3 +575,46 @@
           </div>
         </div>
       </div>
+<!-- Modal de Retroalimentación -->
+<div class="modal fade" id="modalRetroalimentacion" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-question-circle"></i> Pregunta de Retroalimentación
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="lead mb-4">{{ preguntaRetroalimentacion?.texto }}</p>
+        
+        <div class="d-grid gap-2">
+          <button class="btn btn-outline-primary btn-lg text-start" 
+                  [class.active]="respuestaSeleccionada === opcion1"
+                  (click)="seleccionarRespuesta(opcion1)">
+            <i class="fas fa-circle" [class.fa-check-circle]="respuestaSeleccionada === opcion1"></i>
+            {{ opcion1 }}
+          </button>
+          <button class="btn btn-outline-primary btn-lg text-start"
+                  [class.active]="respuestaSeleccionada === opcion2"
+                  (click)="seleccionarRespuesta(opcion2)">
+            <i class="fas fa-circle" [class.fa-check-circle]="respuestaSeleccionada === opcion2"></i>
+            {{ opcion2 }}
+          </button>
+        </div>
+
+        <div class="alert alert-danger mt-3" *ngIf="mostrarErrorRetroalimentacion">
+          <i class="fas fa-times-circle"></i> Respuesta incorrecta. Por favor, revisa el contenido de la lección e intenta nuevamente.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" 
+                [disabled]="!respuestaSeleccionada"
+                (click)="validarRetroalimentacion()">
+          <i class="fas fa-check"></i> Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

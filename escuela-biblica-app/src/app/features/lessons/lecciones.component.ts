@@ -34,7 +34,10 @@ export class LeccionesComponent implements OnInit {
     tipo: 'texto' as 'texto' | 'imagen' | 'pdf' | 'video',
     contenido: '',
     urlArchivo: '',
-    urlYoutube: ''
+    urlYoutube: '',
+    preguntaTexto: '',
+    opcionCorrecta: '',
+    opcionIncorrecta: ''
   };
 
   // Subida de archivos
@@ -87,7 +90,10 @@ export class LeccionesComponent implements OnInit {
       tipo: 'texto',
       contenido: '',
       urlArchivo: '',
-      urlYoutube: ''
+      urlYoutube: '',
+      preguntaTexto: '',
+      opcionCorrecta: '',
+      opcionIncorrecta: ''
     };
     this.showCreateModal = true;
   }
@@ -122,6 +128,15 @@ export class LeccionesComponent implements OnInit {
         }
       }
 
+      // Agregar pregunta de retroalimentación si se completó
+      if (this.newLesson.preguntaTexto && this.newLesson.opcionCorrecta && this.newLesson.opcionIncorrecta) {
+        lessonData.preguntaRetroalimentacion = {
+          texto: this.newLesson.preguntaTexto,
+          opcionCorrecta: this.newLesson.opcionCorrecta,
+          opcionIncorrecta: this.newLesson.opcionIncorrecta
+        };
+      }
+
       await this.lessonService.createLesson(lessonData);
 
       alert('Lección creada exitosamente');
@@ -134,6 +149,14 @@ export class LeccionesComponent implements OnInit {
 
   editLesson(lesson: Leccion) {
     this.selectedLesson = { ...lesson };
+    // Inicializar preguntaRetroalimentacion si no existe
+    if (!this.selectedLesson.preguntaRetroalimentacion) {
+      this.selectedLesson.preguntaRetroalimentacion = {
+        texto: '',
+        opcionCorrecta: '',
+        opcionIncorrecta: ''
+      };
+    }
     this.showEditModal = true;
   }
 
@@ -160,6 +183,20 @@ export class LeccionesComponent implements OnInit {
         if (this.selectedLesson.urlYoutube) {
           updateData.urlYoutube = this.selectedLesson.urlYoutube;
         }
+      }
+
+      // Actualizar o eliminar pregunta de retroalimentación
+      if (this.selectedLesson.preguntaRetroalimentacion?.texto &&
+          this.selectedLesson.preguntaRetroalimentacion?.opcionCorrecta &&
+          this.selectedLesson.preguntaRetroalimentacion?.opcionIncorrecta) {
+        updateData.preguntaRetroalimentacion = {
+          texto: this.selectedLesson.preguntaRetroalimentacion.texto,
+          opcionCorrecta: this.selectedLesson.preguntaRetroalimentacion.opcionCorrecta,
+          opcionIncorrecta: this.selectedLesson.preguntaRetroalimentacion.opcionIncorrecta
+        };
+      } else {
+        // Si están vacíos, eliminar la pregunta
+        updateData.preguntaRetroalimentacion = null;
       }
 
       await this.lessonService.updateLesson(this.selectedLesson.id, updateData);

@@ -29,7 +29,8 @@ service cloud.firestore {
     // Reglas para usuarios
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAdmin();
+      // Permitir crear su propio perfil durante registro O si es admin
+      allow create: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
       allow update: if isAdmin() || request.auth.uid == userId;
       allow delete: if isAdmin();
     }

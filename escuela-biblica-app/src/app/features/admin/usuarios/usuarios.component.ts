@@ -200,6 +200,7 @@ export class UsuariosComponent implements OnInit {
         return;
       }
 
+      // Crear el nuevo usuario (el admin mantiene su sesión)
       await this.authService.register(
         this.newUser.email,
         this.newUser.password,
@@ -213,7 +214,9 @@ export class UsuariosComponent implements OnInit {
 
       alert('Usuario creado exitosamente');
       this.closeCreateModal();
-      this.loadUsers();
+
+      // Recargar la lista de usuarios
+      await this.loadUsers();
     } catch (error: any) {
       console.error('Error al crear usuario:', error);
       alert('Error al crear usuario: ' + (error.message || 'Error desconocido'));

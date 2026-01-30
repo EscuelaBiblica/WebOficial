@@ -49,6 +49,14 @@ export class CourseViewerComponent implements OnInit {
   loading: boolean = true;
   sidebarOpen: boolean = false; // Para controlar menú en móviles
 
+  // Modal de retroalimentación
+  preguntaRetroalimentacion: { texto: string; opcionCorrecta: string; opcionIncorrecta: string } | null = null;
+  opcion1: string = '';
+  opcion2: string = '';
+  respuestaSeleccionada: string | null = null;
+  mostrarErrorRetroalimentacion: boolean = false;
+  leccionPendienteCompletar: Leccion | null = null;
+
   // Contenido actual
   contenidoActual: {
     tipo: 'leccion' | 'tarea' | 'examen' | null;
@@ -549,15 +557,95 @@ export class CourseViewerComponent implements OnInit {
   async completarLeccion(leccion: Leccion): Promise<void> {
     if (!this.currentUser) return;
 
+    // Si la lección tiene pregunta de retroalimentación, mostrar modal primero
+    if (leccion.preguntaRetroalimentacion) {
+      this.mostrarModalRetroalimentacion(leccion);
+      return;
+    }
+
+    // Si no hay pregunta, completar directamente
+    await this.marcarLeccionComoCompletada(leccion, null, null);
+  }
+
+  // Mostrar modal de retroalimentación
+  mostrarModalRetroalimentacion(leccion: Leccion): void {
+    if (!leccion.preguntaRetroalimentacion) return;
+
+    this.leccionPendienteCompletar = leccion;
+    this.preguntaRetroalimentacion = leccion.preguntaRetroalimentacion;
+    this.respuestaSeleccionada = null;
+    this.mostrarErrorRetroalimentacion = false;
+
+    // Mezclar las opciones aleatoriamente
+    const opciones = [
+      leccion.preguntaRetroalimentacion.opcionCorrecta,
+      leccion.preguntaRetroalimentacion.opcionIncorrecta
+    ];
+    const mezcladas = opciones.sort(() => Math.random() - 0.5);
+    this.opcion1 = mezcladas[0];
+    this.opcion2 = mezcladas[1];
+
+    // Abrir modal usando Bootstrap
+    const modalElement = document.getElementById('modalRetroalimentacion');
+    if (modalElement) {
+      const modal = new (window as any).bootstrap.Modal(modalElement);
+      modal.show();
+    }
+  }
+
+  seleccionarRespuesta(opcion: string): void {
+    this.respuestaSeleccionada = opcion;
+    this.mostrarErrorRetroalimentacion = false;
+  }
+
+  async validarRetroalimentacion(): Promise<void> {
+    if (!this.leccionPendienteCompletar || !this.respuestaSeleccionada || !this.preguntaRetroalimentacion) return;
+
+    const esCorrecta = this.respuestaSeleccionada === this.preguntaRetroalimentacion.opcionCorrecta;
+
+    if (esCorrecta) {
+      // Cerrar modal
+      const modalElement = document.getElementById('modalRetroalimentacion');
+      if (modalElement) {
+        const modal = (window as any).bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
+      }
+
+      // Completar lección
+      await this.marcarLeccionComoCompletada(
+        this.leccionPendienteCompletar,
+        this.respuestaSeleccionada,
+        true
+      );
+
+      this.leccionPendienteCompletar = null;
+    } else {
+      // Mostrar error
+      this.mostrarErrorRetroalimentacion = true;
+    }
+  }
+
+  // Marcar lección como completada (con o sin retroalimentación)
+  private async marcarLeccionComoCompletada(
+    leccion: Leccion,
+    respuestaRetroalimentacion: string | null,
+    correctaRetroalimentacion: boolean | null
+  ): Promise<void> {
     try {
       await this.progressUnlockService.marcarLeccionCompletada(
         leccion.id,
-        this.currentUser.id
+        this.currentUser.id,
+        respuestaRetroalimentacion || undefined,
+        correctaRetroalimentacion ?? undefined
       );
 
       // Actualizar estado local
       leccion.completada = true;
       leccion.fechaCompletado = new Date();
+      if (respuestaRetroalimentacion) {
+        leccion.respuestaRetroalimentacion = respuestaRetroalimentacion;
+        leccion.correctaRetroalimentacion = correctaRetroalimentacion || false;
+      }
 
       alert('¡Lección completada exitosamente!');
 

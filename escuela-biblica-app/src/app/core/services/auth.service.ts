@@ -8,8 +8,10 @@ import {
   User,
   UserCredential,
   signInWithPopup,
-  GoogleAuthProvider
+  GoogleAuthProvider,
+  getAuth
 } from '@angular/fire/auth';
+import { FirebaseApp, initializeApp, deleteApp } from '@angular/fire/app';
 import {
   Firestore,
   doc,
@@ -19,6 +21,7 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, from, of, switchMap } from 'rxjs';
 import { UserModel, UserRole } from '../models/user.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +29,7 @@ import { UserModel, UserRole } from '../models/user.model';
 export class AuthService {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
+  private app = inject(FirebaseApp);
 
   // Observable del usuario autenticado
   user$ = user(this.auth);
@@ -82,16 +86,28 @@ export class AuthService {
   }
 
   /**
-   * Registro de nuevo usuario (solo Admin puede usar esto)
+   * Registro de nuevo usuario por Admin (sin cerrar sesión del admin)
+   * Usa una aplicación Firebase secundaria para no afectar la sesión actual
    */
   async register(
     email: string,
     password: string,
     userData: Partial<UserModel>
-  ): Promise<UserCredential> {
+  ): Promise<void> {
+    let secondaryApp;
     try {
+      // Verificar que hay un admin autenticado
+      if (!this.auth.currentUser) {
+        throw new Error('Debes estar autenticado como admin para crear usuarios');
+      }
+
+      // Crear una aplicación Firebase secundaria completamente separada
+      secondaryApp = initializeApp(environment.firebase, 'Secondary');
+      const secondaryAuth = getAuth(secondaryApp);
+
+      // Crear nuevo usuario en la instancia secundaria (no afecta la sesión principal)
       const userCredential = await createUserWithEmailAndPassword(
-        this.auth,
+        secondaryAuth,
         email,
         password
       );
@@ -102,9 +118,22 @@ export class AuthService {
         ...userData
       });
 
-      return userCredential;
+      // Cerrar la sesión de la instancia secundaria
+      await signOut(secondaryAuth);
+
+      // Eliminar la aplicación secundaria para limpiar recursos
+      await deleteApp(secondaryApp);
+
     } catch (error) {
       console.error('Error en registro:', error);
+      // Limpiar la app secundaria en caso de error
+      if (secondaryApp) {
+        try {
+          await deleteApp(secondaryApp);
+        } catch (cleanupError) {
+          console.error('Error limpiando app secundaria:', cleanupError);
+        }
+      }
       throw error;
     }
   }

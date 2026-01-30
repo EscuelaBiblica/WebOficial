@@ -739,3 +739,68 @@
     }
   }
 }
+
+// Modal de retroalimentación
+#modalRetroalimentacion {
+  .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  .modal-header {
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    padding: 1.5rem;
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  .modal-body {
+    padding: 2rem;
+
+    .lead {
+      font-size: 1.1rem;
+      color: #495057;
+      font-weight: 500;
+    }
+
+    .btn-outline-primary {
+      border: 2px solid #0d6efd;
+      color: #0d6efd;
+      padding: 1rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #e7f3ff;
+        transform: translateX(5px);
+      }
+
+      &.active {
+        background: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+
+        i.fa-check-circle {
+          color: white;
+        }
+      }
+
+      i {
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  .modal-footer {
+    border-top: none;
+    padding: 1.5rem;
+  }
+}
