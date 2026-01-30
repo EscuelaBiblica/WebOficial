@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { CourseService } from '../../core/services/course.service';
 import { SectionService } from '../../core/services/section.service';
@@ -15,6 +15,7 @@ import { Seccion, ElementoSeccion, ProgresoSeccion } from '../../core/models/sec
 import { Leccion } from '../../core/models/lesson.model';
 import { Tarea, EntregaTarea } from '../../core/models/task.model';
 import { Examen, IntentoExamen } from '../../core/models/exam.model';
+import { marked } from 'marked';
 
 interface SeccionExpandida extends Seccion {
   expanded: boolean;
@@ -668,6 +669,27 @@ export class CourseViewerComponent implements OnInit {
     } catch (error) {
       console.error('Error completando lección:', error);
       alert('Hubo un error al marcar la lección como completada. Intenta nuevamente.');
+    }
+  }
+
+  /**
+   * Convertir Markdown a HTML y sanitizar
+   */
+  getMarkdownHTML(markdown: string): SafeHtml {
+    if (!markdown) return this.sanitizer.sanitize(1, '') || '';
+
+    // Configurar marked para soportar saltos de línea y listas
+    marked.setOptions({
+      breaks: true,
+      gfm: true
+    });
+
+    try {
+      const html = marked(markdown);
+      return this.sanitizer.sanitize(1, html as string) || '';
+    } catch (error) {
+      console.error('Error parsing markdown:', error);
+      return this.sanitizer.sanitize(1, markdown) || '';
     }
   }
 }

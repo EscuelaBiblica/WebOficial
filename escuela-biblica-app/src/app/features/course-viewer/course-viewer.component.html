@@ -196,12 +196,10 @@
         <div class="content-body">
           <!-- Contenido según tipo -->
           <div class="lesson-content mt-4">
-            <!-- Texto -->
+            <!-- Texto con Markdown -->
             <div *ngIf="leccion.tipo === 'texto'" class="texto-content">
               <div class="card">
-                <div class="card-body">
-                  <div [innerHTML]="leccion.contenido" style="white-space: pre-wrap;"></div>
-                </div>
+                <div class="card-body markdown-content" [innerHTML]="getMarkdownHTML(leccion.contenido)"></div>
               </div>
             </div>
 
@@ -587,9 +585,9 @@
       </div>
       <div class="modal-body">
         <p class="lead mb-4">{{ preguntaRetroalimentacion?.texto }}</p>
-        
+
         <div class="d-grid gap-2">
-          <button class="btn btn-outline-primary btn-lg text-start" 
+          <button class="btn btn-outline-primary btn-lg text-start"
                   [class.active]="respuestaSeleccionada === opcion1"
                   (click)="seleccionarRespuesta(opcion1)">
             <i class="fas fa-circle" [class.fa-check-circle]="respuestaSeleccionada === opcion1"></i>
@@ -609,7 +607,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-primary" 
+        <button type="button" class="btn btn-primary"
                 [disabled]="!respuestaSeleccionada"
                 (click)="validarRetroalimentacion()">
           <i class="fas fa-check"></i> Confirmar

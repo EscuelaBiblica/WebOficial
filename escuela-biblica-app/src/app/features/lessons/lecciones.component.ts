@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 import { LessonService } from '../../core/services/lesson.service';
 import { SectionService } from '../../core/services/section.service';
 import { AuthService } from '../../core/services/auth.service';
 import { CloudinaryService } from '../../core/services/cloudinary.service';
 import { Leccion } from '../../core/models/lesson.model';
 import { Seccion } from '../../core/models/section.model';
+import { marked } from 'marked';
 
 @Component({
   selector: 'app-lecciones',
@@ -43,6 +44,12 @@ export class LeccionesComponent implements OnInit {
   // Subida de archivos
   uploadingFile = false;
   fileProgress = 0;
+
+  // Markdown
+  showPreview = false;
+  showPreviewEdit = false;
+  @ViewChild('markdownTextarea') markdownTextarea?: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('markdownTextareaEdit') markdownTextareaEdit?: ElementRef<HTMLTextAreaElement>;
 
   constructor(
     private route: ActivatedRoute,
@@ -349,5 +356,96 @@ export class LeccionesComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
+  }
+
+  // ===== MARKDOWN EDITOR METHODS =====
+
+  /**
+   * Insertar sintaxis Markdown en el textarea de creación
+   */
+  insertMarkdown(before: string, after: string, placeholder: string) {
+    const textarea = this.markdownTextarea?.nativeElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = this.newLesson.contenido.substring(start, end);
+    const textToInsert = selectedText || placeholder;
+
+    const newText =
+      this.newLesson.contenido.substring(0, start) +
+      before + textToInsert + after +
+      this.newLesson.contenido.substring(end);
+
+    this.newLesson.contenido = newText;
+
+    // Restaurar focus y selección
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + before.length + textToInsert.length + after.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 10);
+  }
+
+  /**
+   * Insertar sintaxis Markdown en el textarea de edición
+   */
+  insertMarkdownEdit(before: string, after: string, placeholder: string) {
+    const textarea = this.markdownTextareaEdit?.nativeElement;
+    if (!textarea || !this.selectedLesson) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = this.selectedLesson.contenido.substring(start, end);
+    const textToInsert = selectedText || placeholder;
+
+    const newText =
+      this.selectedLesson.contenido.substring(0, start) +
+      before + textToInsert + after +
+      this.selectedLesson.contenido.substring(end);
+
+    this.selectedLesson.contenido = newText;
+
+    // Restaurar focus y selección
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = start + before.length + textToInsert.length + after.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 10);
+  }
+
+  /**
+   * Toggle vista previa en modal de creación
+   */
+  togglePreview() {
+    this.showPreview = !this.showPreview;
+  }
+
+  /**
+   * Toggle vista previa en modal de edición
+   */
+  togglePreviewEdit() {
+    this.showPreviewEdit = !this.showPreviewEdit;
+  }
+
+  /**
+   * Convertir Markdown a HTML y sanitizar
+   */
+  getMarkdownPreview(markdown: string): SafeHtml {
+    if (!markdown) return this.sanitizer.sanitize(1, '') || '';
+
+    // Configurar marked para soportar saltos de línea y listas
+    marked.setOptions({
+      breaks: true,
+      gfm: true
+    });
+
+    try {
+      const html = marked(markdown);
+      return this.sanitizer.sanitize(1, html as string) || '';
+    } catch (error) {
+      console.error('Error parsing markdown:', error);
+      return this.sanitizer.sanitize(1, markdown) || '';
+    }
   }
 }

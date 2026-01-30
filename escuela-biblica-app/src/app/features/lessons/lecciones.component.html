@@ -156,10 +156,50 @@
             </select>
           </div>
 
-          <!-- Contenido para tipo texto -->
+          <!-- Contenido para tipo texto con Markdown -->
           <div class="mb-3" *ngIf="newLesson.tipo === 'texto'">
-            <label class="form-label">Contenido</label>
-            <textarea class="form-control" [(ngModel)]="newLesson.contenido" name="contenido" rows="8"></textarea>
+            <label class="form-label">Contenido
+              <small class="text-muted ms-2">Soporta Markdown: **negrita**, *cursiva*, __subrayado__, # Títulos, - Listas</small>
+            </label>
+
+            <!-- Barra de herramientas Markdown -->
+            <div class="markdown-toolbar btn-group mb-2" role="group">
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdown('**', '**', 'Texto en negrita')" title="Negrita">
+                <i class="fas fa-bold"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdown('*', '*', 'Texto en cursiva')" title="Cursiva">
+                <i class="fas fa-italic"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdown('__', '__', 'Texto subrayado')" title="Subrayado">
+                <i class="fas fa-underline"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdown('# ', '', 'Título')" title="Título">
+                <i class="fas fa-heading"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdown('- ', '', 'Elemento de lista')" title="Lista">
+                <i class="fas fa-list-ul"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdown('[', '](url)', 'texto del enlace')" title="Enlace">
+                <i class="fas fa-link"></i>
+              </button>
+            </div>
+
+            <textarea
+              #markdownTextarea
+              class="form-control markdown-editor"
+              [(ngModel)]="newLesson.contenido"
+              name="contenido"
+              rows="10"
+              placeholder="Escribe aquí el contenido de la lección usando Markdown..."></textarea>
+
+            <!-- Vista previa -->
+            <div class="mt-2">
+              <button type="button" class="btn btn-sm btn-outline-info" (click)="togglePreview()">
+                <i class="fas" [class.fa-eye]="!showPreview" [class.fa-eye-slash]="showPreview"></i>
+                {{ showPreview ? 'Ocultar' : 'Ver' }} Vista Previa
+              </button>
+            </div>
+            <div *ngIf="showPreview" class="markdown-preview card mt-2 p-3" [innerHTML]="getMarkdownPreview(newLesson.contenido)"></div>
           </div>
 
           <!-- Subida de imagen -->
@@ -266,10 +306,50 @@
             <input type="text" class="form-control" [(ngModel)]="selectedLesson.titulo" name="titulo">
           </div>
 
-          <!-- Contenido para tipo texto -->
+          <!-- Contenido para tipo texto con Markdown -->
           <div class="mb-3" *ngIf="selectedLesson.tipo === 'texto'">
-            <label class="form-label">Contenido</label>
-            <textarea class="form-control" [(ngModel)]="selectedLesson.contenido" name="contenido" rows="8"></textarea>
+            <label class="form-label">Contenido
+              <small class="text-muted ms-2">Soporta Markdown: **negrita**, *cursiva*, __subrayado__, # Títulos, - Listas</small>
+            </label>
+
+            <!-- Barra de herramientas Markdown -->
+            <div class="markdown-toolbar btn-group mb-2" role="group">
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdownEdit('**', '**', 'Texto en negrita')" title="Negrita">
+                <i class="fas fa-bold"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdownEdit('*', '*', 'Texto en cursiva')" title="Cursiva">
+                <i class="fas fa-italic"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdownEdit('__', '__', 'Texto subrayado')" title="Subrayado">
+                <i class="fas fa-underline"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdownEdit('# ', '', 'Título')" title="Título">
+                <i class="fas fa-heading"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdownEdit('- ', '', 'Elemento de lista')" title="Lista">
+                <i class="fas fa-list-ul"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="insertMarkdownEdit('[', '](url)', 'texto del enlace')" title="Enlace">
+                <i class="fas fa-link"></i>
+              </button>
+            </div>
+
+            <textarea
+              #markdownTextareaEdit
+              class="form-control markdown-editor"
+              [(ngModel)]="selectedLesson.contenido"
+              name="contenido"
+              rows="10"
+              placeholder="Escribe aquí el contenido de la lección usando Markdown..."></textarea>
+
+            <!-- Vista previa -->
+            <div class="mt-2">
+              <button type="button" class="btn btn-sm btn-outline-info" (click)="togglePreviewEdit()">
+                <i class="fas" [class.fa-eye]="!showPreviewEdit" [class.fa-eye-slash]="showPreviewEdit"></i>
+                {{ showPreviewEdit ? 'Ocultar' : 'Ver' }} Vista Previa
+              </button>
+            </div>
+            <div *ngIf="showPreviewEdit" class="markdown-preview card mt-2 p-3" [innerHTML]="getMarkdownPreview(selectedLesson.contenido)"></div>
           </div>
 
           <!-- Subida de imagen -->
@@ -369,10 +449,8 @@
         <button type="button" class="btn-close" (click)="closeViewModal()"></button>
       </div>
       <div class="modal-body" *ngIf="selectedLesson">
-        <!-- Vista de texto -->
-        <div *ngIf="selectedLesson.tipo === 'texto'" class="lesson-content">
-          <p style="white-space: pre-wrap;">{{ selectedLesson.contenido }}</p>
-        </div>
+        <!-- Vista de texto (renderizado Markdown) -->
+        <div *ngIf="selectedLesson.tipo === 'texto'" class="lesson-content markdown-content" [innerHTML]="getMarkdownPreview(selectedLesson.contenido)"></div>
 
         <!-- Vista de imagen -->
         <div *ngIf="selectedLesson.tipo === 'imagen'" class="text-center">
