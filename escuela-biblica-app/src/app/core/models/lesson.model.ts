@@ -9,4 +9,7 @@ export interface Leccion {
   orden: number;
   tareas: string[]; // IDs de tareas asociadas a esta lección
   fechaCreacion: Date;
+  // Progreso del estudiante (solo en runtime, no se guarda en BD de lecciones)
+  completada?: boolean;
+  fechaCompletado?: Date;
 }

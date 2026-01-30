@@ -234,6 +234,20 @@
               <h5><i class="fas fa-image"></i> Imagen</h5>
               <img [src]="leccion.urlArchivo" [alt]="leccion.titulo" class="img-fluid rounded">
             </div>
+
+            <!-- Botón Completar Lección (solo para estudiantes) -->
+            <div *ngIf="userRole === 'estudiante'" class="leccion-actions mt-4">
+              <div class="alert alert-success" *ngIf="leccion.completada">
+                <i class="fas fa-check-circle"></i> Lección completada
+                <span *ngIf="leccion.fechaCompletado"> el {{ leccion.fechaCompletado | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <button
+                *ngIf="!leccion.completada"
+                class="btn btn-success btn-lg w-100"
+                (click)="completarLeccion(leccion)">
+                <i class="fas fa-check"></i> Completar Lección
+              </button>
+            </div>
           </div>
         </div>
       </div>

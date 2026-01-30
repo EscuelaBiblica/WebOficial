@@ -105,7 +105,7 @@ export class GradingService {
 
     // Obtener todos los intentos de exámenes (tomar el mejor intento)
     const qExamenes = query(
-      collection(this.firestore, 'intentosExamenes'),
+      collection(this.firestore, 'intentos'),
       where('estudianteId', '==', estudianteId)
     );
     const examenesSnapshot = await getDocs(qExamenes);
@@ -343,12 +343,20 @@ export class GradingService {
     const leccionesSnapshots = await Promise.all(leccionesPromises);
     const leccionesTotales = leccionesSnapshots.reduce((sum, snapshot) => sum + snapshot.size, 0);
 
-    // Obtener todas las tareas
-    const tareasPromises = seccionesIds.map(seccionId =>
-      getDocs(query(collection(this.firestore, 'tareas'), where('seccionId', '==', seccionId)))
+    // Obtener todas las tareas visibles (buscar por leccionId, no seccionId)
+    const leccionesIds = leccionesSnapshots.flatMap(snapshot => snapshot.docs.map(doc => doc.id));
+    const tareasPromises = leccionesIds.map(leccionId =>
+      getDocs(query(collection(this.firestore, 'tareas'), where('leccionId', '==', leccionId)))
     );
     const tareasSnapshots = await Promise.all(tareasPromises);
-    const tareas = tareasSnapshots.flatMap(snapshot => snapshot.docs.map(doc => doc.id));
+    const tareas = tareasSnapshots.flatMap(snapshot =>
+      snapshot.docs
+        .filter(doc => {
+          const data = doc.data();
+          return data['visible'] !== false; // Incluir si visible es true o undefined
+        })
+        .map(doc => doc.id)
+    );
 
     // Obtener entregas de tareas
     const entregasQuery = query(
@@ -360,16 +368,23 @@ export class GradingService {
       .map(doc => doc.data()['tareaId'])
       .filter((id: string) => tareas.includes(id));
 
-    // Obtener todos los exámenes
+    // Obtener todos los exámenes visibles (filtrar los no visibles)
     const examenesPromises = seccionesIds.map(seccionId =>
       getDocs(query(collection(this.firestore, 'examenes'), where('seccionId', '==', seccionId)))
     );
     const examenesSnapshots = await Promise.all(examenesPromises);
-    const examenes = examenesSnapshots.flatMap(snapshot => snapshot.docs.map(doc => doc.id));
+    const examenes = examenesSnapshots.flatMap(snapshot =>
+      snapshot.docs
+        .filter(doc => {
+          const data = doc.data();
+          return data['visible'] !== false; // Incluir si visible es true o undefined
+        })
+        .map(doc => doc.id)
+    );
 
     // Obtener intentos de exámenes finalizados
     const intentosQuery = query(
-      collection(this.firestore, 'intentosExamenes'),
+      collection(this.firestore, 'intentos'),
       where('estudianteId', '==', estudianteId),
       where('estado', '==', 'finalizado')
     );
@@ -380,19 +395,30 @@ export class GradingService {
         .filter((id: string) => examenes.includes(id))
     )];
 
+    // Obtener lecciones completadas
+    const leccionesCompletadasQuery = query(
+      collection(this.firestore, 'progresoLecciones'),
+      where('estudianteId', '==', estudianteId),
+      where('completada', '==', true)
+    );
+    const leccionesCompletadasSnapshot = await getDocs(leccionesCompletadasQuery);
+    const leccionesCompletadas = leccionesCompletadasSnapshot.docs
+      .map(doc => doc.data()['leccionId'])
+      .filter((id: string) => leccionesIds.includes(id)); // Solo contar lecciones de este curso
+
     // Calcular calificación actual
     const calificacion = await this.calcularCalificacionEstudiante(estudianteId, cursoId);
 
-    // Calcular porcentaje de avance
+    // Calcular porcentaje de avance (AHORA INCLUYE LECCIONES)
     const totalElementos = leccionesTotales + tareas.length + examenes.length;
-    const elementosCompletados = leccionesTotales + tareasEntregadas.length + examenesRealizados.length; // Asumimos lecciones como vistas
+    const elementosCompletados = leccionesCompletadas.length + tareasEntregadas.length + examenesRealizados.length;
     const porcentajeAvance = totalElementos > 0 ? Math.round((elementosCompletados / totalElementos) * 100) : 0;
 
     return {
       estudianteId,
       cursoId,
       porcentajeAvance,
-      leccionesCompletadas: [], // TODO: implementar tracking de lecciones vistas
+      leccionesCompletadas,
       leccionesTotales,
       tareasEntregadas,
       tareasTotales: tareas.length,

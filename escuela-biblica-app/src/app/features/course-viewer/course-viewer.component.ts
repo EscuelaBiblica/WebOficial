@@ -156,6 +156,16 @@ export class CourseViewerComponent implements OnInit {
                   return t !== null;
                 }));
 
+                // Cargar estado de completado de la lección (solo para estudiantes)
+                if (this.userRole === 'estudiante') {
+                  const progresoLeccion = await this.progressUnlockService.getProgresoLeccion(
+                    leccion.id,
+                    this.currentUser.id
+                  );
+                  leccion.completada = progresoLeccion?.completada || false;
+                  leccion.fechaCompletado = progresoLeccion?.fechaCompletado;
+                }
+
                 return {
                   ...leccion,
                   tareasData,
@@ -533,5 +543,43 @@ export class CourseViewerComponent implements OnInit {
   verMiProgreso(): void {
     if (!this.curso?.id) return;
     this.router.navigate(['/cursos', this.curso.id, 'progreso']);
+  }
+
+  // Completar lección
+  async completarLeccion(leccion: Leccion): Promise<void> {
+    if (!this.currentUser) return;
+
+    try {
+      await this.progressUnlockService.marcarLeccionCompletada(
+        leccion.id,
+        this.currentUser.id
+      );
+
+      // Actualizar estado local
+      leccion.completada = true;
+      leccion.fechaCompletado = new Date();
+
+      alert('¡Lección completada exitosamente!');
+
+      // Invalidar caché de progreso para recalcular
+      if (this.curso?.id) {
+        await this.progressUnlockService.invalidarCacheProgresoCurso(this.curso.id, this.currentUser.id);
+
+        // Recargar el progreso de la sección actual para actualizar el porcentaje en el sidebar
+        const seccionActual = this.secciones.find(s =>
+          s.lecciones.some(l => l.id === leccion.id)
+        );
+        if (seccionActual) {
+          const progresoActualizado = await this.progressUnlockService.calcularProgresoSeccion(
+            seccionActual.id,
+            this.currentUser.id
+          );
+          seccionActual.progreso = progresoActualizado;
+        }
+      }
+    } catch (error) {
+      console.error('Error completando lección:', error);
+      alert('Hubo un error al marcar la lección como completada. Intenta nuevamente.');
+    }
   }
 }

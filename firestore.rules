@@ -154,8 +154,8 @@ service cloud.firestore {
     
     // Reglas para configuración de calificaciones
     match /configuracionCalificaciones/{configId} {
-      // Leer: Cualquier usuario autenticado
-      allow read: if isAuthenticated();
+      // Leer: Cualquier usuario autenticado puede leer y listar
+      allow get, list: if isAuthenticated();
       
       // Crear/Actualizar: Solo profesores y admins
       allow create: if isProfesor() || isAdmin();
@@ -190,6 +190,33 @@ service cloud.firestore {
                     isAdmin());
       
       // Crear/Actualizar: El estudiante dueño (al completar actividades), profesores y admins
+      allow create: if isAuthenticated() && 
+                     (request.resource.data.estudianteId == request.auth.uid || 
+                      isProfesor() || 
+                      isAdmin());
+      allow update: if isAuthenticated() && 
+                     (resource.data.estudianteId == request.auth.uid || 
+                      isProfesor() || 
+                      isAdmin());
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // Reglas para progreso de lecciones individuales
+    match /progresoLecciones/{progresoLeccionId} {
+      // Leer documento individual: Validar por ID del documento
+      // Formato del ID: {estudianteId}_{leccionId}
+      allow get: if isAuthenticated() && 
+                   (progresoLeccionId.matches('^' + request.auth.uid + '_.*') || 
+                    isProfesor() || 
+                    isAdmin());
+      
+      // Listar (queries con where): Permitir a todos autenticados
+      // Las queries filtrarán por estudianteId en el código
+      allow list: if isAuthenticated();
+      
+      // Crear/Actualizar: El estudiante dueño (al completar lecciones), profesores y admins
       allow create: if isAuthenticated() && 
                      (request.resource.data.estudianteId == request.auth.uid || 
                       isProfesor() || 

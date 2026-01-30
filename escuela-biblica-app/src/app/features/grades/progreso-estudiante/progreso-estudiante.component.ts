@@ -62,9 +62,6 @@ export class ProgresoEstudianteComponent implements OnInit {
         this.gradingService.calcularCalificacionEstudiante(this.estudianteId, this.cursoId),
         this.gradingService.getConfiguracionByCurso(this.cursoId)
       ]);
-
-      this.progreso = progreso;
-      this.calificacion = calificacion;
       this.configuracion = configuracion || undefined;
 
       // Cargar asistencias si la configuración lo incluye

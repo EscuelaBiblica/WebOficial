@@ -71,11 +71,8 @@ export class ProgressUnlockService {
    */
   async calcularProgresoSeccion(seccionId: string, estudianteId: string): Promise<ProgresoSeccion> {
     try {
-      console.log('🔍 [PROGRESO] Iniciando cálculo para:', { seccionId, estudianteId });
-
       // Validar que estudianteId no sea undefined o null
       if (!estudianteId) {
-        console.error('❌ [PROGRESO] estudianteId es undefined o null');
         throw new Error('estudianteId es requerido para calcular progreso');
       }
 
@@ -83,9 +80,7 @@ export class ProgressUnlockService {
       const progresoDocId = `${estudianteId}_${seccionId}`;
       const progresoDocRef = doc(this.firestore, 'progreso', progresoDocId);
 
-      console.log('📖 [PROGRESO] Intentando leer documento de progreso:', progresoDocId);
       const progresoDoc = await getDoc(progresoDocRef);
-      console.log('✅ [PROGRESO] Documento leído exitosamente');
 
       // Si existe y es reciente (menos de 5 minutos), usarlo
       if (progresoDoc.exists()) {
@@ -95,7 +90,6 @@ export class ProgressUnlockService {
         const CINCO_MINUTOS = 5 * 60 * 1000;
 
         if (tiempoTranscurrido < CINCO_MINUTOS) {
-          console.log('✅ [PROGRESO] Usando datos en caché (menos de 5 minutos)');
           // Usar datos en caché
           return {
             seccionId: data.seccionId,
@@ -110,14 +104,10 @@ export class ProgressUnlockService {
         }
       }
 
-      console.log('🔄 [PROGRESO] Caché expirado o no existe, calculando desde cero...');
-
       // Si no existe o está desactualizado, calcular de nuevo
       // Obtener la sección
-      console.log('📖 [PROGRESO] Leyendo sección:', seccionId);
       const seccionDoc = await getDoc(doc(this.firestore, 'secciones', seccionId));
       if (!seccionDoc.exists()) {
-        console.error('❌ [PROGRESO] Sección no encontrada');
         throw new Error('Sección no encontrada');
       }
       console.log('✅ [PROGRESO] Sección leída exitosamente');
@@ -146,9 +136,8 @@ export class ProgressUnlockService {
         return progresoCompleto;
       }
 
-      // Obtener lecciones completadas (asumimos que ver una lección = completarla)
-      const leccionesCompletadas: string[] = [];
-      // TODO: Implementar tracking de lecciones vistas
+      // Obtener lecciones completadas de esta sección
+      const leccionesCompletadas: string[] = await this.getLeccionesCompletadasSeccion(seccionId, estudianteId);
 
       // Obtener tareas entregadas
       let tareasEntregadas: string[] = [];
@@ -423,4 +412,98 @@ export class ProgressUnlockService {
       console.error('Error invalidando caché:', error);
     }
   }
+
+  // ========== TRACKING DE LECCIONES ==========
+
+  /**
+   * Marcar una lección como completada
+   */
+  async marcarLeccionCompletada(
+    leccionId: string,
+    estudianteId: string,
+    respuestaRetroalimentacion?: string,
+    correcta?: boolean
+  ): Promise<void> {
+    const progresoLeccionId = `${estudianteId}_${leccionId}`;
+    const progresoDocRef = doc(this.firestore, 'progresoLecciones', progresoLeccionId);
+
+    await setDoc(progresoDocRef, {
+      leccionId,
+      estudianteId,
+      completada: true,
+      fechaCompletado: new Date(),
+      respuestaRetroalimentacion: respuestaRetroalimentacion || null,
+      correctaRetroalimentacion: correcta !== undefined ? correcta : null
+    });
+
+    console.log('✅ Lección marcada como completada:', leccionId);
+  }
+
+  /**
+   * Verificar si una lección está completada
+   */
+  async isLeccionCompletada(leccionId: string, estudianteId: string): Promise<boolean> {
+    const progresoLeccionId = `${estudianteId}_${leccionId}`;
+    const progresoDocRef = doc(this.firestore, 'progresoLecciones', progresoLeccionId);
+    const progresoDoc = await getDoc(progresoDocRef);
+
+    if (progresoDoc.exists()) {
+      const data = progresoDoc.data();
+      return data['completada'] === true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Obtener progreso de lección
+   */
+  async getProgresoLeccion(leccionId: string, estudianteId: string): Promise<any | null> {
+    try {
+      const progresoLeccionId = `${estudianteId}_${leccionId}`;
+      const progresoDocRef = doc(this.firestore, 'progresoLecciones', progresoLeccionId);
+      const progresoDoc = await getDoc(progresoDocRef);
+
+      if (progresoDoc.exists()) {
+        const data = progresoDoc.data();
+        return {
+          id: progresoDoc.id,
+          leccionId: data['leccionId'],
+          estudianteId: data['estudianteId'],
+          completada: data['completada'],
+          fechaCompletado: data['fechaCompletado']?.toDate(),
+          respuestaRetroalimentacion: data['respuestaRetroalimentacion'],
+          correctaRetroalimentacion: data['correctaRetroalimentacion']
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error obteniendo progreso de lección:', error);
+      return null; // Retornar null si hay error de permisos o cualquier otro
+    }
+  }
+
+  /**
+   * Obtener todas las lecciones completadas de un estudiante en una sección
+   */
+  async getLeccionesCompletadasSeccion(seccionId: string, estudianteId: string): Promise<string[]> {
+    // Obtener lecciones de la sección
+    const leccionesQuery = query(
+      collection(this.firestore, 'lecciones'),
+      where('seccionId', '==', seccionId)
+    );
+    const leccionesSnapshot = await getDocs(leccionesQuery);
+    const leccionesIds = leccionesSnapshot.docs.map(doc => doc.id);
+
+    // Verificar cuáles están completadas
+    const completadasPromises = leccionesIds.map(async leccionId => {
+      const completada = await this.isLeccionCompletada(leccionId, estudianteId);
+      return completada ? leccionId : null;
+    });
+
+    const resultados = await Promise.all(completadasPromises);
+    return resultados.filter(id => id !== null) as string[];
+  }
 }
+

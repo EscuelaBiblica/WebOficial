@@ -1,0 +1,13 @@
+1- NO SIRVE EL MODO PROGRESION (solo se esta aplicando a las secciones mas no asi a las lecciones y tareas) 
+-No hay forma de registrar el avance y la progresión, debería existir en cada lección el botón de completar al final de la misma para registrar el avance
+
+2- SE NECESITA MEJORAR LA CREACION DE LECCIONES PARA:
+-inluir estilos de letra, principalmente negrita, cursiva y subrayado. (talvez podríamos usar la notación de los README, y al visualizar ya darle los estilos correctos)
+
+3- SE NECESITA AÑADIR ADEMAS DE TAREAS EN LAS LECCIONES, PREGUNTAS DE RETROALIMENTACION. 
+-Al completar una lección realizar una pregunta (preconfigurada por el admin) que sirva como retro alimentación y forma de asegurar que realmente aprendio la lección y de esa forma también asegurar el registro del progreso en caso de contestar bien. La pregunta debería ser simple, con dos opciones por marcar nada mas. 
+
+4- Hay demasiada información irrelevante o que ocupa mucho espacio visual al querer realizar una entrega de una tarea se debe optimizar el espacio visual
+
+5- La vista de progreso y calificaciones para el estudiante, esta demasiado cargado cuando todo podría entrar en un espacio mas reducido. Ademas no se están reflejando bien los datos, a pesar de que un estudiante ya realizo tareas y exámenes y tiene calificación, en su avance sale como que no completo nada aun, este error es critico y debe mejorarse cuanto antes. La verdad es que para esta vista quería algo mas minimalista:
+Una tabla donde se muestren las tareas, exámenes y nota de asistencia, al costado la nota obtenida otra columna para la ponderación y otra para la nota ponderada y en la ultima fila el total acumulado. Si quieres puedes dejar los graficos y demás cosas que tenia pero que queden en segundo plano abajo de la tabla y con un tamaño mucho mas reducido
