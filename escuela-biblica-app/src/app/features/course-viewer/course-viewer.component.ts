@@ -83,6 +83,13 @@ export class CourseViewerComponent implements OnInit {
     private progressUnlockService: ProgressUnlockService
   ) {}
 
+  /**
+   * Helper para convertir Firestore Timestamps a Date
+   */
+  private convertTimestamp(timestamp: any): Date {
+    return timestamp instanceof Date ? timestamp : timestamp.toDate();
+  }
+
   async ngOnInit() {
     const firebaseUser = this.authService.getCurrentUser();
     if (!firebaseUser) {
@@ -150,11 +157,10 @@ export class CourseViewerComponent implements OnInit {
                     const tarea = await this.taskService.getTaskById(tareaId);
                     if (!tarea) return null;
 
-                    // Convertir Timestamps de Firestore a Date
                     return {
                       ...tarea,
-                      fechaInicio: tarea.fechaInicio instanceof Date ? tarea.fechaInicio : (tarea.fechaInicio as any).toDate(),
-                      fechaFin: tarea.fechaFin instanceof Date ? tarea.fechaFin : (tarea.fechaFin as any).toDate()
+                      fechaInicio: this.convertTimestamp(tarea.fechaInicio),
+                      fechaFin: this.convertTimestamp(tarea.fechaFin)
                     };
                   })
                 ).then(tareas => tareas.filter((t): t is Tarea => {
@@ -231,9 +237,7 @@ export class CourseViewerComponent implements OnInit {
   }
 
   toggleLeccion(leccion: LeccionConTareas) {
-    console.log('Toggle lección:', leccion.titulo, 'Estado actual:', leccion.expanded);
     leccion.expanded = !leccion.expanded;
-    console.log('Nuevo estado:', leccion.expanded);
   }
 
   async loadLeccion(seccion: SeccionExpandida, leccion: LeccionConTareas) {
@@ -269,10 +273,6 @@ export class CourseViewerComponent implements OnInit {
       return;
     }
 
-    console.log('Cargando tarea:', tarea.titulo);
-    console.log('User role:', this.userRole);
-    console.log('Current user:', this.currentUser);
-
     this.contenidoActual = {
       tipo: 'tarea',
       seccionTitulo: seccion.titulo,
@@ -282,21 +282,16 @@ export class CourseViewerComponent implements OnInit {
 
     // Si es estudiante, cargar su entrega
     if (this.userRole === 'estudiante') {
-      console.log('Cargando entrega del estudiante...');
       this.contenidoActual.entrega = await this.taskService.getSubmissionByStudentAndTask(
         this.currentUser.id,
         tarea.id
       );
-      console.log('Entrega cargada:', this.contenidoActual.entrega);
 
-      // Convertir Timestamp a Date
-      if (this.contenidoActual.entrega && this.contenidoActual.entrega.fechaEntrega) {
-        this.contenidoActual.entrega.fechaEntrega = this.contenidoActual.entrega.fechaEntrega instanceof Date
-          ? this.contenidoActual.entrega.fechaEntrega
-          : (this.contenidoActual.entrega.fechaEntrega as any).toDate();
+      if (this.contenidoActual.entrega?.fechaEntrega) {
+        this.contenidoActual.entrega.fechaEntrega = this.convertTimestamp(
+          this.contenidoActual.entrega.fechaEntrega
+        );
       }
-    } else {
-      console.log('No es estudiante, no se carga entrega');
     }
     this.closeSidebarOnMobile(); // Cerrar sidebar en móviles
   }
@@ -335,16 +330,11 @@ export class CourseViewerComponent implements OnInit {
 
   getYoutubeEmbedUrl(url: string): SafeResourceUrl {
     if (!url) {
-      console.warn('URL de YouTube vacía');
       return this.sanitizer.bypassSecurityTrustResourceUrl('');
     }
 
-    console.log('URL de YouTube original:', url);
     const videoId = this.extractYoutubeVideoId(url);
-    console.log('Video ID extraído:', videoId);
-
     const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : '';
-    console.log('URL embed generada:', embedUrl);
 
     return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
@@ -497,8 +487,6 @@ export class CourseViewerComponent implements OnInit {
         break;
       }
     }
-
-    console.log('Ver intentos - examenId:', examenId, 'seccionId:', seccionId);
 
     if (seccionId) {
       this.router.navigate(['/secciones', seccionId, 'examenes', examenId, 'intentos']);

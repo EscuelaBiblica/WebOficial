@@ -240,12 +240,11 @@ export class ProgressUnlockService {
 
     const estadoMap = new Map<string, ProgresoSeccion>();
 
-    // Calcular progreso para cada sección
-    for (const seccion of secciones) {
+    // ✅ Calcular progreso para todas las secciones EN PARALELO
+    const progresosPromises = secciones.map(async (seccion) => {
       const progreso = await this.calcularProgresoSeccion(seccion.id, estudianteId);
-
-      // Verificar si está bloqueada
       const desbloqueada = await this.isSeccionUnlocked(seccion.id, estudianteId, secciones);
+
       progreso.bloqueada = !desbloqueada;
       progreso.cumpleRequisitos = desbloqueada;
 
@@ -253,8 +252,16 @@ export class ProgressUnlockService {
         progreso.seccionesPrerrequisito = seccion.prerequisitos;
       }
 
-      estadoMap.set(seccion.id, progreso);
-    }
+      return { seccionId: seccion.id, progreso };
+    });
+
+    // Esperar a que todas las promesas se resuelvan
+    const resultados = await Promise.all(progresosPromises);
+
+    // Construir el mapa con los resultados
+    resultados.forEach(({ seccionId, progreso }) => {
+      estadoMap.set(seccionId, progreso);
+    });
 
     return estadoMap;
   }
