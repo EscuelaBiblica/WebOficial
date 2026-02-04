@@ -1,0 +1,225 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h2 class="mb-1">
+            <i class="fas fa-home me-2"></i>Configuración del Home
+          </h2>
+          <p class="text-muted mb-0">
+            <i class="fas fa-info-circle me-1"></i>
+            Prueba de concepto - Sección Hero/Masthead
+          </p>
+        </div>
+        <div>
+          <button class="btn btn-outline-secondary me-2" (click)="volverAdmin()">
+            <i class="fas fa-arrow-left me-1"></i>Volver
+          </button>
+          <button class="btn btn-info" (click)="verVistaPrevia()">
+            <i class="fas fa-eye me-1"></i>Vista Previa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  <div class="row mb-3" *ngIf="mensaje">
+    <div class="col-12">
+      <div class="alert alert-dismissible fade show"
+           [class.alert-success]="mensaje.tipo === 'success'"
+           [class.alert-danger]="mensaje.tipo === 'error'"
+           [class.alert-info]="mensaje.tipo === 'info'"
+           role="alert">
+        <i class="fas fa-check-circle me-2" *ngIf="mensaje.tipo === 'success'"></i>
+        <i class="fas fa-exclamation-circle me-2" *ngIf="mensaje.tipo === 'error'"></i>
+        <i class="fas fa-info-circle me-2" *ngIf="mensaje.tipo === 'info'"></i>
+        {{ mensaje.texto }}
+        <button type="button" class="btn-close" (click)="mensaje = null"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="row" *ngIf="loading">
+    <div class="col-12">
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3 text-muted">Cargando configuración...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="row" *ngIf="!loading">
+    <div class="col-lg-8 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-edit me-2"></i>Editar Hero/Masthead
+          </h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="heroForm" (ngSubmit)="guardarCambios()">
+
+            <!-- Subtítulo 1 -->
+            <div class="mb-4">
+              <label for="subtitulo1" class="form-label fw-bold">
+                <i class="fas fa-heading me-2"></i>Subtítulo 1
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="subtitulo1"
+                formControlName="subtitulo1"
+                placeholder="¡Desarrolla tu fe!"
+                [class.is-invalid]="heroForm.get('subtitulo1')?.invalid && heroForm.get('subtitulo1')?.touched">
+              <div class="form-text">
+                Primer texto que aparece en el banner principal
+              </div>
+              <div class="invalid-feedback">
+                Este campo es requerido
+              </div>
+            </div>
+
+            <!-- Subtítulo 2 (Horario) -->
+            <div class="mb-4">
+              <label for="subtitulo2" class="form-label fw-bold">
+                <i class="fas fa-clock me-2"></i>Subtítulo 2 (Horario)
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="subtitulo2"
+                formControlName="subtitulo2"
+                placeholder="CLASES TODOS LOS DOMINGOS A LAS 18:00PM"
+                [class.is-invalid]="heroForm.get('subtitulo2')?.invalid && heroForm.get('subtitulo2')?.touched">
+              <div class="form-text">
+                Información del horario de clases
+              </div>
+              <div class="invalid-feedback">
+                Este campo es requerido
+              </div>
+            </div>
+
+            <!-- Título Principal -->
+            <div class="mb-4">
+              <label for="titulo" class="form-label fw-bold">
+                <i class="fas fa-font me-2"></i>Título Principal
+              </label>
+              <input
+                type="text"
+                class="form-control form-control-lg"
+                id="titulo"
+                formControlName="titulo"
+                placeholder="ESCUELA BÍBLICA CAVEVID"
+                [class.is-invalid]="heroForm.get('titulo')?.invalid && heroForm.get('titulo')?.touched">
+              <div class="form-text">
+                Título grande en mayúsculas
+              </div>
+              <div class="invalid-feedback">
+                Este campo es requerido
+              </div>
+            </div>
+
+            <!-- Texto del Botón -->
+            <div class="mb-4">
+              <label for="botonTexto" class="form-label fw-bold">
+                <i class="fas fa-mouse-pointer me-2"></i>Texto del Botón
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="botonTexto"
+                formControlName="botonTexto"
+                placeholder="Ver cursos"
+                [class.is-invalid]="heroForm.get('botonTexto')?.invalid && heroForm.get('botonTexto')?.touched">
+              <div class="form-text">
+                Texto que aparece en el botón del hero
+              </div>
+              <div class="invalid-feedback">
+                Este campo es requerido
+              </div>
+            </div>
+
+            <!-- Link del Botón -->
+            <div class="mb-4">
+              <label for="botonLink" class="form-label fw-bold">
+                <i class="fas fa-link me-2"></i>Link del Botón
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="botonLink"
+                formControlName="botonLink"
+                placeholder="#services"
+                [class.is-invalid]="heroForm.get('botonLink')?.invalid && heroForm.get('botonLink')?.touched">
+              <div class="form-text">
+                Hacia dónde lleva el botón (use # para anclas internas)
+              </div>
+              <div class="invalid-feedback">
+                Este campo es requerido
+              </div>
+            </div>
+
+            <!-- Información de Última Actualización -->
+            <div class="alert alert-light border" *ngIf="config">
+              <small class="text-muted">
+                <i class="fas fa-clock me-1"></i>
+                Última actualización: {{ config.ultimaActualizacion | date:'medium' }}
+                por {{ config.actualizadoPor }}
+              </small>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-warning"
+                (click)="resetearValores()"
+                [disabled]="saving">
+                <i class="fas fa-undo me-1"></i>Restablecer Valores
+              </button>
+
+              <div>
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-lg"
+                  [disabled]="heroForm.invalid || saving">
+                  <span *ngIf="!saving">
+                    <i class="fas fa-save me-2"></i>Guardar Cambios
+                  </span>
+                  <span *ngIf="saving">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Guardando...
+                  </span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Información Técnica -->
+      <div class="card mt-4 border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Información Técnica
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>Los cambios se aplican <strong>inmediatamente</strong> en el home</li>
+            <li>El caché se invalida automáticamente al guardar</li>
+            <li>Los visitantes verán los cambios en su próxima carga</li>
+            <li>Esta es la <strong>Fase 0.5</strong> - Prueba de concepto con Hero</li>
+            <li>Si funciona bien, agregaremos el resto de secciones</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

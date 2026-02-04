@@ -301,5 +301,20 @@ service cloud.firestore {
     }
     
     // ====================================================================
+    // REGLAS PARA CONFIGURACIÓN DEL HOME (CMS)
+    // ====================================================================
+    match /configuracion-home/{configId} {
+      // Leer: Cualquier usuario (incluso no autenticado) puede leer la configuración del home
+      // Esto es necesario para que los visitantes vean la página sin login
+      allow read: if true;
+      
+      // Crear/Actualizar: Solo admins pueden modificar la configuración
+      allow create, update: if isAdmin();
+      
+      // Eliminar: Solo admins (aunque en la práctica no se debería eliminar)
+      allow delete: if isAdmin();
+    }
+    
+    // ====================================================================
   }
 }

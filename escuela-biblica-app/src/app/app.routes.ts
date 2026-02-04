@@ -50,6 +50,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/admin/solicitudes/solicitudes-admin.component').then(m => m.SolicitudesAdminComponent)
   },
   {
+    path: 'admin/configurar-home',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/admin/configurar-home/configurar-home.component').then(m => m.ConfigurarHomeComponent)
+  },
+  {
     path: 'cursos',
     canActivate: [authGuard],
     loadComponent: () => import('./features/courses/cursos.component').then(m => m.CursosComponent)

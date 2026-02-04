@@ -2,6 +2,8 @@ import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { HomeConfigService } from '../../core/services/home-config.service';
+import { ConfiguracionHome } from '../../core/models/config-home.model';
 
 declare const bootstrap: any;
 
@@ -17,17 +19,41 @@ export class HomeComponent implements OnInit, AfterViewInit {
   isLoggedIn = false;
   userRole: string | null = null;
 
+  // Configuración dinámica del home
+  config: ConfiguracionHome | null = null;
+  loadingConfig = true;
+
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private homeConfigService: HomeConfigService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
+    // Cargar configuración del home
+    await this.cargarConfiguracion();
+
     // Verificar estado de autenticación
     this.authService.userProfile$.subscribe(userProfile => {
       this.isLoggedIn = !!userProfile;
       this.userRole = userProfile?.rol || null;
     });
+  }
+
+  /**
+   * Carga la configuración dinámica del home desde Firestore
+   * Implementa caché de 2 horas para rendimiento óptimo
+   */
+  private async cargarConfiguracion() {
+    try {
+      this.loadingConfig = true;
+      this.config = await this.homeConfigService.getConfiguracion();
+    } catch (error) {
+      console.error('Error cargando configuración del home:', error);
+      // En caso de error, mantener null y el HTML mostrará valores por defecto
+    } finally {
+      this.loadingConfig = false;
+    }
   }
 
   ngAfterViewInit() {

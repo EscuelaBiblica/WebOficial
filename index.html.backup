@@ -1,8 +1,26 @@
-
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Escuela Biblica - CAVEVID</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <!-- Google fonts-->
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body id="page-top">
         <!-- Navigation-->
         <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
             <div class="container">
-                <a class="navbar-brand" routerLink="/home"><img src="assets/img/logo.svg" alt="..." /></a>
+                <a class="navbar-brand" href="#page-top"><img src="assets/img/logo.svg" alt="..." /></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                     Menu
                     <i class="fas fa-bars ms-1"></i>
@@ -14,26 +32,6 @@
                         <li class="nav-item"><a class="nav-link" href="#about">Propósito</a></li>
                         <li class="nav-item"><a class="nav-link" href="#team">Profesores</a></li>
                         <li class="nav-item"><a class="nav-link" href="#contact">Inscripción</a></li>
-                        <li class="nav-item" *ngIf="!isLoggedIn">
-                            <a class="nav-link btn btn-outline-primary text-white px-3 ms-lg-3" routerLink="/login">
-                                <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
-                            </a>
-                        </li>
-                        <li class="nav-item" *ngIf="!isLoggedIn">
-                            <a class="nav-link btn btn-primary text-white px-3 ms-lg-2" routerLink="/registro">
-                                <i class="fas fa-user-plus me-1"></i>Registrarse
-                            </a>
-                        </li>
-                        <li class="nav-item" *ngIf="isLoggedIn">
-                            <a class="nav-link btn btn-success text-white px-3 ms-lg-3" (click)="navigateToDashboard()" style="cursor: pointer;">
-                                <i class="fas fa-tachometer-alt me-1"></i>Mi Panel
-                            </a>
-                        </li>
-                        <li class="nav-item" *ngIf="isLoggedIn">
-                            <a class="nav-link btn btn-danger text-white px-3 ms-lg-2" (click)="logout()" style="cursor: pointer;">
-                                <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
-                            </a>
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -41,23 +39,10 @@
         <!-- Masthead-->
         <header class="masthead">
             <div class="container">
-                <!--
-                    SECCIÓN HERO - Ahora dinámico desde Firestore
-                    Si no hay config cargada, muestra valores por defecto (fallback)
-                -->
-                <div class="masthead-subheading">
-                    {{ (config?.hero?.subtitulo1) ?? '¡Desarrolla tu fe!' }}
-                </div>
-                <div class="masthead-subheading">
-                    {{ (config?.hero?.subtitulo2) ?? 'CLASES TODOS LOS DOMINGOS A LAS 18:00PM' }}
-                </div>
-                <div class="masthead-heading text-uppercase">
-                    {{ (config?.hero?.titulo) ?? 'ESCUELA BÍBLICA CAVEVID' }}
-                </div>
-                <a class="btn btn-primary btn-xl text-uppercase"
-                   [href]="(config?.hero?.botonLink) ?? '#services'">
-                    {{ (config?.hero?.botonTexto) ?? 'Ver cursos' }}
-                </a>
+                <div class="masthead-subheading">¡Desarrolla tu fe!</div>
+                <div class="masthead-subheading">CLASES TODOS LOS DOMINGOS A LAS 18:00PM</div>
+                <div class="masthead-heading text-uppercase">ESCUELA BÍBLICA CAVEVID</div>
+                <a class="btn btn-primary btn-xl text-uppercase" href="#services">Ver cursos</a>
             </div>
         </header>
 <!-- Services-->
@@ -77,7 +62,7 @@
                 <h4 class="my-3">Básico</h4>
                 <h5 class="section-subheading text-muted mb-3">Estudio Bíblico Fundamental</h5>
                 <p class="text-muted mb-4">
-                    Este curso introduce los principios básicos del estudio de la Biblia.
+                    Este curso introduce los principios básicos del estudio de la Biblia. 
                     Ideal para quienes desean establecer una base sólida en su camino de fe y servicio cristiano.
                 </p>
                 <div class="text-start">
@@ -91,7 +76,7 @@
                     </ul>
                 </div>
             </div>
-
+            
             <!-- Curso Avanzado -->
             <div class="col-md-6">
                 <span class="fa-stack fa-4x">
@@ -101,13 +86,13 @@
                 <h4 class="my-3">Avanzado</h4>
                 <h5 class="section-subheading text-muted mb-3">Teología y Evangelismo Profesional</h5>
                 <p class="text-muted mb-4">
-                    Este curso profundiza en el estudio avanzado de la Biblia y la teología cristiana.
+                    Este curso profundiza en el estudio avanzado de la Biblia y la teología cristiana. 
                     Está diseñado para aquellos que buscan un conocimiento más profundo para ejercer un liderazgo efectivo en la iglesia y en la misión cristiana.
                 </p>
                 <div class="text-start">
                     <h5 class="my-3">Materias:</h5>
                     <ul class="text-muted fa-ul">
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Métodos de Evangelismo General <span class="en-curso">EN CURSO</span></li>
+                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Métodos de Evangelismo General <span class="en-curso">EN CURSO</span></li></li>
                         <li><span class="fa-li"><i class="fas fa-check"></i></span>Introducción a la Teología Sistemática</li>
                         <li><span class="fa-li"><i class="fas fa-check"></i></span>Bibliología</li>
                         <li><span class="fa-li"><i class="fas fa-check"></i></span>Homilética</li>
@@ -138,7 +123,7 @@
                             <div class="portfolio-caption">
                                 <div class="portfolio-caption-heading">Evangelismo Personal</div>
                                 <div class="portfolio-caption-subheading text-muted">(Curso Basico)</div>
-                                <span class="en-curso">EN CURSO</span>
+                                <span class="en-curso">EN CURSO</span></li>
                             </div>
                         </div>
                     </div>
@@ -214,7 +199,7 @@
                             <div class="portfolio-caption">
                                 <div class="portfolio-caption-heading">Metodos de Evangelismo General</div>
                                 <div class="portfolio-caption-subheading text-muted">(Curso Avanzado)</div>
-                                <span class="en-curso">EN CURSO</span>
+                                <span class="en-curso">EN CURSO</span></li>
                             </div>
                         </div>
                     </div>
@@ -443,7 +428,7 @@
             <h2 class="section-heading text-uppercase">INSCRIPCIÓN</h2>
             <h3 class="section-subheading text-muted">Regístrate para llevar uno de los cursos.</h3>
         </div>
-        <form id="contactForm" (submit)="onSubmit($event)">
+        <form id="contactForm" onsubmit="return handleSubmit(event)">
             <div class="row align-items-stretch mb-5">
                 <div class="col-md-6">
                     <div class="form-group">
@@ -521,8 +506,39 @@
         </div>
     </div>
 </div>
-
-
+<script>
+    async function handleSubmit(event) {
+        event.preventDefault();
+    
+        const submitButton = document.getElementById('submitButton');
+        submitButton.disabled = true;
+    
+        const formData = {
+            nombre: document.getElementById('name').value,
+            curso: document.getElementById('curso').value,
+            celular: document.getElementById('phone').value,
+            observacion: document.getElementById('message').value
+        };
+    
+        try {
+            const response = await fetch('https://script.google.com/macros/s/AKfycbwiq3qLw565PE5mJJIqH-RauNBgzUYyMyg0xVVlJXLemRq3brgfpL_R3bDTR4mPi2U/exec', {
+                method: 'POST',
+                body: JSON.stringify(formData),
+                headers: { 'Content-Type': 'application/json' },
+                mode: 'no-cors'
+            });
+                document.getElementById('contactForm').reset(); // Reinicia el formulario
+                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+        } catch (error) {
+            var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+    </script>
+    
         <!-- Footer-->
         <footer class="footer py-4">
             <div class="container">
@@ -562,7 +578,7 @@
                                             <strong>Fecha de inicio:</strong>
                                             Domingo 09 de marzo
                                         </li>
-                                        <span class="en-curso">EN CURSO</span>
+                                        <span class="en-curso">EN CURSO</span></li>
                                         <li>
                                             <strong>Profesor:</strong>
                                             Hernán Pérez
@@ -748,7 +764,7 @@
                                                 <strong>Fecha de inicio:</strong>
                                                 Domingo 09 de Marzo
                                             </li>
-                                            <span class="en-curso">EN CURSO</span>
+                                            <span class="en-curso">EN CURSO</span></li>
                                             <li>
                                                 <strong>Profesor:</strong>
                                                 Eben Cayo
@@ -917,4 +933,14 @@
                 </div>
             </div>
         </div>
-
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <!-- * *                               SB Forms JS                               * *-->
+        <!-- * * Activate your form at https://startbootstrap.com/solution/contact-forms * *-->
+        <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *-->
+        <script src="https://cdn.startbootstrap.com/sb-forms-latest.js"></script>
+    </body>
+</html>
