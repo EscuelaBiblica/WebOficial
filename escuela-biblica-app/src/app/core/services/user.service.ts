@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
-import { 
-  Firestore, 
-  collection, 
-  collectionData, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc, 
+import {
+  Firestore,
+  collection,
+  collectionData,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
   deleteDoc,
   query,
   where,
-  getDocs
+  getDocs,
+  documentId
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { UserModel, UserRole } from '../models/user.model';
@@ -37,13 +38,60 @@ export class UserService {
     try {
       const userDocRef = doc(this.firestore, `users/${userId}`);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (userDoc.exists()) {
         return { id: userDoc.id, ...userDoc.data() } as UserModel;
       }
       return null;
     } catch (error) {
       console.error('Error obteniendo usuario:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * ✅ OPTIMIZACIÓN: Obtener múltiples usuarios por IDs (batch loading)
+   * Reduce N llamadas a 1 llamada usando 'in' operator
+   */
+  async getUsersByIds(userIds: string[]): Promise<Map<string, UserModel>> {
+    const usersMap = new Map<string, UserModel>();
+
+    if (userIds.length === 0) return usersMap;
+
+    // Filtrar IDs únicos y no nulos
+    const uniqueIds = [...new Set(userIds.filter(id => id))];
+    if (uniqueIds.length === 0) return usersMap;
+
+    try {
+      // Firestore 'in' limita a 10 items, dividir en chunks
+      const chunks = [];
+      for (let i = 0; i < uniqueIds.length; i += 10) {
+        chunks.push(uniqueIds.slice(i, i + 10));
+      }
+
+      // Ejecutar queries en paralelo
+      const queryPromises = chunks.map(chunk =>
+        getDocs(query(
+          this.usersCollection,
+          where(documentId(), 'in', chunk)
+        ))
+      );
+
+      const snapshots = await Promise.all(queryPromises);
+
+      // Procesar resultados
+      snapshots.forEach(snapshot => {
+        snapshot.docs.forEach(doc => {
+          usersMap.set(doc.id, {
+            id: doc.id,
+            ...doc.data()
+          } as UserModel);
+        });
+      });
+
+      return usersMap;
+    } catch (error) {
+      console.error('Error en batch loading de usuarios:', error);
       throw error;
     }
   }
@@ -118,7 +166,7 @@ export class UserService {
     try {
       const student = await this.getUserById(studentId);
       if (!student) throw new Error('Estudiante no encontrado');
-      
+
       const cursosInscritos = student.cursosInscritos || [];
       if (!cursosInscritos.includes(courseId)) {
         cursosInscritos.push(courseId);
@@ -137,7 +185,7 @@ export class UserService {
     try {
       const student = await this.getUserById(studentId);
       if (!student) throw new Error('Estudiante no encontrado');
-      
+
       const cursosInscritos = (student.cursosInscritos || []).filter(id => id !== courseId);
       await this.updateUser(studentId, { cursosInscritos });
     } catch (error) {
@@ -153,7 +201,7 @@ export class UserService {
     try {
       const teacher = await this.getUserById(teacherId);
       if (!teacher) throw new Error('Profesor no encontrado');
-      
+
       const cursosAsignados = teacher.cursosAsignados || [];
       if (!cursosAsignados.includes(courseId)) {
         cursosAsignados.push(courseId);
@@ -172,7 +220,7 @@ export class UserService {
     try {
       const teacher = await this.getUserById(teacherId);
       if (!teacher) throw new Error('Profesor no encontrado');
-      
+
       const cursosAsignados = (teacher.cursosAsignados || []).filter(id => id !== courseId);
       await this.updateUser(teacherId, { cursosAsignados });
     } catch (error) {
@@ -188,7 +236,7 @@ export class UserService {
     try {
       const allUsers = await getDocs(this.usersCollection);
       const users = allUsers.docs.map(doc => doc.data() as UserModel);
-      
+
       return {
         total: users.length,
         estudiantes: users.filter(u => u.rol === 'estudiante').length,

@@ -1,15 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseService } from '../../../core/services/course.service';
-import { SectionService } from '../../../core/services/section.service';
-import { LessonService } from '../../../core/services/lesson.service';
-import { TaskService } from '../../../core/services/task.service';
 import { UserService } from '../../../core/services/user.service';
+import { ProgressUnlockService } from '../../../core/services/progress-unlock.service';
 import { Router } from '@angular/router';
 import { Curso } from '../../../core/models/course.model';
-import { User } from '../../../core/models/user.model';
+import { ProgresoSeccion } from '../../../core/models/section.model';
 
 interface CursoConProgreso extends Curso {
   progreso: number;
@@ -35,10 +32,8 @@ export class EstudianteDashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private courseService: CourseService,
-    private sectionService: SectionService,
-    private lessonService: LessonService,
-    private taskService: TaskService,
     private userService: UserService,
+    private progressUnlockService: ProgressUnlockService,
     private router: Router
   ) {}
 
@@ -58,48 +53,37 @@ export class EstudianteDashboardComponent implements OnInit {
       // Obtener cursos donde el estudiante está inscrito
       const cursosEstudiante = await this.courseService.getCoursesByEstudiante(this.currentUserId);
 
-      // Cargar progreso y estadísticas para cada curso
+      if (cursosEstudiante.length === 0) {
+        this.cursos = [];
+        return;
+      }
+
+      // ✅ OPTIMIZACIÓN: Batch loading de profesores
+      const profesorIds = cursosEstudiante
+        .map(c => c.profesorId)
+        .filter(id => id);
+      const profesoresMap = await this.userService.getUsersByIds(profesorIds);
+
+      // ✅ OPTIMIZACIÓN: Cargar progreso usando servicio en paralelo
       this.cursos = await Promise.all(
         cursosEstudiante.map(async curso => {
-          // Obtener nombre del profesor
+          // Obtener nombre del profesor desde el mapa
           let profesorNombre = 'Sin asignar';
           if (curso.profesorId) {
-            const profesor = await this.userService.getUserById(curso.profesorId);
+            const profesor = profesoresMap.get(curso.profesorId);
             if (profesor) {
               profesorNombre = `${profesor.nombre} ${profesor.apellido}`;
             }
           }
 
-          // Calcular progreso del curso
-          const secciones = await firstValueFrom(this.sectionService.getSectionsByCourse(curso.id));
-          let totalTareas = 0;
-          let tareasEntregadas = 0;
+          // Usar servicio de progreso (con caché en Firestore)
+          const estadoSecciones = await this.progressUnlockService.getEstadoSeccionesCurso(
+            curso.id,
+            this.currentUserId
+          );
 
-          for (const seccion of secciones) {
-            // Obtener lecciones de la sección
-            const lecciones = await firstValueFrom(this.lessonService.getLessonsBySection(seccion.id));
-
-            for (const leccion of lecciones) {
-              // Obtener tareas de la lección
-              if (leccion.tareas && leccion.tareas.length > 0) {
-                totalTareas += leccion.tareas.length;
-
-                // Verificar cuáles ha entregado el estudiante
-                for (const tareaId of leccion.tareas) {
-                  const entrega = await this.taskService.getSubmissionByStudentAndTask(
-                    this.currentUserId,
-                    tareaId
-                  );
-                  if (entrega) {
-                    tareasEntregadas++;
-                  }
-                }
-              }
-            }
-          }
-
-          // Calcular progreso (porcentaje de tareas entregadas)
-          const progreso = totalTareas > 0 ? Math.round((tareasEntregadas / totalTareas) * 100) : 0;
+          // Calcular progreso promedio y estadísticas
+          const { progreso, tareasEntregadas, totalTareas } = this.calcularEstadisticasCurso(estadoSecciones);
 
           return {
             ...curso,
@@ -116,6 +100,45 @@ export class EstudianteDashboardComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  /**
+   * ✅ Helper para calcular estadísticas del curso desde el progreso de secciones
+   */
+  private calcularEstadisticasCurso(estadoSecciones: Map<string, ProgresoSeccion>): {
+    progreso: number;
+    tareasEntregadas: number;
+    totalTareas: number;
+  } {
+    if (estadoSecciones.size === 0) {
+      return { progreso: 0, tareasEntregadas: 0, totalTareas: 0 };
+    }
+
+    let tareasEntregadasTotal = 0;
+    let totalTareasTotal = 0;
+    const progresos: number[] = [];
+
+    estadoSecciones.forEach(seccion => {
+      // Acumular tareas
+      tareasEntregadasTotal += seccion.tareasEntregadas?.length || 0;
+      // Estimar total de tareas de la sección basado en elementos
+      const tareasSeccion = seccion.tareasEntregadas?.length || 0;
+      totalTareasTotal += tareasSeccion;
+
+      // Acumular porcentaje de completado
+      progresos.push(seccion.porcentajeCompletado || 0);
+    });
+
+    // Calcular progreso promedio de todas las secciones
+    const progresoPromedio = progresos.length > 0
+      ? Math.round(progresos.reduce((a, b) => a + b, 0) / progresos.length)
+      : 0;
+
+    return {
+      progreso: progresoPromedio,
+      tareasEntregadas: tareasEntregadasTotal,
+      totalTareas: totalTareasTotal
+    };
   }
 
   verCurso(cursoId: string) {
