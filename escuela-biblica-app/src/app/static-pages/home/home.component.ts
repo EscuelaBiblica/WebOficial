@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { HomeConfigService } from '../../core/services/home-config.service';
-import { ConfiguracionHome, CursoInfo, MateriaDetalle } from '../../core/models/config-home.model';
+import { ConfiguracionHome, CursoInfo, MateriaDetalle, TimelineItem } from '../../core/models/config-home.model';
 
 declare const bootstrap: any;
 
@@ -194,6 +194,38 @@ export class HomeComponent implements OnInit, AfterViewInit {
         fechaInicio: "Julio 2025",
         profesor: "Misionera Ana López"
       }
+    }
+  ];
+
+  // Datos de fallback para timeline/about (si no hay config en Firestore)
+  aboutItemsDefault: TimelineItem[] = [
+    {
+      titulo: 'MISIÓN',
+      subtitulo: 'Formación Integral en la Palabra',
+      descripcion: 'Formar creyentes firmes en la fe, con un conocimiento profundo de la Palabra de Dios, capacitados para aplicar principios bíblicos en su vida diaria y preparados para servir en la obra del Señor.',
+      imagen: 'assets/img/about/1.jpg',
+      invertido: false
+    },
+    {
+      titulo: 'VISIÓN',
+      subtitulo: 'Creciendo en el Conocimiento y Servicio',
+      descripcion: 'Ofrecer una enseñanza sólida y práctica, que impulse el crecimiento espiritual de los creyentes y equipe obreros para el servicio en la iglesia local y la expansión del evangelio.',
+      imagen: 'assets/img/about/2.webp',
+      invertido: true
+    },
+    {
+      titulo: 'OBJETIVO',
+      subtitulo: 'Capacitación para la Vida y el Ministerio',
+      descripcion: 'Proporcionar una educación bíblica estructurada, que ayude a los estudiantes a desarrollar su vida espiritual, doctrinal y ministerial, fortaleciendo su relación con Dios y su compromiso con la gran comisión.',
+      imagen: 'assets/img/about/3.jpg',
+      invertido: false
+    },
+    {
+      titulo: 'COMPROMISO',
+      subtitulo: 'Edificando una Generación Fiel',
+      descripcion: 'Promover una formación cristiana que transforme vidas, fomentando el amor por Dios, el estudio de las Escrituras y el servicio activo en la iglesia, para que cada creyente impacte su entorno con el evangelio.',
+      imagen: 'assets/img/about/4.webp',
+      invertido: true
     }
   ];
 

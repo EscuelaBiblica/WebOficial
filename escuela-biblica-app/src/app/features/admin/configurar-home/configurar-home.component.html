@@ -9,7 +9,7 @@
           </h2>
           <p class="text-muted mb-0">
             <i class="fas fa-cog me-1"></i>
-            FASE 2 - Hero, Cursos y Portfolio/Materias
+            FASE 3 - Hero, Cursos, Portfolio/Materias y About/Timeline
           </p>
         </div>
         <div>
@@ -50,6 +50,14 @@
              (click)="cambiarTab('portfolio')"
              style="cursor: pointer;">
             <i class="fas fa-th me-2"></i>Portfolio / Materias
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="tabActiva === 'about'"
+             (click)="cambiarTab('about')"
+             style="cursor: pointer;">
+            <i class="fas fa-timeline me-2"></i>About / Timeline
           </a>
         </li>
       </ul>
@@ -764,6 +772,194 @@
             <li>Los estados "En Curso" y "Próximamente" muestran badges en las cards</li>
             <li>Puedes ocultar toda la sección con el switch "Sección Visible"</li>
             <li>Recomendación: mantén 10 materias (5 Básico + 5 Avanzado)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario About/Timeline -->
+  <div class="row" *ngIf="!loading && tabActiva === 'about'">
+    <div class="col-lg-10 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-timeline me-2"></i>Editar Sección About / Timeline
+          </h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="aboutForm" (ngSubmit)="guardarCambiosAbout()">
+
+            <!-- Switch de visibilidad -->
+            <div class="mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="aboutVisible" formControlName="visible">
+                <label class="form-check-label fw-bold" for="aboutVisible">
+                  Sección Visible
+                </label>
+              </div>
+            </div>
+
+            <!-- Título de la sección -->
+            <div class="mb-3">
+              <label class="form-label fw-bold">Título de la Sección</label>
+              <input type="text" class="form-control" formControlName="titulo" placeholder="Propósito de la Escuela Bíblica">
+            </div>
+
+            <!-- Subtítulo de la sección -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">Subtítulo de la Sección</label>
+              <input type="text" class="form-control" formControlName="subtitulo" placeholder="¿Por qué existe este ministerio?">
+            </div>
+
+            <hr>
+
+            <!-- Timeline Items -->
+            <div formArrayName="items">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0"><i class="fas fa-list me-2"></i>Items del Timeline</h6>
+                <button type="button" class="btn btn-sm btn-success" (click)="agregarTimelineItem()">
+                  <i class="fas fa-plus me-1"></i>Agregar Item
+                </button>
+              </div>
+
+              <div *ngFor="let item of timelineItems.controls; let i = index" class="card mb-3" [formGroupName]="i">
+                <div class="card-header bg-light">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Item {{ i + 1 }}</h6>
+                    <button type="button" class="btn btn-sm btn-danger" (click)="eliminarTimelineItem(i)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Título</label>
+                      <input type="text" class="form-control" formControlName="titulo" placeholder="MISIÓN">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Subtítulo</label>
+                      <input type="text" class="form-control" formControlName="subtitulo" placeholder="Formación Integral en la Palabra">
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Descripción</label>
+                    <textarea class="form-control" formControlName="descripcion" rows="3" placeholder="Descripción detallada..."></textarea>
+                  </div>
+
+                  <!-- Imagen -->
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Imagen (circular)</label>
+
+                    <!-- Opción 1: Pegar URL -->
+                    <div class="mb-2">
+                      <label class="form-label small">Opción 1: Pegar URL</label>
+                      <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-link"></i></span>
+                        <input type="text" class="form-control" formControlName="imagen" placeholder="https://res.cloudinary.com/...">
+                        <button type="button" class="btn btn-outline-secondary" (click)="item.patchValue({imagen: ''})" [disabled]="!item.get('imagen')?.value">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Opción 2: Subir archivo -->
+                    <div>
+                      <label class="form-label small">Opción 2: Subir a Cloudinary</label>
+                      <div class="input-group">
+                        <input type="file" class="form-control" [id]="'imagenTimeline' + i" accept="image/*" (change)="onImagenTimelineSelected($event, i)">
+                        <label class="input-group-text" [attr.for]="'imagenTimeline' + i">
+                          <i class="fas fa-upload"></i>
+                        </label>
+                      </div>
+                    </div>
+
+                    <small class="text-muted d-block mt-1">Tamaño recomendado: 600x600px (cuadrada) | Máx: 5MB</small>
+                    <div *ngIf="item.get('imagen')?.value" class="mt-2">
+                      <img [src]="item.get('imagen')?.value" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" alt="Preview">
+                    </div>
+                  </div>
+
+                  <!-- Checkbox invertido -->
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'invertido' + i" formControlName="invertido">
+                    <label class="form-check-label" [attr.for]="'invertido' + i">
+                      Posición invertida (derecha)
+                    </label>
+                    <small class="d-block text-muted">Alterna la posición del item en el timeline</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Item Final -->
+            <div formGroupName="itemFinal">
+              <h6 class="mb-3"><i class="fas fa-bullseye me-2"></i>Mensaje Final del Timeline</h6>
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Línea 1</label>
+                  <input type="text" class="form-control" formControlName="linea1" placeholder="Tu también">
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Línea 2</label>
+                  <input type="text" class="form-control" formControlName="linea2" placeholder="Puedes">
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label class="form-label">Línea 3</label>
+                  <input type="text" class="form-control" formControlName="linea3" placeholder="Ser Parte">
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-content-between mt-4">
+              <div>
+                <button
+                  type="button"
+                  class="btn btn-outline-info me-2"
+                  (click)="cargarValoresPorDefecto('about')"
+                  [disabled]="saving">
+                  <i class="fas fa-file-code me-1"></i>Cargar Valores por Defecto
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="aboutForm.reset(); cargarConfiguracion()">
+                  <i class="fas fa-undo me-1"></i>Descartar Cambios
+                </button>
+              </div>
+              <button type="submit" class="btn btn-success" [disabled]="saving || aboutForm.invalid">
+                <span *ngIf="!saving">
+                  <i class="fas fa-save me-1"></i>Guardar Cambios
+                </span>
+                <span *ngIf="saving">
+                  <i class="fas fa-spinner fa-spin me-1"></i>Guardando...
+                </span>
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Información Técnica About -->
+      <div class="card mt-4 border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Tips
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>El timeline muestra la misión, visión, objetivo y compromiso de la escuela</li>
+            <li>Las imágenes deben ser cuadradas para verse bien en círculos</li>
+            <li>Alterna "Posición invertida" para crear el efecto zigzag del timeline</li>
+            <li>El mensaje final aparece al final del timeline con estilo especial</li>
+            <li>Recomendación: mantén 4 items para un diseño equilibrado</li>
           </ul>
         </div>
       </div>

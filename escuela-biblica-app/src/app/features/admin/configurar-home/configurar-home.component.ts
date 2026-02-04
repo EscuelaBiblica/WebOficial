@@ -18,6 +18,7 @@ export class ConfigurarHomeComponent implements OnInit {
   heroForm!: FormGroup;
   cursosForm!: FormGroup;
   portfolioForm!: FormGroup;
+  aboutForm!: FormGroup;
   config: ConfiguracionHome | null = null;
   loading = true;
   saving = false;
@@ -26,7 +27,7 @@ export class ConfigurarHomeComponent implements OnInit {
   mensaje: { tipo: 'success' | 'error' | 'info'; texto: string } | null = null;
 
   // Tabs de navegación
-  tabActiva: 'hero' | 'cursos' | 'portfolio' = 'hero';
+  tabActiva: 'hero' | 'cursos' | 'portfolio' | 'about' = 'hero';
 
   // Lista de iconos disponibles para cursos
   iconosDisponibles = [
@@ -101,6 +102,19 @@ export class ConfigurarHomeComponent implements OnInit {
       titulo: ['', Validators.required],
       subtitulo: ['', Validators.required],
       materias: this.fb.array([])
+    });
+
+    // Crear formulario About/Timeline
+    this.aboutForm = this.fb.group({
+      visible: [true],
+      titulo: ['', Validators.required],
+      subtitulo: ['', Validators.required],
+      items: this.fb.array([]),
+      itemFinal: this.fb.group({
+        linea1: ['', Validators.required],
+        linea2: ['', Validators.required],
+        linea3: ['', Validators.required]
+      })
     });
 
     // Cargar configuración actual
@@ -181,6 +195,36 @@ export class ConfigurarHomeComponent implements OnInit {
             this.materias.push(this.crearMateriaPortfolioForm(materia));
           });
         }
+
+        // Poblar formulario About/Timeline si existe
+        if (this.config.seccionAbout) {
+          this.aboutForm.patchValue({
+            visible: this.config.seccionAbout.visible,
+            titulo: this.config.seccionAbout.titulo,
+            subtitulo: this.config.seccionAbout.subtitulo,
+            itemFinal: this.config.seccionAbout.itemFinal
+          });
+
+          // Limpiar y repoblar array de items
+          this.timelineItems.clear();
+          this.config.seccionAbout.items.forEach(item => {
+            this.timelineItems.push(this.crearTimelineItemForm(item));
+          });
+        } else {
+          // Si no hay seccionAbout en Firestore, cargar datos por defecto
+          this.aboutForm.patchValue({
+            visible: CONFIG_HOME_DEFAULT.seccionAbout!.visible,
+            titulo: CONFIG_HOME_DEFAULT.seccionAbout!.titulo,
+            subtitulo: CONFIG_HOME_DEFAULT.seccionAbout!.subtitulo,
+            itemFinal: CONFIG_HOME_DEFAULT.seccionAbout!.itemFinal
+          });
+
+          // Limpiar y cargar items por defecto
+          this.timelineItems.clear();
+          CONFIG_HOME_DEFAULT.seccionAbout!.items.forEach(item => {
+            this.timelineItems.push(this.crearTimelineItemForm(item));
+          });
+        }
       }
     } catch (error) {
       console.error('Error cargando configuración:', error);
@@ -232,6 +276,11 @@ export class ConfigurarHomeComponent implements OnInit {
     return this.portfolioForm.get('materias') as FormArray;
   }
 
+  // About/Timeline helpers
+  get timelineItems(): FormArray {
+    return this.aboutForm.get('items') as FormArray;
+  }
+
   crearMateriaPortfolioForm(materia?: any): FormGroup {
     return this.fb.group({
       titulo: [materia?.titulo || '', Validators.required],
@@ -275,6 +324,27 @@ export class ConfigurarHomeComponent implements OnInit {
   eliminarMateriaPortfolio(index: number) {
     if (confirm('¿Eliminar esta materia del portfolio?')) {
       this.materias.removeAt(index);
+    }
+  }
+
+  crearTimelineItemForm(item?: any): FormGroup {
+    return this.fb.group({
+      titulo: [item?.titulo || '', Validators.required],
+      subtitulo: [item?.subtitulo || '', Validators.required],
+      descripcion: [item?.descripcion || '', Validators.required],
+      imagen: [item?.imagen || '', Validators.required],
+      invertido: [item?.invertido || false]
+    });
+  }
+
+  // About/Timeline CRUD
+  agregarTimelineItem() {
+    this.timelineItems.push(this.crearTimelineItemForm());
+  }
+
+  eliminarTimelineItem(index: number) {
+    if (confirm('¿Eliminar este item del timeline?')) {
+      this.timelineItems.removeAt(index);
     }
   }
 
@@ -432,6 +502,36 @@ export class ConfigurarHomeComponent implements OnInit {
     }
   }
 
+  async guardarCambiosAbout() {
+    if (this.aboutForm.invalid) {
+      this.mostrarMensaje('error', 'Por favor completa todos los campos requeridos en About/Timeline');
+      return;
+    }
+
+    if (!this.currentUserId) {
+      this.mostrarMensaje('error', 'No se pudo identificar al usuario');
+      return;
+    }
+
+    try {
+      this.saving = true;
+
+      const aboutConfig = this.aboutForm.value;
+
+      await this.homeConfigService.updateSeccionAbout(aboutConfig, this.currentUserId);
+
+      this.mostrarMensaje('success', '✅ Sección About/Timeline actualizada exitosamente.');
+
+      // Recargar configuración
+      await this.cargarConfiguracion();
+    } catch (error) {
+      console.error('Error guardando cambios de about:', error);
+      this.mostrarMensaje('error', 'Error al guardar los cambios de about.');
+    } finally {
+      this.saving = false;
+    }
+  }
+
   // Subir imagen de materia Portfolio
   async onImagenMateriaSelected(event: Event, materiaIndex: number) {
     const input = event.target as HTMLInputElement;
@@ -494,11 +594,43 @@ export class ConfigurarHomeComponent implements OnInit {
     }
   }
 
-  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio') {
+  async onImagenTimelineSelected(event: any, itemIndex: number) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona un archivo de imagen válido');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen no debe superar los 5MB');
+      return;
+    }
+
+    try {
+      this.uploadingImage = true;
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+      this.timelineItems.at(itemIndex).get('imagen')?.setValue(imageUrl);
+
+      this.mostrarMensaje('success', '✅ Imagen timeline cargada exitosamente');
+    } catch (error) {
+      console.error('Error subiendo imagen timeline:', error);
+      alert('Error al subir la imagen timeline. Intenta nuevamente.');
+    } finally {
+      this.uploadingImage = false;
+      input.value = '';
+    }
+  }
+
+  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio' | 'about') {
     this.tabActiva = tab;
   }
 
-  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio') {
+  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio' | 'about') {
     if (!confirm('¿Cargar valores por defecto en el formulario? (No se guardará hasta que presiones "Guardar Cambios")')) {
       return;
     }
@@ -540,6 +672,20 @@ export class ConfigurarHomeComponent implements OnInit {
           this.materias.push(this.crearMateriaPortfolioForm(materia));
         });
         this.mostrarMensaje('info', 'Valores por defecto cargados en Portfolio');
+        break;
+
+      case 'about':
+        this.aboutForm.patchValue({
+          visible: CONFIG_HOME_DEFAULT.seccionAbout!.visible,
+          titulo: CONFIG_HOME_DEFAULT.seccionAbout!.titulo,
+          subtitulo: CONFIG_HOME_DEFAULT.seccionAbout!.subtitulo,
+          itemFinal: CONFIG_HOME_DEFAULT.seccionAbout!.itemFinal
+        });
+        this.timelineItems.clear();
+        CONFIG_HOME_DEFAULT.seccionAbout!.items.forEach(item => {
+          this.timelineItems.push(this.crearTimelineItemForm(item));
+        });
+        this.mostrarMensaje('info', 'Valores por defecto cargados en About/Timeline');
         break;
     }
   }

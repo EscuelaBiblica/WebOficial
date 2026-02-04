@@ -94,6 +94,13 @@ export class HomeConfigService {
   }
 
   /**
+   * Actualiza solo la sección About/Timeline
+   */
+  async updateSeccionAbout(aboutConfig: ConfiguracionHome['seccionAbout'], adminId: string): Promise<void> {
+    await this.updateConfiguracion({ seccionAbout: aboutConfig }, adminId);
+  }
+
+  /**
    * Inicializa la configuración con valores por defecto
    * Se ejecuta una sola vez al crear el sistema
    */

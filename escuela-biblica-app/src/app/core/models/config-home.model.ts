@@ -2,7 +2,8 @@
  * Modelo para la configuración dinámica del Home
  * FASE 0.5 - Hero ✅
  * FASE 1 - Sección Cursos ✅
- * FASE 2 - Sección Portfolio/Materias ⏳
+ * FASE 2 - Sección Portfolio/Materias ✅
+ * FASE 3 - Sección About/Timeline ⏳
  */
 
 // ===== HERO/MASTHEAD =====
@@ -61,6 +62,27 @@ export interface SeccionPortfolioConfig {
   materias: MateriaDetalle[]; // Normalmente 10 materias
 }
 
+// ===== SECCIÓN ABOUT/TIMELINE =====
+export interface TimelineItem {
+  titulo: string; // "MISIÓN", "VISIÓN", "OBJETIVO", "COMPROMISO"
+  subtitulo: string; // "Formación Integral en la Palabra"
+  descripcion: string; // Texto descriptivo
+  imagen: string; // URL de imagen circular
+  invertido: boolean; // true para alternar posición izq/der
+}
+
+export interface SeccionAboutConfig {
+  visible: boolean;
+  titulo: string; // "Propósito de la Escuela Bíblica"
+  subtitulo: string; // "¿Por qué existe este ministerio?"
+  items: TimelineItem[]; // Normalmente 4 items
+  itemFinal: {
+    linea1: string; // "Tu también"
+    linea2: string; // "Puedes"
+    linea3: string; // "Ser Parte"
+  };
+}
+
 // ===== CONFIGURACIÓN PRINCIPAL =====
 export interface ConfiguracionHome {
   id: 'principal';
@@ -78,8 +100,10 @@ export interface ConfiguracionHome {
   // Sección Portfolio/Materias (FASE 2)
   seccionPortfolio?: SeccionPortfolioConfig;
 
+  // Sección About/Timeline (FASE 3)
+  seccionAbout?: SeccionAboutConfig;
+
   // TODO: Agregar resto de secciones en fases posteriores
-  // seccionProposito?: SeccionPropositoConfig;
   // seccionProfesores?: SeccionProfesoresConfig;
   // seccionInscripcion?: SeccionInscripcionConfig;
   // footer?: FooterConfig;
@@ -277,5 +301,47 @@ export const CONFIG_HOME_DEFAULT: Omit<ConfiguracionHome, 'ultimaActualizacion' 
         }
       }
     ]
+  },
+
+  // ===== SECCIÓN ABOUT/TIMELINE (FASE 3) =====
+  seccionAbout: {
+    visible: true,
+    titulo: 'Propósito de la Escuela Bíblica',
+    subtitulo: '¿Por qué existe este ministerio?',
+    items: [
+      {
+        titulo: 'MISIÓN',
+        subtitulo: 'Formación Integral en la Palabra',
+        descripcion: 'Formar creyentes firmes en la fe, con un conocimiento profundo de la Palabra de Dios, capacitados para aplicar principios bíblicos en su vida diaria y preparados para servir en la obra del Señor.',
+        imagen: 'assets/img/about/1.jpg',
+        invertido: false
+      },
+      {
+        titulo: 'VISIÓN',
+        subtitulo: 'Creciendo en el Conocimiento y Servicio',
+        descripcion: 'Ofrecer una enseñanza sólida y práctica, que impulse el crecimiento espiritual de los creyentes y equipe obreros para el servicio en la iglesia local y la expansión del evangelio.',
+        imagen: 'assets/img/about/2.webp',
+        invertido: true
+      },
+      {
+        titulo: 'OBJETIVO',
+        subtitulo: 'Capacitación para la Vida y el Ministerio',
+        descripcion: 'Proporcionar una educación bíblica estructurada, que ayude a los estudiantes a desarrollar su vida espiritual, doctrinal y ministerial, fortaleciendo su relación con Dios y su compromiso con la gran comisión.',
+        imagen: 'assets/img/about/3.jpg',
+        invertido: false
+      },
+      {
+        titulo: 'COMPROMISO',
+        subtitulo: 'Edificando una Generación Fiel',
+        descripcion: 'Promover una formación cristiana que transforme vidas, fomentando el amor por Dios, el estudio de las Escrituras y el servicio activo en la iglesia, para que cada creyente impacte su entorno con el evangelio.',
+        imagen: 'assets/img/about/4.webp',
+        invertido: true
+      }
+    ],
+    itemFinal: {
+      linea1: 'Tu también',
+      linea2: 'Puedes',
+      linea3: 'Ser Parte'
+    }
   }
 };

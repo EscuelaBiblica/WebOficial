@@ -125,61 +125,32 @@
             </div>
         </section>
         <!-- About-->
-        <section class="page-section" id="about">
+        <section class="page-section" id="about" *ngIf="(config?.seccionAbout?.visible) ?? true">
             <div class="container">
                 <div class="text-center">
-                    <h2 class="section-heading text-uppercase">Propósito de la Escuela biblica</h2>
-                    <h3 class="section-subheading text-muted">¿Por qué existe este ministerio?.</h3>
+                    <h2 class="section-heading text-uppercase">{{ config?.seccionAbout?.titulo || 'Propósito de la Escuela Bíblica' }}</h2>
+                    <h3 class="section-subheading text-muted">{{ config?.seccionAbout?.subtitulo || '¿Por qué existe este ministerio?' }}</h3>
                 </div>
                 <ul class="timeline">
-                    <li>
-                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/1.jpg" alt="..." /></div>
+                    <li *ngFor="let item of config?.seccionAbout?.items || aboutItemsDefault; let i = index"
+                        [class.timeline-inverted]="item.invertido">
+                        <div class="timeline-image"><img class="rounded-circle img-fluid" [src]="item.imagen" [alt]="item.titulo" /></div>
                         <div class="timeline-panel">
                             <div class="timeline-heading">
-                                <h4>MISIÓN</h4>
-                                <h4 class="subheading">Formación Integral en la Palabra</h4>
+                                <h4>{{ item.titulo }}</h4>
+                                <h4 class="subheading">{{ item.subtitulo }}</h4>
                             </div>
-                            <div class="timeline-body"><p class="text-muted">Formar creyentes firmes en la fe, con un conocimiento profundo de la Palabra de Dios, capacitados para aplicar principios bíblicos en su vida diaria y preparados para servir en la obra del Señor.</p></div>
-                        </div>
-                    </li>
-                    <li class="timeline-inverted">
-                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/2.webp" alt="..." /></div>
-                        <div class="timeline-panel">
-                            <div class="timeline-heading">
-                                <h4>VISIÓN</h4>
-                                <h4 class="subheading">Creciendo en el Conocimiento y Servicio</h4>
-                            </div>
-                            <div class="timeline-body"><p class="text-muted">Ofrecer una enseñanza sólida y práctica, que impulse el crecimiento espiritual de los creyentes y equipe obreros para el servicio en la iglesia local y la expansión del evangelio.</p></div>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/3.jpg" alt="..." /></div>
-                        <div class="timeline-panel">
-                            <div class="timeline-heading">
-                                <h4>OBJETIVO</h4>
-                                <h4 class="subheading">Capacitación para la Vida y el Ministerio</h4>
-                            </div>
-                            <div class="timeline-body"><p class="text-muted">Proporcionar una educación bíblica estructurada, que ayude a los estudiantes a desarrollar su vida espiritual, doctrinal y ministerial, fortaleciendo su relación con Dios y su compromiso con la gran comisión.</p></div>
-                        </div>
-                    </li>
-                    <li class="timeline-inverted">
-                        <div class="timeline-image"><img class="rounded-circle img-fluid" src="assets/img/about/4.webp" alt="..." /></div>
-                        <div class="timeline-panel">
-                            <div class="timeline-heading">
-                                <h4>COMPROMISO</h4>
-                                <h4 class="subheading">Edificando una Generación Fiel</h4>
-                            </div>
-                            <div class="timeline-body"><p class="text-muted">Promover una formación cristiana que transforme vidas, fomentando el amor por Dios, el estudio de las Escrituras y el servicio activo en la iglesia, para que cada creyente impacte su entorno con el evangelio.</p></div>
+                            <div class="timeline-body"><p class="text-muted">{{ item.descripcion }}</p></div>
                         </div>
                     </li>
                     <li class="timeline-inverted">
                         <div class="timeline-image">
                             <h4>
-                                Tu tambien
+                                {{ (config?.seccionAbout?.itemFinal?.linea1) || 'Tu también' }}
                                 <br />
-                                Puedes
+                                {{ (config?.seccionAbout?.itemFinal?.linea2) || 'Puedes' }}
                                 <br />
-                                Ser Parte
+                                {{ (config?.seccionAbout?.itemFinal?.linea3) || 'Ser Parte' }}
                             </h4>
                         </div>
                     </li>
