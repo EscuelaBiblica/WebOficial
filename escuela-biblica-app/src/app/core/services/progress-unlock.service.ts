@@ -110,13 +110,11 @@ export class ProgressUnlockService {
       if (!seccionDoc.exists()) {
         throw new Error('Sección no encontrada');
       }
-      console.log('✅ [PROGRESO] Sección leída exitosamente');
 
       const seccion = { id: seccionDoc.id, ...seccionDoc.data() } as Seccion;
 
       // Contar elementos totales
       const totalElementos = seccion.elementos.length;
-      console.log('📊 [PROGRESO] Total elementos en sección:', totalElementos);
 
       if (totalElementos === 0) {
         const progresoCompleto = {
@@ -130,7 +128,6 @@ export class ProgressUnlockService {
           cumpleRequisitos: true
         };
 
-        console.log('💾 [PROGRESO] Guardando progreso (sección vacía)...');
         // Guardar en BD
         await this.guardarProgreso(progresoCompleto);
         return progresoCompleto;
@@ -142,18 +139,15 @@ export class ProgressUnlockService {
       // Obtener tareas entregadas
       let tareasEntregadas: string[] = [];
       try {
-        console.log('📋 [PROGRESO] Consultando calificaciones (tareas)...');
         const tareasQuery = query(
           collection(this.firestore, 'calificaciones'),
           where('estudianteId', '==', estudianteId),
           where('tipo', '==', 'tarea')
         );
         const tareasSnapshot = await getDocs(tareasQuery);
-        console.log('✅ [PROGRESO] Calificaciones leídas:', tareasSnapshot.docs.length, 'documentos');
         tareasEntregadas = tareasSnapshot.docs
           .map(doc => (doc.data() as any).tareaId)
           .filter(tareaId => seccion.elementos.some(e => e.id === tareaId));
-        console.log('✅ [PROGRESO] Tareas entregadas filtradas:', tareasEntregadas.length);
       } catch (error) {
         console.error('❌ [PROGRESO] Error obteniendo tareas entregadas:', error);
       }
@@ -161,18 +155,15 @@ export class ProgressUnlockService {
       // Obtener exámenes realizados
       let examenesRealizados: string[] = [];
       try {
-        console.log('📝 [PROGRESO] Consultando intentos (exámenes)...');
         const examenesQuery = query(
           collection(this.firestore, 'intentos'),
           where('estudianteId', '==', estudianteId),
           where('estado', '==', 'finalizado')
         );
         const examenesSnapshot = await getDocs(examenesQuery);
-        console.log('✅ [PROGRESO] Intentos leídos:', examenesSnapshot.docs.length, 'documentos');
         examenesRealizados = examenesSnapshot.docs
           .map(doc => (doc.data() as any).examenId)
           .filter(examenId => seccion.elementos.some(e => e.id === examenId));
-        console.log('✅ [PROGRESO] Exámenes finalizados filtrados:', examenesRealizados.length);
       } catch (error) {
         console.error('❌ [PROGRESO] Error obteniendo exámenes realizados:', error);
       }
@@ -381,8 +372,6 @@ export class ProgressUnlockService {
 
       // Recalcular progreso (que lo guardará automáticamente)
       await this.calcularProgresoSeccion(seccionId, estudianteId);
-
-      console.log('✅ Progreso actualizado para estudiante:', estudianteId);
     } catch (error) {
       console.error('Error actualizando progreso:', error);
     }
@@ -414,7 +403,6 @@ export class ProgressUnlockService {
       });
 
       await Promise.all(promises);
-      console.log('✅ Caché de progreso invalidado para curso:', cursoId);
     } catch (error) {
       console.error('Error invalidando caché:', error);
     }
@@ -442,8 +430,6 @@ export class ProgressUnlockService {
       respuestaRetroalimentacion: respuestaRetroalimentacion || null,
       correctaRetroalimentacion: correcta !== undefined ? correcta : null
     });
-
-    console.log('✅ Lección marcada como completada:', leccionId);
   }
 
   /**
