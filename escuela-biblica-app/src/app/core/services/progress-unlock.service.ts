@@ -346,7 +346,6 @@ export class ProgressUnlockService {
         fechaCreacion: new Date() // Solo se usa en el primer guardado
       }, { merge: true });
 
-      console.log('✅ Progreso guardado:', progresoDocId);
     } catch (error) {
       console.error('Error guardando progreso:', error);
     }

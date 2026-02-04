@@ -134,36 +134,37 @@ export class EstudianteDashboardComponent implements OnInit {
     // Obtener secciones del curso para contar totales correctos
     const secciones = await firstValueFrom(this.sectionService.getSectionsByCourse(cursoId));
 
-    // Contar totales de exámenes y lecciones
-    let totalExamenesTotal = 0;
+    if (secciones.length === 0) {
+      return { progreso: 0, tareasEntregadas: 0, totalTareas: 0, examenesRealizados: 0, totalExamenes: 0 };
+    }
+
+    // Extraer IDs de secciones y lecciones en un solo recorrido
+    const seccionIds: string[] = [];
     const leccionIds: string[] = [];
 
-    // Obtener exámenes de cada sección en paralelo
-    const examenesPromises = secciones.map(seccion =>
-      this.examService.getExamsBySection(seccion.id)
-    );
-    const examenesPorSeccion = await Promise.all(examenesPromises);
-
-    // Contar total de exámenes y recopilar IDs de lecciones
-    examenesPorSeccion.forEach(examenes => {
-      totalExamenesTotal += examenes.length;
-    });
-
     secciones.forEach(seccion => {
-      // Recopilar IDs de lecciones
+      seccionIds.push(seccion.id);
       seccion.elementos
         .filter(e => e.tipo === 'leccion')
         .forEach(e => leccionIds.push(e.id));
     });
 
-    // Obtener lecciones para contar tareas totales
+    // ✅ OPTIMIZACIÓN: Obtener exámenes y lecciones en paralelo
+    const [examenesPorSeccion, leccionesMap] = await Promise.all([
+      // Obtener exámenes de todas las secciones en paralelo
+      Promise.all(seccionIds.map(id => this.examService.getExamsBySection(id))),
+      // Obtener lecciones en batch
+      leccionIds.length > 0
+        ? this.lessonService.getLessonsByIds(leccionIds)
+        : Promise.resolve(new Map())
+    ]);
+
+    // Contar totales
+    const totalExamenesTotal = examenesPorSeccion.reduce((total, examenes) => total + examenes.length, 0);
     let totalTareasTotal = 0;
-    if (leccionIds.length > 0) {
-      const leccionesMap = await this.lessonService.getLessonsByIds(leccionIds);
-      leccionesMap.forEach(leccion => {
-        totalTareasTotal += leccion.tareas?.length || 0;
-      });
-    }
+    leccionesMap.forEach(leccion => {
+      totalTareasTotal += leccion.tareas?.length || 0;
+    });
 
     // Acumular tareas entregadas y exámenes realizados desde el progreso
     let tareasEntregadasTotal = 0;
