@@ -139,23 +139,51 @@ export class CourseViewerComponent implements OnInit {
         );
       }
 
+      // ✅ OPTIMIZACIÓN: Pre-cargar TODAS las lecciones y tareas en batch
+      const allLeccionIds: string[] = [];
+      const allTareaIds: string[] = [];
+
+      seccionesData.forEach(seccion => {
+        seccion.elementos
+          .filter(el => el.tipo === 'leccion')
+          .forEach(el => allLeccionIds.push(el.id));
+      });
+
+      // Batch loading de TODAS las lecciones (1 query en lugar de N)
+      const leccionesMap = await this.lessonService.getLessonsByIds(allLeccionIds);
+
+      // Recolectar IDs de tareas de todas las lecciones
+      leccionesMap.forEach(leccion => {
+        if (leccion.tareas) {
+          allTareaIds.push(...leccion.tareas);
+        }
+      });
+
+      // Batch loading de TODAS las tareas (1 query en lugar de N×M)
+      const tareasMap = await this.taskService.getTasksByIds(allTareaIds);
+
       // Cargar lecciones y exámenes de cada sección
       this.secciones = await Promise.all(
         seccionesData.map(async (seccion) => {
-          // Cargar lecciones con sus tareas
+          // Construir lecciones desde el mapa pre-cargado
           const lecciones: LeccionConTareas[] = await Promise.all(
             seccion.elementos
               .filter(elemento => elemento.tipo === 'leccion')
               .map(async (elemento) => {
-                const leccion = await this.lessonService.getLessonById(elemento.id);
+                const leccion = leccionesMap.get(elemento.id);
                 if (!leccion) return null;
 
-                // Cargar tareas de esta lección
+                // Obtener tareas de esta lección desde el mapa pre-cargado
                 const tareasIds = leccion.tareas || [];
-                const tareasData: Tarea[] = await Promise.all(
-                  tareasIds.map(async (tareaId) => {
-                    const tarea = await this.taskService.getTaskById(tareaId);
+                const tareasData: Tarea[] = tareasIds
+                  .map(tareaId => {
+                    const tarea = tareasMap.get(tareaId);
                     if (!tarea) return null;
+
+                    // Filtrar visibilidad para estudiantes
+                    if (this.userRole === 'estudiante' && tarea.visible === false) {
+                      return null;
+                    }
 
                     return {
                       ...tarea,
@@ -163,13 +191,7 @@ export class CourseViewerComponent implements OnInit {
                       fechaFin: this.convertTimestamp(tarea.fechaFin)
                     };
                   })
-                ).then(tareas => tareas.filter((t): t is Tarea => {
-                  // Filtrar solo tareas visibles para estudiantes
-                  if (this.userRole === 'estudiante') {
-                    return t !== null && t.visible !== false;
-                  }
-                  return t !== null;
-                }));
+                  .filter((t): t is Tarea => t !== null);
 
                 // Cargar estado de completado de la lección (solo para estudiantes)
                 if (this.userRole === 'estudiante') {

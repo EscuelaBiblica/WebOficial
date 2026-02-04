@@ -11,7 +11,8 @@ import {
   query,
   where,
   getDocs,
-  orderBy
+  orderBy,
+  documentId
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Leccion } from '../models/lesson.model';
@@ -193,6 +194,53 @@ export class LessonService {
       await Promise.all(batch);
     } catch (error) {
       console.error('Error reordenando lecciones:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * ✅ OPTIMIZACIÓN: Obtener múltiples lecciones por IDs (batch loading)
+   * Reduce N llamadas a 1 llamada usando 'in' operator
+   */
+  async getLessonsByIds(lessonIds: string[]): Promise<Map<string, Leccion>> {
+    const lessonsMap = new Map<string, Leccion>();
+
+    if (lessonIds.length === 0) return lessonsMap;
+
+    try {
+      // Firestore 'in' limita a 10 items, dividir en chunks
+      const chunks = [];
+      for (let i = 0; i < lessonIds.length; i += 10) {
+        chunks.push(lessonIds.slice(i, i + 10));
+      }
+
+      // Ejecutar queries en paralelo
+      const queryPromises = chunks.map(chunk =>
+        getDocs(query(
+          this.lessonsCollection,
+          where(documentId(), 'in', chunk)
+        ))
+      );
+
+      const snapshots = await Promise.all(queryPromises);
+
+      // Procesar resultados
+      snapshots.forEach(snapshot => {
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          lessonsMap.set(doc.id, {
+            id: doc.id,
+            ...data,
+            fechaCreacion: data['fechaCreacion'] instanceof Date
+              ? data['fechaCreacion']
+              : data['fechaCreacion'].toDate()
+          } as Leccion);
+        });
+      });
+
+      return lessonsMap;
+    } catch (error) {
+      console.error('Error en batch loading de lecciones:', error);
       throw error;
     }
   }

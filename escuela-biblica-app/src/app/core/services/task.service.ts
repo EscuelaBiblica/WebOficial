@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, collectionData, getDoc } from '@angular/fire/firestore';
+import { Firestore, collection, doc, setDoc, updateDoc, deleteDoc, query, where, orderBy, collectionData, getDoc, getDocs, documentId } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Tarea, EntregaTarea } from '../models/task.model';
 import { LessonService } from './lesson.service';
@@ -51,6 +51,49 @@ export class TaskService {
     } catch (error) {
       console.error('Error obteniendo tarea:', error);
       return null;
+    }
+  }
+
+  /**
+   * ✅ OPTIMIZACIÓN: Obtener múltiples tareas por IDs (batch loading)
+   * Reduce N llamadas a 1 llamada usando 'in' operator
+   */
+  async getTasksByIds(taskIds: string[]): Promise<Map<string, Tarea>> {
+    const tasksMap = new Map<string, Tarea>();
+
+    if (taskIds.length === 0) return tasksMap;
+
+    try {
+      // Firestore 'in' limita a 10 items, dividir en chunks
+      const chunks = [];
+      for (let i = 0; i < taskIds.length; i += 10) {
+        chunks.push(taskIds.slice(i, i + 10));
+      }
+
+      // Ejecutar queries en paralelo
+      const queryPromises = chunks.map(chunk =>
+        getDocs(query(
+          this.tareasCollection,
+          where(documentId(), 'in', chunk)
+        ))
+      );
+
+      const snapshots = await Promise.all(queryPromises);
+
+      // Procesar resultados
+      snapshots.forEach(snapshot => {
+        snapshot.docs.forEach(doc => {
+          tasksMap.set(doc.id, {
+            id: doc.id,
+            ...doc.data()
+          } as Tarea);
+        });
+      });
+
+      return tasksMap;
+    } catch (error) {
+      console.error('Error en batch loading de tareas:', error);
+      throw error;
     }
   }
 
