@@ -4,7 +4,11 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CourseService } from '../../../core/services/course.service';
 import { UserService } from '../../../core/services/user.service';
 import { ProgressUnlockService } from '../../../core/services/progress-unlock.service';
+import { SectionService } from '../../../core/services/section.service';
+import { LessonService } from '../../../core/services/lesson.service';
+import { ExamService } from '../../../core/services/exam.service';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { Curso } from '../../../core/models/course.model';
 import { ProgresoSeccion } from '../../../core/models/section.model';
 
@@ -13,6 +17,8 @@ interface CursoConProgreso extends Curso {
   profesorNombre: string;
   tareasEntregadas: number;
   totalTareas: number;
+  examenesRealizados: number;
+  totalExamenes: number;
 }
 
 @Component({
@@ -34,6 +40,9 @@ export class EstudianteDashboardComponent implements OnInit {
     private courseService: CourseService,
     private userService: UserService,
     private progressUnlockService: ProgressUnlockService,
+    private sectionService: SectionService,
+    private lessonService: LessonService,
+    private examService: ExamService,
     private router: Router
   ) {}
 
@@ -83,14 +92,17 @@ export class EstudianteDashboardComponent implements OnInit {
           );
 
           // Calcular progreso promedio y estadísticas
-          const { progreso, tareasEntregadas, totalTareas } = this.calcularEstadisticasCurso(estadoSecciones);
+          const { progreso, tareasEntregadas, totalTareas, examenesRealizados, totalExamenes } =
+            await this.calcularEstadisticasCurso(curso.id, estadoSecciones);
 
           return {
             ...curso,
             progreso,
             profesorNombre,
             tareasEntregadas,
-            totalTareas
+            totalTareas,
+            examenesRealizados,
+            totalExamenes
           };
         })
       );
@@ -105,27 +117,62 @@ export class EstudianteDashboardComponent implements OnInit {
   /**
    * ✅ Helper para calcular estadísticas del curso desde el progreso de secciones
    */
-  private calcularEstadisticasCurso(estadoSecciones: Map<string, ProgresoSeccion>): {
+  private async calcularEstadisticasCurso(
+    cursoId: string,
+    estadoSecciones: Map<string, ProgresoSeccion>
+  ): Promise<{
     progreso: number;
     tareasEntregadas: number;
     totalTareas: number;
-  } {
+    examenesRealizados: number;
+    totalExamenes: number;
+  }> {
     if (estadoSecciones.size === 0) {
-      return { progreso: 0, tareasEntregadas: 0, totalTareas: 0 };
+      return { progreso: 0, tareasEntregadas: 0, totalTareas: 0, examenesRealizados: 0, totalExamenes: 0 };
     }
 
-    let tareasEntregadasTotal = 0;
+    // Obtener secciones del curso para contar totales correctos
+    const secciones = await firstValueFrom(this.sectionService.getSectionsByCourse(cursoId));
+
+    // Contar totales de exámenes y lecciones
+    let totalExamenesTotal = 0;
+    const leccionIds: string[] = [];
+
+    // Obtener exámenes de cada sección en paralelo
+    const examenesPromises = secciones.map(seccion =>
+      this.examService.getExamsBySection(seccion.id)
+    );
+    const examenesPorSeccion = await Promise.all(examenesPromises);
+
+    // Contar total de exámenes y recopilar IDs de lecciones
+    examenesPorSeccion.forEach(examenes => {
+      totalExamenesTotal += examenes.length;
+    });
+
+    secciones.forEach(seccion => {
+      // Recopilar IDs de lecciones
+      seccion.elementos
+        .filter(e => e.tipo === 'leccion')
+        .forEach(e => leccionIds.push(e.id));
+    });
+
+    // Obtener lecciones para contar tareas totales
     let totalTareasTotal = 0;
+    if (leccionIds.length > 0) {
+      const leccionesMap = await this.lessonService.getLessonsByIds(leccionIds);
+      leccionesMap.forEach(leccion => {
+        totalTareasTotal += leccion.tareas?.length || 0;
+      });
+    }
+
+    // Acumular tareas entregadas y exámenes realizados desde el progreso
+    let tareasEntregadasTotal = 0;
+    let examenesRealizadosTotal = 0;
     const progresos: number[] = [];
 
     estadoSecciones.forEach(seccion => {
-      // Acumular tareas
       tareasEntregadasTotal += seccion.tareasEntregadas?.length || 0;
-      // Estimar total de tareas de la sección basado en elementos
-      const tareasSeccion = seccion.tareasEntregadas?.length || 0;
-      totalTareasTotal += tareasSeccion;
-
-      // Acumular porcentaje de completado
+      examenesRealizadosTotal += seccion.examenesRealizados?.length || 0;
       progresos.push(seccion.porcentajeCompletado || 0);
     });
 
@@ -137,7 +184,9 @@ export class EstudianteDashboardComponent implements OnInit {
     return {
       progreso: progresoPromedio,
       tareasEntregadas: tareasEntregadasTotal,
-      totalTareas: totalTareasTotal
+      totalTareas: totalTareasTotal,
+      examenesRealizados: examenesRealizadosTotal,
+      totalExamenes: totalExamenesTotal
     };
   }
 
