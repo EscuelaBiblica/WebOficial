@@ -15,8 +15,13 @@
                         <li class="nav-item"><a class="nav-link" href="#team">Profesores</a></li>
                         <li class="nav-item"><a class="nav-link" href="#contact">Inscripción</a></li>
                         <li class="nav-item" *ngIf="!isLoggedIn">
-                            <a class="nav-link btn btn-primary text-white px-3 ms-lg-3" routerLink="/login">
+                            <a class="nav-link btn btn-outline-primary text-white px-3 ms-lg-3" routerLink="/login">
                                 <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
+                            </a>
+                        </li>
+                        <li class="nav-item" *ngIf="!isLoggedIn">
+                            <a class="nav-link btn btn-primary text-white px-3 ms-lg-2" routerLink="/registro">
+                                <i class="fas fa-user-plus me-1"></i>Registrarse
                             </a>
                         </li>
                         <li class="nav-item" *ngIf="isLoggedIn">

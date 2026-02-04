@@ -28,8 +28,16 @@
 
     <!-- Cursos -->
     <div class="row mb-4">
-      <div class="col-12">
-        <h2 class="mb-4">Mis Cursos</h2>
+      <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">Mis Cursos</h2>
+        <div class="btn-group">
+          <button class="btn btn-outline-success" (click)="irASolicitarInscripcion()">
+            <i class="fas fa-plus-circle"></i> Solicitar inscripción
+          </button>
+          <button class="btn btn-outline-info" (click)="verMisSolicitudes()">
+            <i class="fas fa-history"></i> Mis solicitudes
+          </button>
+        </div>
       </div>
     </div>
 
@@ -96,12 +104,15 @@
     </div>
 
     <!-- Empty State -->
-    <div class="row" *ngIf="cursos.length === 0">
+    <div class="row" *ngIf="cursos.length === 0 && !loading">
       <div class="col-12">
         <div class="text-center py-5">
           <i class="fas fa-book-open fa-4x text-muted mb-3"></i>
           <h4 class="text-muted">No tienes cursos inscritos</h4>
-          <p class="text-muted">Contacta al administrador para inscribirte en un curso</p>
+          <p class="text-muted">¡Solicita inscripción a un curso para comenzar tu aprendizaje!</p>
+          <button class="btn btn-primary mt-3" (click)="irASolicitarInscripcion()">
+            <i class="fas fa-plus-circle"></i> Solicitar inscripción
+          </button>
         </div>
       </div>
     </div>

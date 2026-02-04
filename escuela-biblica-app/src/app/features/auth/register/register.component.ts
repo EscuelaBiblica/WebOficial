@@ -52,8 +52,8 @@ export class RegisterComponent {
 
     try {
       const { nombre, apellido, email, password, rol } = this.registerForm.value;
-      
-      await this.authService.register(email, password, {
+
+      await this.authService.registerByAdmin(email, password, {
         nombre,
         apellido,
         rol,
@@ -62,7 +62,7 @@ export class RegisterComponent {
 
       this.successMessage = '✓ Usuario creado exitosamente';
       this.registerForm.reset({ rol: 'estudiante' });
-      
+
       // Opcional: redirigir al login después de 2 segundos
       setTimeout(() => {
         this.router.navigate(['/login']);
@@ -89,24 +89,24 @@ export class RegisterComponent {
 
   getFieldError(fieldName: string): string {
     const field = this.registerForm.get(fieldName);
-    
+
     if (field?.hasError('required') && field.touched) {
       return 'Este campo es requerido';
     }
-    
+
     if (field?.hasError('email') && field.touched) {
       return 'Email inválido';
     }
-    
+
     if (field?.hasError('minlength') && field.touched) {
       const minLength = field.errors?.['minlength'].requiredLength;
       return `Mínimo ${minLength} caracteres`;
     }
-    
+
     if (fieldName === 'confirmPassword' && this.registerForm.hasError('passwordMismatch') && field?.touched) {
       return 'Las contraseñas no coinciden';
     }
-    
+
     return '';
   }
 }

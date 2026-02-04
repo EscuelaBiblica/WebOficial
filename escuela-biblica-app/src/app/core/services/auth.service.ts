@@ -57,39 +57,10 @@ export class AuthService {
   }
 
   /**
-   * Login con Google
-   */
-  async loginWithGoogle(): Promise<UserCredential> {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(this.auth, provider);
-
-      // Verificar si el usuario ya existe en Firestore
-      const userDoc = await this.getUserProfile(result.user.uid);
-
-      // Si no existe, crear perfil básico
-      if (!userDoc) {
-        await this.createUserProfile(result.user.uid, {
-          email: result.user.email!,
-          nombre: result.user.displayName?.split(' ')[0] || '',
-          apellido: result.user.displayName?.split(' ').slice(1).join(' ') || '',
-          rol: 'estudiante' as UserRole,
-          fotoPerfil: result.user.photoURL || undefined
-        });
-      }
-
-      return result;
-    } catch (error) {
-      console.error('Error en login con Google:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Registro de nuevo usuario por Admin (sin cerrar sesión del admin)
    * Usa una aplicación Firebase secundaria para no afectar la sesión actual
    */
-  async register(
+  async registerByAdmin(
     email: string,
     password: string,
     userData: Partial<UserModel>
@@ -231,5 +202,68 @@ export class AuthService {
    */
   isAuthenticated(): boolean {
     return this.auth.currentUser !== null;
+  }
+
+  /**
+   * Registro público de estudiantes (auto-login incluido)
+   * No requiere app secundaria porque el usuario se loguea automáticamente
+   */
+  async registerPublic(
+    email: string,
+    password: string,
+    nombre: string,
+    apellido: string
+  ): Promise<void> {
+    try {
+      // Crear usuario con email y contraseña
+      const userCredential = await createUserWithEmailAndPassword(
+        this.auth,
+        email,
+        password
+      );
+
+      // Crear perfil en Firestore con rol de estudiante fijo
+      await this.createUserProfile(userCredential.user.uid, {
+        email,
+        nombre,
+        apellido,
+        rol: 'estudiante',  // Siempre estudiante para registro público
+        fotoPerfil: null
+      });
+
+      console.log('✅ Usuario registrado como estudiante');
+    } catch (error) {
+      console.error('Error en registro público:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Login con Google (auto-registro si no existe)
+   */
+  async loginWithGoogle(): Promise<UserCredential> {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(this.auth, provider);
+
+      // Verificar si el usuario ya existe en Firestore
+      const userDoc = await this.getUserProfile(result.user.uid);
+
+      // Si no existe, crear perfil básico con rol estudiante
+      if (!userDoc) {
+        await this.createUserProfile(result.user.uid, {
+          email: result.user.email || '',
+          nombre: result.user.displayName?.split(' ')[0] || '',
+          apellido: result.user.displayName?.split(' ').slice(1).join(' ') || '',
+          rol: 'estudiante',  // Siempre estudiante para login público con Google
+          fotoPerfil: result.user.photoURL || undefined
+        });
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error en login con Google:', error);
+      throw error;
+    }
   }
 }

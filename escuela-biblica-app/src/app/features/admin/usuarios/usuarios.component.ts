@@ -201,7 +201,7 @@ export class UsuariosComponent implements OnInit {
       }
 
       // Crear el nuevo usuario (el admin mantiene su sesión)
-      await this.authService.register(
+      await this.authService.registerByAdmin(
         this.newUser.email,
         this.newUser.password,
         {

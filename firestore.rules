@@ -276,5 +276,30 @@ service cloud.firestore {
     }
     
     // ====================================================================
+    // REGLAS PARA SOLICITUDES DE INSCRIPCIÓN
+    // ====================================================================
+    match /solicitudes-inscripcion/{solicitudId} {
+      // Leer: El estudiante dueño de la solicitud, profesores y admins
+      allow get: if isAuthenticated() && 
+                   (resource.data.estudianteId == request.auth.uid || 
+                    isProfesor() || 
+                    isAdmin());
+      
+      // Listar (queries): Estudiantes pueden listar sus propias solicitudes, admins todas
+      allow list: if isAuthenticated();
+      
+      // Crear: Solo estudiantes autenticados, y deben crear con su propio ID
+      allow create: if isAuthenticated() && 
+                     request.resource.data.estudianteId == request.auth.uid &&
+                     request.resource.data.estado == 'pendiente';
+      
+      // Actualizar: Solo admins (para aceptar/rechazar solicitudes)
+      allow update: if isAdmin();
+      
+      // Eliminar: Solo admins
+      allow delete: if isAdmin();
+    }
+    
+    // ====================================================================
   }
 }

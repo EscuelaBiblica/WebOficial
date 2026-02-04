@@ -122,6 +122,14 @@ export class EstudianteDashboardComponent implements OnInit {
     this.router.navigate(['/curso', cursoId]);
   }
 
+  irASolicitarInscripcion() {
+    this.router.navigate(['/estudiante/solicitar-inscripcion']);
+  }
+
+  verMisSolicitudes() {
+    this.router.navigate(['/estudiante/mis-solicitudes']);
+  }
+
   goToDashboard() {
     // Ya estamos en el dashboard
   }

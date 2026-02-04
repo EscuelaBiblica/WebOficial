@@ -29,6 +29,10 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent)
   },
+  {
+    path: 'registro',
+    loadComponent: () => import('./features/auth/registro/registro.component').then(m => m.RegistroComponent)
+  },
   // Rutas protegidas por rol
   {
     path: 'admin',
@@ -39,6 +43,11 @@ export const routes: Routes = [
     path: 'admin/usuarios',
     canActivate: [authGuard, adminGuard],
     loadComponent: () => import('./features/admin/usuarios/usuarios.component').then(m => m.UsuariosComponent)
+  },
+  {
+    path: 'admin/solicitudes',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/admin/solicitudes/solicitudes-admin.component').then(m => m.SolicitudesAdminComponent)
   },
   {
     path: 'cursos',
@@ -139,6 +148,16 @@ export const routes: Routes = [
     path: 'estudiante',
     canActivate: [authGuard],
     loadComponent: () => import('./features/dashboards/estudiante-dashboard/estudiante-dashboard.component').then(m => m.EstudianteDashboardComponent)
+  },
+  {
+    path: 'estudiante/solicitar-inscripcion',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/enrollment/solicitar-inscripcion/solicitar-inscripcion.component').then(m => m.SolicitarInscripcionComponent)
+  },
+  {
+    path: 'estudiante/mis-solicitudes',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/enrollment/mis-solicitudes/mis-solicitudes.component').then(m => m.MisSolicitudesComponent)
   },
   // Ruta legacy - redirige según el rol
   {
