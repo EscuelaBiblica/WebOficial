@@ -15,6 +15,7 @@ import { Observable } from 'rxjs';
 import { collectionData } from '@angular/fire/firestore';
 import { SolicitudInscripcion } from '../models/enrollment-request.model';
 import { UserService } from './user.service';
+import { CourseService } from './course.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,6 +23,7 @@ import { UserService } from './user.service';
 export class EnrollmentRequestService {
   private firestore = inject(Firestore);
   private userService = inject(UserService);
+  private courseService = inject(CourseService);
   private solicitudesCollection = collection(this.firestore, 'solicitudes-inscripcion');
 
   /**
@@ -139,15 +141,9 @@ export class EnrollmentRequestService {
         respondidoPor: adminId
       });
 
-      // 2. Inscribir al estudiante en el curso (agregar a cursosInscritos)
-      const userDoc = await this.userService.getUserById(solicitud.estudianteId);
-      if (userDoc) {
-        const cursosInscritos = userDoc.cursosInscritos || [];
-        if (!cursosInscritos.includes(solicitud.cursoId)) {
-          cursosInscritos.push(solicitud.cursoId);
-          await this.userService.updateUser(solicitud.estudianteId, { cursosInscritos });
-        }
-      }
+      // 2. Inscribir al estudiante en el curso usando el método existente
+      // Este método actualiza AMBAS relaciones: curso.estudiantes[] Y user.cursosInscritos[]
+      await this.courseService.enrollStudent(solicitud.cursoId, solicitud.estudianteId);
 
       console.log('✅ Solicitud aceptada y estudiante inscrito');
     } catch (error) {
