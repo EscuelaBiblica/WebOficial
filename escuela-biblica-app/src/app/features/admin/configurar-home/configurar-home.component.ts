@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { HomeConfigService } from '../../../core/services/home-config.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
-import { ConfiguracionHome } from '../../../core/models/config-home.model';
+import { ConfiguracionHome, CONFIG_HOME_DEFAULT } from '../../../core/models/config-home.model';
 
 @Component({
   selector: 'app-configurar-home',
@@ -17,6 +17,7 @@ import { ConfiguracionHome } from '../../../core/models/config-home.model';
 export class ConfigurarHomeComponent implements OnInit {
   heroForm!: FormGroup;
   cursosForm!: FormGroup;
+  portfolioForm!: FormGroup;
   config: ConfiguracionHome | null = null;
   loading = true;
   saving = false;
@@ -25,7 +26,7 @@ export class ConfigurarHomeComponent implements OnInit {
   mensaje: { tipo: 'success' | 'error' | 'info'; texto: string } | null = null;
 
   // Tabs de navegación
-  tabActiva: 'hero' | 'cursos' = 'hero';
+  tabActiva: 'hero' | 'cursos' | 'portfolio' = 'hero';
 
   // Lista de iconos disponibles para cursos
   iconosDisponibles = [
@@ -94,6 +95,14 @@ export class ConfigurarHomeComponent implements OnInit {
       cursos: this.fb.array([])
     });
 
+    // Crear formulario Portfolio
+    this.portfolioForm = this.fb.group({
+      visible: [true],
+      titulo: ['', Validators.required],
+      subtitulo: ['', Validators.required],
+      materias: this.fb.array([])
+    });
+
     // Cargar configuración actual
     await this.cargarConfiguracion();
   }
@@ -102,6 +111,10 @@ export class ConfigurarHomeComponent implements OnInit {
     try {
       this.loading = true;
       this.config = await this.homeConfigService.getConfiguracion();
+
+      console.log('📦 Configuración cargada desde Firestore:', this.config);
+      console.log('📚 Sección Cursos:', this.config?.seccionCursos);
+      console.log('🎯 Cantidad de cursos:', this.config?.seccionCursos?.cursos?.length);
 
       // Poblar formulario Hero con valores actuales
       if (this.config) {
@@ -125,6 +138,47 @@ export class ConfigurarHomeComponent implements OnInit {
           this.cursos.clear();
           this.config.seccionCursos.cursos.forEach(curso => {
             this.cursos.push(this.crearCursoForm(curso));
+          });
+        } else {
+          // Si no hay seccionCursos en Firestore, cargar datos por defecto
+          this.cursosForm.patchValue({
+            visible: CONFIG_HOME_DEFAULT.seccionCursos!.visible,
+            titulo: CONFIG_HOME_DEFAULT.seccionCursos!.titulo,
+            subtitulo: CONFIG_HOME_DEFAULT.seccionCursos!.subtitulo
+          });
+
+          // Limpiar y cargar cursos por defecto
+          this.cursos.clear();
+          CONFIG_HOME_DEFAULT.seccionCursos!.cursos.forEach(curso => {
+            this.cursos.push(this.crearCursoForm(curso));
+          });
+        }
+
+        // Poblar formulario Portfolio si existe
+        if (this.config.seccionPortfolio) {
+          this.portfolioForm.patchValue({
+            visible: this.config.seccionPortfolio.visible,
+            titulo: this.config.seccionPortfolio.titulo,
+            subtitulo: this.config.seccionPortfolio.subtitulo
+          });
+
+          // Limpiar y repoblar array de materias
+          this.materias.clear();
+          this.config.seccionPortfolio.materias.forEach(materia => {
+            this.materias.push(this.crearMateriaPortfolioForm(materia));
+          });
+        } else {
+          // Si no hay seccionPortfolio en Firestore, cargar datos por defecto
+          this.portfolioForm.patchValue({
+            visible: CONFIG_HOME_DEFAULT.seccionPortfolio!.visible,
+            titulo: CONFIG_HOME_DEFAULT.seccionPortfolio!.titulo,
+            subtitulo: CONFIG_HOME_DEFAULT.seccionPortfolio!.subtitulo
+          });
+
+          // Limpiar y cargar materias por defecto
+          this.materias.clear();
+          CONFIG_HOME_DEFAULT.seccionPortfolio!.materias.forEach(materia => {
+            this.materias.push(this.crearMateriaPortfolioForm(materia));
           });
         }
       }
@@ -173,6 +227,28 @@ export class ConfigurarHomeComponent implements OnInit {
     return this.cursos.at(cursoIndex).get('materias') as FormArray;
   }
 
+  // Portfolio/Materias helpers
+  get materias(): FormArray {
+    return this.portfolioForm.get('materias') as FormArray;
+  }
+
+  crearMateriaPortfolioForm(materia?: any): FormGroup {
+    return this.fb.group({
+      titulo: [materia?.titulo || '', Validators.required],
+      subtitulo: [materia?.subtitulo || '', Validators.required],
+      imagen: [materia?.imagen || '', Validators.required],
+      estado: [materia?.estado || null],
+      modal: this.fb.group({
+        tituloModal: [materia?.modal?.tituloModal || '', Validators.required],
+        intro: [materia?.modal?.intro || '', Validators.required],
+        imagenModal: [materia?.modal?.imagenModal || '', Validators.required],
+        descripcion: [materia?.modal?.descripcion || '', Validators.required],
+        fechaInicio: [materia?.modal?.fechaInicio || '', Validators.required],
+        profesor: [materia?.modal?.profesor || '', Validators.required]
+      })
+    });
+  }
+
   agregarCurso() {
     this.cursos.push(this.crearCursoForm());
   }
@@ -189,6 +265,17 @@ export class ConfigurarHomeComponent implements OnInit {
 
   eliminarMateria(cursoIndex: number, materiaIndex: number) {
     this.getMaterias(cursoIndex).removeAt(materiaIndex);
+  }
+
+  // Portfolio CRUD
+  agregarMateriaPortfolio() {
+    this.materias.push(this.crearMateriaPortfolioForm());
+  }
+
+  eliminarMateriaPortfolio(index: number) {
+    if (confirm('¿Eliminar esta materia del portfolio?')) {
+      this.materias.removeAt(index);
+    }
   }
 
   // ===== SUBIDA DE IMAGEN =====
@@ -315,8 +402,146 @@ export class ConfigurarHomeComponent implements OnInit {
     }
   }
 
-  cambiarTab(tab: 'hero' | 'cursos') {
+  async guardarCambiosPortfolio() {
+    if (this.portfolioForm.invalid) {
+      this.mostrarMensaje('error', 'Por favor completa todos los campos requeridos en Portfolio/Materias');
+      return;
+    }
+
+    if (!this.currentUserId) {
+      this.mostrarMensaje('error', 'No se pudo identificar al usuario');
+      return;
+    }
+
+    try {
+      this.saving = true;
+
+      const portfolioConfig = this.portfolioForm.value;
+
+      await this.homeConfigService.updateSeccionPortfolio(portfolioConfig, this.currentUserId);
+
+      this.mostrarMensaje('success', '✅ Sección Portfolio/Materias actualizada exitosamente.');
+
+      // Recargar configuración
+      await this.cargarConfiguracion();
+    } catch (error) {
+      console.error('Error guardando cambios de portfolio:', error);
+      this.mostrarMensaje('error', 'Error al guardar los cambios de portfolio.');
+    } finally {
+      this.saving = false;
+    }
+  }
+
+  // Subir imagen de materia Portfolio
+  async onImagenMateriaSelected(event: Event, materiaIndex: number) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona un archivo de imagen válido');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen no debe superar los 5MB');
+      return;
+    }
+
+    try {
+      this.uploadingImage = true;
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+      this.materias.at(materiaIndex).get('imagen')?.setValue(imageUrl);
+
+      this.mostrarMensaje('success', '✅ Imagen cargada exitosamente');
+    } catch (error) {
+      console.error('Error subiendo imagen:', error);
+      alert('Error al subir la imagen. Intenta nuevamente.');
+    } finally {
+      this.uploadingImage = false;
+      input.value = '';
+    }
+  }
+
+  // Subir imagen modal de materia Portfolio
+  async onImagenModalMateriaSelected(event: Event, materiaIndex: number) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona un archivo de imagen válido');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen no debe superar los 5MB');
+      return;
+    }
+
+    try {
+      this.uploadingImage = true;
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+      this.materias.at(materiaIndex).get('modal')?.get('imagenModal')?.setValue(imageUrl);
+
+      this.mostrarMensaje('success', '✅ Imagen modal cargada exitosamente');
+    } catch (error) {
+      console.error('Error subiendo imagen modal:', error);
+      alert('Error al subir la imagen modal. Intenta nuevamente.');
+    } finally {
+      this.uploadingImage = false;
+      input.value = '';
+    }
+  }
+
+  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio') {
     this.tabActiva = tab;
+  }
+
+  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio') {
+    if (!confirm('¿Cargar valores por defecto en el formulario? (No se guardará hasta que presiones "Guardar Cambios")')) {
+      return;
+    }
+
+    switch (seccion) {
+      case 'hero':
+        this.heroForm.patchValue({
+          titulo: CONFIG_HOME_DEFAULT.hero.titulo,
+          subtitulo1: CONFIG_HOME_DEFAULT.hero.subtitulo1,
+          subtitulo2: CONFIG_HOME_DEFAULT.hero.subtitulo2,
+          botonTexto: CONFIG_HOME_DEFAULT.hero.botonTexto,
+          botonLink: CONFIG_HOME_DEFAULT.hero.botonLink,
+          imagenFondo: CONFIG_HOME_DEFAULT.hero.imagenFondo
+        });
+        this.mostrarMensaje('info', 'Valores por defecto cargados en Hero');
+        break;
+
+      case 'cursos':
+        this.cursosForm.patchValue({
+          visible: CONFIG_HOME_DEFAULT.seccionCursos!.visible,
+          titulo: CONFIG_HOME_DEFAULT.seccionCursos!.titulo,
+          subtitulo: CONFIG_HOME_DEFAULT.seccionCursos!.subtitulo
+        });
+        this.cursos.clear();
+        CONFIG_HOME_DEFAULT.seccionCursos!.cursos.forEach(curso => {
+          this.cursos.push(this.crearCursoForm(curso));
+        });
+        this.mostrarMensaje('info', 'Valores por defecto cargados en Cursos');
+        break;
+
+      case 'portfolio':
+        this.portfolioForm.patchValue({
+          visible: CONFIG_HOME_DEFAULT.seccionPortfolio!.visible,
+          titulo: CONFIG_HOME_DEFAULT.seccionPortfolio!.titulo,
+          subtitulo: CONFIG_HOME_DEFAULT.seccionPortfolio!.subtitulo
+        });
+        this.materias.clear();
+        CONFIG_HOME_DEFAULT.seccionPortfolio!.materias.forEach(materia => {
+          this.materias.push(this.crearMateriaPortfolioForm(materia));
+        });
+        this.mostrarMensaje('info', 'Valores por defecto cargados en Portfolio');
+        break;
+    }
   }
 
   async resetearValores() {

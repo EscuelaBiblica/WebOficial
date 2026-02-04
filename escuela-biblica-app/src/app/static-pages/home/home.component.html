@@ -94,162 +94,30 @@
     </div>
 </section>
         <!-- Portfolio Grid-->
-        <section class="page-section bg-light" id="portfolio">
+        <section class="page-section bg-light" id="portfolio" *ngIf="(config?.seccionPortfolio?.visible) ?? true">
             <div class="container">
                 <div class="text-center">
-                    <h2 class="section-heading text-uppercase">Materias</h2>
-                    <h3 class="section-subheading text-muted">Mas detalles sobre cada materia empezando por el curso basico hasta el avanzado.</h3>
+                    <h2 class="section-heading text-uppercase">{{ config?.seccionPortfolio?.titulo || 'Materias' }}</h2>
+                    <h3 class="section-subheading text-muted">{{ config?.seccionPortfolio?.subtitulo || 'Mas detalles sobre cada materia empezando por el curso basico hasta el avanzado.' }}</h3>
                 </div>
                 <div class="row">
-                    <div class="col-lg-4 col-sm-6 mb-4">
-                        <!-- Portfolio item 1-->
+                    <div class="col-lg-4 col-sm-6 mb-4"
+                         *ngFor="let materia of config?.seccionPortfolio?.materias || materiasDefault; let i = index"
+                         [class.mb-sm-0]="i === 4"
+                         [class.mb-lg-0]="i === 3">
+                        <!-- Portfolio item -->
                         <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal1">
+                            <a class="portfolio-link" data-bs-toggle="modal" [href]="'#portfolioModal' + (i + 1)">
                                 <div class="portfolio-hover">
                                     <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
                                 </div>
-                                <img class="img-fluid" src="assets/img/portfolio/1.png" alt="..." />
+                                <img class="img-fluid" [src]="materia.imagen" [alt]="materia.titulo" />
                             </a>
                             <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Evangelismo Personal</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Basico)</div>
-                                <span class="en-curso">EN CURSO</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 mb-4">
-                        <!-- Portfolio item 2-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal2">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/2.jpg" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Vida Cristiana</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Basico)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 mb-4">
-                        <!-- Portfolio item 3-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal3">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/3.jpg" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Sinstesis del Antiguo Testamento</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Basico)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 mb-4 mb-lg-0">
-                        <!-- Portfolio item 4-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal4">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/4.jpg" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Sintesis del Nuevo Testamento</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Basico)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 mb-4 mb-sm-0">
-                        <!-- Portfolio item 5-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal5">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/5.jpg" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Servicio Ministerial</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Basico)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6">
-                        <!-- Portfolio item 6-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal6">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/6.png" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Metodos de Evangelismo General</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Avanzado)</div>
-                                <span class="en-curso">EN CURSO</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 mb-4">
-                        <!-- Portfolio item 1-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal7">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/7.png" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Introduccion a la Teologia Sistematica</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Avanzado)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 mb-4">
-                        <!-- Portfolio item 2-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal8">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/8.png" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Bibliología</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Avanzado)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 mb-4">
-                        <!-- Portfolio item 3-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal9">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/9.png" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Homiletica</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Avanzado)</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-sm-6 mb-4 mb-lg-0">
-                        <!-- Portfolio item 4-->
-                        <div class="portfolio-item">
-                            <a class="portfolio-link" data-bs-toggle="modal" href="#portfolioModal10">
-                                <div class="portfolio-hover">
-                                    <div class="portfolio-hover-content"><i class="fas fa-plus fa-3x"></i></div>
-                                </div>
-                                <img class="img-fluid" src="assets/img/portfolio/10.png" alt="..." />
-                            </a>
-                            <div class="portfolio-caption">
-                                <div class="portfolio-caption-heading">Misiología</div>
-                                <div class="portfolio-caption-subheading text-muted">(Curso Avanzado)</div>
+                                <div class="portfolio-caption-heading">{{ materia.titulo }}</div>
+                                <div class="portfolio-caption-subheading text-muted">{{ materia.subtitulo }}</div>
+                                <span class="en-curso" *ngIf="materia.estado === 'en-curso'">EN CURSO</span>
+                                <span class="proximamente" *ngIf="materia.estado === 'proximamente'">PRÓXIMAMENTE</span>
                             </div>
                         </div>
                     </div>
@@ -516,8 +384,12 @@
             </div>
         </footer>
         <!-- Portfolio Modals-->
-        <!-- Portfolio item 1 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal1" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="portfolio-modal modal fade"
+             *ngFor="let materia of config?.seccionPortfolio?.materias || materiasDefault; let i = index"
+             [id]="'portfolioModal' + (i + 1)"
+             tabindex="-1"
+             role="dialog"
+             aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
@@ -526,365 +398,26 @@
                             <div class="col-lg-8">
                                 <div class="modal-body">
                                     <!-- Project details-->
-                                    <h2 class="text-uppercase">Evangelismo Personal</h2>
-                                    <p class="item-intro text-muted">Compartiendo el Mensaje de Salvación.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/1.png" alt="..." />
-                                    <p>Este curso está diseñado para equipar a los creyentes con las herramientas y el conocimiento necesario para compartir el evangelio de manera clara y efectiva en encuentros personales. A lo largo del curso, se abordarán temas fundamentales como el mensaje central del evangelio, preguntas frecuentes, el papel del evangelista, factores que impulsan o dificultan la evangelización, métodos prácticos y herramientas útiles para llevar a cabo el evangelismo personal.
-
-                                        A través de una enseñanza práctica y aplicada, los participantes aprenderán a presentar el evangelio de manera relevante, superando obstáculos y aprovechando oportunidades para compartir el mensaje de salvación con eficacia.</p>
+                                    <h2 class="text-uppercase">{{ materia.modal.tituloModal }}</h2>
+                                    <p class="item-intro text-muted">{{ materia.modal.intro }}</p>
+                                    <img class="img-fluid d-block mx-auto" [src]="materia.modal.imagenModal" [alt]="materia.titulo" />
+                                    <p [innerHTML]="materia.modal.descripcion"></p>
                                     <ul class="list-inline">
                                         <li>
                                             <strong>Fecha de inicio:</strong>
-                                            Domingo 09 de marzo
+                                            {{ materia.modal.fechaInicio }}
                                         </li>
-                                        <span class="en-curso">EN CURSO</span>
+                                        <span class="en-curso" *ngIf="materia.estado === 'en-curso'">EN CURSO</span>
+                                        <span class="proximamente" *ngIf="materia.estado === 'proximamente'">PRÓXIMAMENTE</span>
                                         <li>
                                             <strong>Profesor:</strong>
-                                            Hernán Pérez
+                                            {{ materia.modal.profesor }}
                                         </li>
                                     </ul>
                                     <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
                                         <i class="fas fa-xmark me-1"></i>
                                         Cerrar
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 2 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal2" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Vida Cristiana</h2>
-                                    <p class="item-intro text-muted">Creciendo en la Fe y el Servicio.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/2.jpg" alt="..." />
-                                    <p>Este curso tiene como propósito incentivar a los creyentes a desarrollar hábitos piadosos que fortalezcan su relación con Dios y su vida en comunidad. A través del estudio de temas clave como la importancia de congregarse, la oración, el devocional y el servicio, los participantes serán guiados en un crecimiento espiritual sólido y comprometido.
-
-                                        El curso abarca un bosquejo del libro de Efesios, el papel del Espíritu Santo, la autoridad de la Palabra de Dios y la obediencia como fundamento de la vida cristiana. A través de estos principios, los creyentes aprenderán a vivir una fe activa y a reflejar el evangelio en su vida diaria.</p>
-                                        <ul class="list-inline">
-                                            <li>
-                                                <strong>Fecha de inicio:</strong>
-                                                Domingo 20 de Abril
-                                            </li>
-                                            <li>
-                                                <strong>Profesor:</strong>
-                                                Cristian Villafuerte
-                                            </li>
-                                        </ul>
-                                        <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                            <i class="fas fa-xmark me-1"></i>
-                                            Cerrar
-                                        </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 3 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Síntesis del Antiguo Testamento</h2>
-                                    <p class="item-intro text-muted">Una Visión General de la Historia Bíblica.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/3.jpg" alt="..." />
-                                    <p>Este curso ofrece una visión panorámica del Antiguo Testamento, ayudando a los participantes a comprender su estructura, mensaje y propósito dentro de la revelación de Dios. Se explorarán los principales grupos de libros: el Pentateuco, los libros históricos, los libros poéticos y los escritos proféticos, abarcando desde Génesis hasta Malaquías.
-
-                                        A lo largo del curso, se analizarán los eventos clave, los personajes principales y el mensaje central de cada sección, permitiendo a los estudiantes obtener una comprensión clara y ordenada del Antiguo Testamento y su relevancia para la fe cristiana.</p>
-                                    <ul class="list-inline">
-                                        <li>
-                                            <strong>Fecha de inicio:</strong>
-                                            Domingo 01 de Junio
-                                        </li>
-                                        <li>
-                                            <strong>Profesor:</strong>
-                                            Marco Sanchez
-                                        </li>
-                                    </ul>
-                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                        <i class="fas fa-xmark me-1"></i>
-                                        Cerrar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 4 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal4" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Síntesis del Nuevo Testamento</h2>
-                                    <p class="item-intro text-muted">La Revelación de Cristo y su Iglesia.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/4.jpg" alt="..." />
-                                    <p>Este curso proporciona una visión general del Nuevo Testamento, ayudando a los participantes a comprender su estructura, mensaje y propósito en la revelación divina. Se explorarán los Evangelios, el libro de Hechos, las epístolas paulinas y generales, y el libro de Apocalipsis, analizando su contenido y relevancia para la vida cristiana.
-
-                                        A lo largo del estudio, se examinarán los eventos clave del ministerio de Jesús, la expansión de la iglesia primitiva, las enseñanzas apostólicas y la esperanza escatológica, brindando una comprensión clara y estructurada del Nuevo Testamento y su impacto en la fe cristiana.</p>
-                                        <ul class="list-inline">
-                                            <li>
-                                                <strong>Fecha de inicio:</strong>
-                                                Domingo 10 de Agosto
-                                            </li>
-                                            <li>
-                                                <strong>Profesor:</strong>
-                                                Efrain Villafuerte
-                                            </li>
-                                        </ul>
-                                        <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                            <i class="fas fa-xmark me-1"></i>
-                                            Cerrar
-                                        </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 5 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal5" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Servicio Ministerial</h2>
-                                    <p class="item-intro text-muted">Descubriendo y Ejercitando los Dones en la Iglesia.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/5.jpg" alt="..." />
-                                    <p>Este curso tiene como objetivo ayudar a cada cristiano a comprender su propósito dentro de la congregación, descubriendo y practicando los dones espirituales para el servicio en los ministerios de la iglesia. Se explorarán los dones espirituales vigentes, su función en el cuerpo de Cristo y cómo identificarlos y desarrollarlos.
-
-                                        Además, se analizarán los diferentes ministerios dentro de la iglesia, el rol de la mujer en el servicio y la importancia de la participación activa en la obra de Dios. A través de este estudio, los participantes podrán reconocer su llamado y contribuir de manera efectiva al crecimiento y fortalecimiento de la iglesia.</p>
-                                    <ul class="list-inline">
-                                        <li>
-                                            <strong>Fecha de inicio:</strong>
-                                            Domingo 05 de Octubre
-                                        </li>
-                                        <li>
-                                            <strong>Profesor:</strong>
-                                            Eliezer Villafuerte
-                                        </li>
-                                    </ul>
-                                    <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                        <i class="fas fa-xmark me-1"></i>
-                                        Cerrar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 6 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal6" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Métodos de Evangelismo General</h2>
-                                    <p class="item-intro text-muted">Compartiendo el Mensaje de Salvación.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/6.png" alt="..." />
-                                    <p>Este curso tiene como objetivo brindar herramientas prácticas y estrategias para compartir el evangelio con grupos de personas en diferentes situaciones. Se abordarán los puntos esenciales del evangelio, el papel del evangelista y los factores que impulsan o dificultan la difusión del mensaje de salvación.
-
-                                        Además, se explorarán distintos métodos de evangelismo, herramientas útiles para su aplicación y recomendaciones clave para una presentación efectiva del evangelio. A través de este estudio, los participantes serán capacitados para llevar el mensaje de Cristo con claridad, amor y confianza en diversos contextos.</p>
-                                        <ul class="list-inline">
-                                            <li>
-                                                <strong>Fecha de inicio:</strong>
-                                                Domingo 09 de Marzo
-                                            </li>
-                                            <span class="en-curso">EN CURSO</span>
-                                            <li>
-                                                <strong>Profesor:</strong>
-                                                Eben Cayo
-                                            </li>
-                                        </ul>
-                                        <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                            <i class="fas fa-xmark me-1"></i>
-                                            Cerrar
-                                        </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 7 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal7" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Introducción a la Teología Sistemática</h2>
-                                    <p class="item-intro text-muted">Panorama de las sub-diviciones o ramas de la Teologia.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/7.png" alt="..." />
-                                    <p>Este curso ofrece un panorama general de las principales ramas de la teología sistemática, explorando sus fundamentos y puntos clave. Se estudiará la Bibliología (doctrina de la Biblia), Teología Propia (Dios y sus atributos), Cristología (la persona y obra de Cristo), y Pneumatología (el Espíritu Santo).
-
-                                        Además, se abordarán temas como la naturaleza del hombre (Antropología), el pecado (Hamartiología), la salvación (Soteriología), la Iglesia (Eclesiología), los eventos futuros (Escatología) y la doctrina de los ángeles (Angeleología). Este curso busca proporcionar una base sólida para el estudio profundo de la doctrina cristiana y su aplicación en la vida del creyente.
-                                    </p>
-                                        <ul class="list-inline">
-                                            <li>
-                                                <strong>Fecha de inicio:</strong>
-                                                Domingo 20 de Abril
-                                            </li>
-                                            <li>
-                                                <strong>Profesor:</strong>
-                                                Eliezer Villafuerte
-                                            </li>
-                                        </ul>
-                                        <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                            <i class="fas fa-xmark me-1"></i>
-                                            Cerrar
-                                        </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 8 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal8" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Bibliología</h2>
-                                    <p class="item-intro text-muted">La Autoridad y Credibilidad de la Biblia.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/8.png" alt="..." />
-                                    <p>Este curso explora la historia, inspiración y autenticidad de las Escrituras, fundamentales para la fe cristiana. Se analizarán las teorías incorrectas sobre la inspiración, así como la doctrina de la inspiración verbal y plenaria.
-
-                                        También se estudiará el testimonio de la Iglesia primitiva y de escritores seculares sobre la confiabilidad de la Biblia, así como las objeciones a la doctrina de la inspiración. Finalmente, se abordará el proceso de formación del canon bíblico, comprendiendo su importancia en la revelación de Dios para la humanidad.
-                                    </p>
-                                        <ul class="list-inline">
-                                            <li>
-                                                <strong>Fecha de inicio:</strong>
-                                                Domingo 01 de Junio
-                                            </li>
-                                            <li>
-                                                <strong>Profesor:</strong>
-                                                Kevin Franco
-                                            </li>
-                                        </ul>
-                                        <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                            <i class="fas fa-xmark me-1"></i>
-                                            Cerrar
-                                        </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 9 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal9" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Homilética</h2>
-                                    <p class="item-intro text-muted">Métodos de Estudio y Predicación de la Palabra.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/9.png" alt="..." />
-                                    <p>Este curso tiene como propósito equipar a los estudiantes con herramientas prácticas para el estudio y la enseñanza de la Biblia. Se explorarán las diferentes etapas del estudio bíblico, métodos de preparación y diversos enfoques de predicación, como el expositivo, analítico, biográfico y bibliográfico.
-
-                                        Además, se enseñarán principios esenciales para desarrollar una oratoria efectiva, permitiendo una comunicación clara y poderosa del mensaje bíblico.
-                                    </p>
-                                        <ul class="list-inline">
-                                            <li>
-                                                <strong>Fecha de inicio:</strong>
-                                                Domingo 10 de Agosto
-                                            </li>
-                                            <li>
-                                                <strong>Profesor:</strong>
-                                                Eben Cayo
-                                            </li>
-                                        </ul>
-                                        <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                            <i class="fas fa-xmark me-1"></i>
-                                            Cerrar
-                                        </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Portfolio item 10 modal popup-->
-        <div class="portfolio-modal modal fade" id="portfolioModal10" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="close-modal" data-bs-dismiss="modal"><img src="assets/img/close-icon.svg" alt="Close modal" /></div>
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-lg-8">
-                                <div class="modal-body">
-                                    <!-- Project details-->
-                                    <h2 class="text-uppercase">Misiología</h2>
-                                    <p class="item-intro text-muted">La Misión de la Iglesia en el Mundo.</p>
-                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/10.png" alt="..." />
-                                    <p>Este curso aborda la importancia de las misiones y el papel fundamental de la iglesia en la expansión del evangelio. Se explorará el propósito y la estrategia bíblica para la obra misionera, analizando el panorama misionero mundial y cómo la iglesia local actúa como instrumento de Dios en esta labor.
-
-                                        Además, se estudiará el llamado a la obra misionera, el sustento de los misioneros y la necesidad de una visión global para cumplir con la Gran Comisión.
-                                    </p>
-                                        <ul class="list-inline">
-                                            <li>
-                                                <strong>Fecha de inicio:</strong>
-                                                Domingo 05 de Octubre
-                                            </li>
-                                            <li>
-                                                <strong>Profesor:</strong>
-                                                Freddy Uvaldez
-                                            </li>
-                                        </ul>
-                                        <button class="btn btn-primary btn-xl text-uppercase" data-bs-dismiss="modal" type="button">
-                                            <i class="fas fa-xmark me-1"></i>
-                                            Cerrar
-                                        </button>
                                 </div>
                             </div>
                         </div>

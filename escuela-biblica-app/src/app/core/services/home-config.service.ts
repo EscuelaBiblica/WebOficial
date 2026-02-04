@@ -87,6 +87,13 @@ export class HomeConfigService {
   }
 
   /**
+   * Actualiza solo la sección Portfolio/Materias
+   */
+  async updateSeccionPortfolio(portfolioConfig: ConfiguracionHome['seccionPortfolio'], adminId: string): Promise<void> {
+    await this.updateConfiguracion({ seccionPortfolio: portfolioConfig }, adminId);
+  }
+
+  /**
    * Inicializa la configuración con valores por defecto
    * Se ejecuta una sola vez al crear el sistema
    */

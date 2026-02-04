@@ -9,7 +9,7 @@
           </h2>
           <p class="text-muted mb-0">
             <i class="fas fa-cog me-1"></i>
-            FASE 1 - Hero y Sección Cursos
+            FASE 2 - Hero, Cursos y Portfolio/Materias
           </p>
         </div>
         <div>
@@ -42,6 +42,14 @@
              (click)="cambiarTab('cursos')"
              style="cursor: pointer;">
             <i class="fas fa-graduation-cap me-2"></i>Sección Cursos
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="tabActiva === 'portfolio'"
+             (click)="cambiarTab('portfolio')"
+             style="cursor: pointer;">
+            <i class="fas fa-th me-2"></i>Portfolio / Materias
           </a>
         </li>
       </ul>
@@ -214,23 +222,48 @@
                 </div>
               </div>
 
-              <div class="input-group mt-2">
-                <input
-                  type="file"
-                  class="form-control"
-                  id="imagenFondo"
-                  accept="image/*"
-                  (change)="onImagenFondoSelected($event)"
-                  [disabled]="uploadingImage">
-                <label class="input-group-text" for="imagenFondo">
-                  <i class="fas fa-upload me-1"></i>
-                  {{ uploadingImage ? 'Subiendo...' : 'Seleccionar' }}
-                </label>
+              <!-- Opción 1: Pegar URL -->
+              <div class="mb-2">
+                <label class="form-label small">Opción 1: Pegar URL de imagen</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-link"></i></span>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="imagenFondo"
+                    placeholder="https://res.cloudinary.com/..."
+                    [disabled]="uploadingImage">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="heroForm.patchValue({imagenFondo: ''})"
+                    [disabled]="!heroForm.get('imagenFondo')?.value">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
               </div>
-              <div class="form-text">
+
+              <!-- Opción 2: Subir archivo -->
+              <div>
+                <label class="form-label small">Opción 2: Subir archivo a Cloudinary</label>
+                <div class="input-group">
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="imagenFondo"
+                    accept="image/*"
+                    (change)="onImagenFondoSelected($event)"
+                    [disabled]="uploadingImage">
+                  <label class="input-group-text" for="imagenFondo">
+                    <i class="fas fa-upload me-1"></i>
+                    {{ uploadingImage ? 'Subiendo...' : 'Seleccionar' }}
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-text mt-2">
                 <i class="fas fa-info-circle me-1"></i>
-                Imagen de fondo para el Hero. Recomendado: 1920x1080px, máx 5MB.
-                Si no se especifica, se usa la imagen por defecto del CSS.
+                Puedes pegar un link existente o subir una imagen nueva. Recomendado: 1920x1080px.
               </div>
             </div>
 
@@ -245,13 +278,22 @@
 
             <!-- Botones de Acción -->
             <div class="d-flex justify-content-between">
-              <button
-                type="button"
-                class="btn btn-outline-warning"
-                (click)="resetearValores()"
-                [disabled]="saving">
-                <i class="fas fa-undo me-1"></i>Restablecer Valores
-              </button>
+              <div>
+                <button
+                  type="button"
+                  class="btn btn-outline-info me-2"
+                  (click)="cargarValoresPorDefecto('hero')"
+                  [disabled]="saving">
+                  <i class="fas fa-file-code me-1"></i>Cargar Valores por Defecto
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-warning"
+                  (click)="resetearValores()"
+                  [disabled]="saving">
+                  <i class="fas fa-undo me-1"></i>Restablecer Valores
+                </button>
+              </div>
 
               <div>
                 <button
@@ -440,13 +482,22 @@
 
             <!-- Botones de Acción -->
             <div class="d-flex justify-content-between">
-              <button
-                type="button"
-                class="btn btn-outline-warning"
-                (click)="resetearValores()"
-                [disabled]="saving">
-                <i class="fas fa-undo me-1"></i>Restablecer Todo
-              </button>
+              <div>
+                <button
+                  type="button"
+                  class="btn btn-outline-info me-2"
+                  (click)="cargarValoresPorDefecto('cursos')"
+                  [disabled]="saving">
+                  <i class="fas fa-file-code me-1"></i>Cargar Valores por Defecto
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-warning"
+                  (click)="resetearValores()"
+                  [disabled]="saving">
+                  <i class="fas fa-undo me-1"></i>Restablecer Todo
+                </button>
+              </div>
 
               <div>
                 <button
@@ -481,6 +532,238 @@
             <li>Los estados de materia muestran badges: EN CURSO, PRÓXIMAMENTE, COMPLETADO</li>
             <li>Los íconos son de Font Awesome (versión 6)</li>
             <li>Puedes ocultar toda la sección con el switch "Sección Visible"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario Portfolio/Materias -->
+  <div class="row" *ngIf="!loading && tabActiva === 'portfolio'">
+    <div class="col-lg-10 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-th me-2"></i>Editar Sección Portfolio / Materias
+          </h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="portfolioForm" (ngSubmit)="guardarCambiosPortfolio()">
+
+            <!-- Toggle de visibilidad -->
+            <div class="form-check form-switch mb-4">
+              <input class="form-check-input" type="checkbox" id="portfolioVisible"
+                     formControlName="visible">
+              <label class="form-check-label fw-bold" for="portfolioVisible">
+                <i class="fas fa-eye me-1"></i>Sección Visible
+              </label>
+            </div>
+
+            <!-- Título y subtítulo de la sección -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Título de la Sección</label>
+                <input type="text" class="form-control" formControlName="titulo" placeholder="Materias">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold">Subtítulo</label>
+                <input type="text" class="form-control" formControlName="subtitulo" placeholder="Más detalles sobre cada materia...">
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Materias de Portfolio -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Materias
+                <span class="badge bg-secondary ms-2">{{ materias.length }}</span>
+              </h5>
+              <button type="button" class="btn btn-primary btn-sm" (click)="agregarMateriaPortfolio()">
+                <i class="fas fa-plus me-1"></i>Agregar Materia
+              </button>
+            </div>
+
+            <div formArrayName="materias" class="mb-4">
+              <div *ngFor="let materia of materias.controls; let i = index" class="card mb-3">
+                <div class="card-header bg-light">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Materia {{ i + 1 }}</h6>
+                    <button type="button" class="btn btn-sm btn-danger" (click)="eliminarMateriaPortfolio(i)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body" [formGroupName]="i">
+                  <!-- Información básica -->
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label fw-bold">Título</label>
+                      <input type="text" class="form-control" formControlName="titulo" placeholder="Evangelismo Personal">
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold">Subtítulo</label>
+                      <input type="text" class="form-control" formControlName="subtitulo" placeholder="(Curso Básico)">
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label fw-bold">Estado</label>
+                      <select class="form-select" formControlName="estado">
+                        <option [ngValue]="null">Sin estado</option>
+                        <option value="en-curso">En Curso</option>
+                        <option value="proximamente">Próximamente</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Imagen principal -->
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Imagen Principal</label>
+
+                    <!-- Opción 1: Pegar URL -->
+                    <div class="mb-2">
+                      <label class="form-label small">Opción 1: Pegar URL</label>
+                      <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-link"></i></span>
+                        <input type="text" class="form-control" formControlName="imagen" placeholder="https://res.cloudinary.com/...">
+                        <button type="button" class="btn btn-outline-secondary" (click)="materia.patchValue({imagen: ''})" [disabled]="!materia.get('imagen')?.value">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Opción 2: Subir archivo -->
+                    <div>
+                      <label class="form-label small">Opción 2: Subir a Cloudinary</label>
+                      <div class="input-group">
+                        <input type="file" class="form-control" [id]="'imagenMateria' + i" accept="image/*" (change)="onImagenMateriaSelected($event, i)">
+                        <label class="input-group-text" [attr.for]="'imagenMateria' + i">
+                          <i class="fas fa-upload"></i>
+                        </label>
+                      </div>
+                    </div>
+
+                    <small class="text-muted d-block mt-1">Tamaño recomendado: 800x600px | Máx: 5MB</small>
+                    <div *ngIf="materia.get('imagen')?.value" class="mt-2">
+                      <img [src]="materia.get('imagen')?.value" class="img-thumbnail" style="max-width: 200px;" alt="Preview">
+                    </div>
+                  </div>
+
+                  <!-- Datos del Modal -->
+                  <div class="border rounded p-3 bg-light" formGroupName="modal">
+                    <h6 class="mb-3">
+                      <i class="fas fa-window-maximize me-2"></i>Información del Modal
+                    </h6>
+
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label fw-bold">Título del Modal</label>
+                        <input type="text" class="form-control" formControlName="tituloModal" placeholder="Evangelismo Personal">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-bold">Intro (subtítulo del modal)</label>
+                        <input type="text" class="form-control" formControlName="intro" placeholder="Compartiendo la Fe de Manera Efectiva">
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label fw-bold">Imagen del Modal</label>
+
+                      <!-- Opción 1: Pegar URL -->
+                      <div class="mb-2">
+                        <label class="form-label small">Opción 1: Pegar URL</label>
+                        <div class="input-group">
+                          <span class="input-group-text"><i class="fas fa-link"></i></span>
+                          <input type="text" class="form-control" formControlName="imagenModal" placeholder="https://res.cloudinary.com/...">
+                          <button type="button" class="btn btn-outline-secondary" (click)="materia.get('modal')?.patchValue({imagenModal: ''})" [disabled]="!materia.get('modal')?.get('imagenModal')?.value">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Opción 2: Subir archivo -->
+                      <div>
+                        <label class="form-label small">Opción 2: Subir a Cloudinary</label>
+                        <div class="input-group">
+                          <input type="file" class="form-control" [id]="'imagenModal' + i" accept="image/*" (change)="onImagenModalMateriaSelected($event, i)">
+                          <label class="input-group-text" [attr.for]="'imagenModal' + i">
+                            <i class="fas fa-upload"></i>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div *ngIf="materia.get('modal')?.get('imagenModal')?.value" class="mt-2">
+                        <img [src]="materia.get('modal')?.get('imagenModal')?.value" class="img-thumbnail" style="max-width: 200px;" alt="Preview Modal">
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label fw-bold">Descripción (HTML permitido)</label>
+                      <textarea class="form-control" formControlName="descripcion" rows="4" placeholder="Descripción completa de la materia..."></textarea>
+                      <small class="text-muted">Puedes usar HTML básico: &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;, etc.</small>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-md-6">
+                        <label class="form-label fw-bold">Fecha de Inicio</label>
+                        <input type="text" class="form-control" formControlName="fechaInicio" placeholder="Domingo 02 de Febrero">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-bold">Profesor</label>
+                        <input type="text" class="form-control" formControlName="profesor" placeholder="Marco Sánchez">
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="d-flex justify-content-between">
+              <div>
+                <button
+                  type="button"
+                  class="btn btn-outline-info me-2"
+                  (click)="cargarValoresPorDefecto('portfolio')"
+                  [disabled]="saving">
+                  <i class="fas fa-file-code me-1"></i>Cargar Valores por Defecto
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="portfolioForm.reset(); cargarConfiguracion()">
+                  <i class="fas fa-undo me-1"></i>Descartar Cambios
+                </button>
+              </div>
+              <button type="submit" class="btn btn-success" [disabled]="saving || portfolioForm.invalid">
+                <span *ngIf="!saving">
+                  <i class="fas fa-save me-1"></i>Guardar Cambios
+                </span>
+                <span *ngIf="saving">
+                  <i class="fas fa-spinner fa-spin me-1"></i>Guardando...
+                </span>
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- Información Técnica Portfolio -->
+      <div class="card mt-4 border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Tips
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>Cada materia tiene una imagen principal y una imagen para el modal</li>
+            <li>Las imágenes se suben a Cloudinary automáticamente</li>
+            <li>La descripción del modal soporta HTML básico</li>
+            <li>Los estados "En Curso" y "Próximamente" muestran badges en las cards</li>
+            <li>Puedes ocultar toda la sección con el switch "Sección Visible"</li>
+            <li>Recomendación: mantén 10 materias (5 Básico + 5 Avanzado)</li>
           </ul>
         </div>
       </div>

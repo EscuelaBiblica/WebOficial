@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { HomeConfigService } from '../../core/services/home-config.service';
-import { ConfiguracionHome, CursoInfo } from '../../core/models/config-home.model';
+import { ConfiguracionHome, CursoInfo, MateriaDetalle } from '../../core/models/config-home.model';
 
 declare const bootstrap: any;
 
@@ -50,6 +50,150 @@ export class HomeComponent implements OnInit, AfterViewInit {
         { nombre: 'Homilética', estado: null },
         { nombre: 'Misiología', estado: null }
       ]
+    }
+  ];
+
+  // Datos de fallback para materias/portfolio (si no hay config en Firestore)
+  materiasDefault: MateriaDetalle[] = [
+    {
+      titulo: "Evangelismo Personal",
+      subtitulo: "(Curso Basico)",
+      imagen: "assets/img/portfolio/1.png",
+      estado: "en-curso",
+      modal: {
+        tituloModal: "Evangelismo Personal - Curso Básico",
+        intro: "Un curso fundamental para aprender a compartir tu fe de manera efectiva y con amor.",
+        imagenModal: "assets/img/portfolio/1.png",
+        descripcion: "Este curso te equipará con las herramientas necesarias para compartir el evangelio de manera natural y efectiva en tu vida diaria. Aprenderás métodos prácticos de evangelización personal y cómo responder preguntas comunes sobre la fe cristiana.",
+        fechaInicio: "1 de febrero de 2025",
+        profesor: "Pastor Juan Pérez"
+      }
+    },
+    {
+      titulo: "Vida Cristiana",
+      subtitulo: "(Curso Basico)",
+      imagen: "assets/img/portfolio/2.jpg",
+      estado: "en-curso",
+      modal: {
+        tituloModal: "Vida Cristiana - Curso Básico",
+        intro: "Fundamentos esenciales para vivir una vida cristiana plena y fructífera.",
+        imagenModal: "assets/img/portfolio/2.jpg",
+        descripcion: "Explora los principios fundamentales de la vida cristiana, incluyendo la oración, el estudio bíblico, la adoración, y cómo desarrollar una relación personal con Dios. Este curso te ayudará a establecer hábitos espirituales saludables.",
+        fechaInicio: "1 de febrero de 2025",
+        profesor: "Pastora María González"
+      }
+    },
+    {
+      titulo: "Síntesis del Antiguo Testamento",
+      subtitulo: "(Curso Basico)",
+      imagen: "assets/img/portfolio/3.jpg",
+      estado: "en-curso",
+      modal: {
+        tituloModal: "Síntesis del Antiguo Testamento",
+        intro: "Un recorrido completo por la historia y los mensajes del Antiguo Testamento.",
+        imagenModal: "assets/img/portfolio/3.jpg",
+        descripcion: "Descubre la riqueza del Antiguo Testamento a través de un estudio panorámico que te ayudará a comprender el contexto histórico, los temas principales y cómo cada libro apunta hacia Cristo.",
+        fechaInicio: "1 de febrero de 2025",
+        profesor: "Pastor Roberto Méndez"
+      }
+    },
+    {
+      titulo: "Síntesis del Nuevo Testamento",
+      subtitulo: "(Curso Basico)",
+      imagen: "assets/img/portfolio/4.jpg",
+      estado: "en-curso",
+      modal: {
+        tituloModal: "Síntesis del Nuevo Testamento",
+        intro: "Explorando el mensaje transformador del Nuevo Testamento.",
+        imagenModal: "assets/img/portfolio/4.jpg",
+        descripcion: "Un estudio integral del Nuevo Testamento que te ayudará a comprender el ministerio de Jesús, el nacimiento de la iglesia, y las enseñanzas apostólicas para la vida cristiana.",
+        fechaInicio: "1 de febrero de 2025",
+        profesor: "Pastor Carlos Ramírez"
+      }
+    },
+    {
+      titulo: "Servicio Ministerial",
+      subtitulo: "(Curso Avanzado)",
+      imagen: "assets/img/portfolio/5.jpg",
+      estado: "en-curso",
+      modal: {
+        tituloModal: "Servicio Ministerial - Curso Avanzado",
+        intro: "Preparación práctica para el servicio efectivo en el ministerio cristiano.",
+        imagenModal: "assets/img/portfolio/5.jpg",
+        descripcion: "Desarrolla las habilidades y el carácter necesarios para servir efectivamente en el ministerio. Incluye liderazgo de grupos pequeños, consejería básica, y administración ministerial.",
+        fechaInicio: "Próximamente",
+        profesor: "Pastor David Torres"
+      }
+    },
+    {
+      titulo: "Métodos de Evangelismo",
+      subtitulo: "(Curso Avanzado)",
+      imagen: "assets/img/portfolio/6.png",
+      estado: "proximamente",
+      modal: {
+        tituloModal: "Métodos de Evangelismo - Curso Avanzado",
+        intro: "Estrategias avanzadas para alcanzar a otros con el mensaje del evangelio.",
+        imagenModal: "assets/img/portfolio/6.png",
+        descripcion: "Profundiza en diversos métodos y estrategias de evangelización, incluyendo evangelismo relacional, evangelismo de eventos, y uso de medios digitales para compartir el evangelio.",
+        fechaInicio: "Marzo 2025",
+        profesor: "Pastor Juan Pérez"
+      }
+    },
+    {
+      titulo: "Teología Sistemática",
+      subtitulo: "(Curso Avanzado)",
+      imagen: "assets/img/portfolio/7.png",
+      estado: "proximamente",
+      modal: {
+        tituloModal: "Teología Sistemática - Curso Avanzado",
+        intro: "Un estudio organizado de las doctrinas fundamentales de la fe cristiana.",
+        imagenModal: "assets/img/portfolio/7.png",
+        descripcion: "Explora las doctrinas esenciales del cristianismo de manera sistemática, incluyendo teología propia, cristología, pneumatología, soteriología, eclesiología y escatología.",
+        fechaInicio: "Abril 2025",
+        profesor: "Dr. Fernando Sánchez"
+      }
+    },
+    {
+      titulo: "Bibliología",
+      subtitulo: "(Curso Avanzado)",
+      imagen: "assets/img/portfolio/8.png",
+      estado: "proximamente",
+      modal: {
+        tituloModal: "Bibliología - Curso Avanzado",
+        intro: "El estudio de la naturaleza, inspiración y autoridad de las Sagradas Escrituras.",
+        imagenModal: "assets/img/portfolio/8.png",
+        descripcion: "Examina la formación del canon bíblico, la inspiración divina de las Escrituras, principios de interpretación bíblica, y cómo defender la confiabilidad de la Biblia.",
+        fechaInicio: "Mayo 2025",
+        profesor: "Dr. Fernando Sánchez"
+      }
+    },
+    {
+      titulo: "Homilética",
+      subtitulo: "(Curso Avanzado)",
+      imagen: "assets/img/portfolio/9.png",
+      estado: "proximamente",
+      modal: {
+        tituloModal: "Homilética - Curso Avanzado",
+        intro: "El arte y la ciencia de la preparación y predicación de sermones bíblicos.",
+        imagenModal: "assets/img/portfolio/9.png",
+        descripcion: "Aprende a preparar y presentar sermones bíblicos efectivos. Incluye exégesis, estructura de sermones, aplicación práctica, y técnicas de comunicación.",
+        fechaInicio: "Junio 2025",
+        profesor: "Pastor Roberto Méndez"
+      }
+    },
+    {
+      titulo: "Misiología",
+      subtitulo: "(Curso Avanzado)",
+      imagen: "assets/img/portfolio/10.png",
+      estado: "proximamente",
+      modal: {
+        tituloModal: "Misiología - Curso Avanzado",
+        intro: "El estudio de la misión de Dios y la expansión del evangelio en el mundo.",
+        imagenModal: "assets/img/portfolio/10.png",
+        descripcion: "Explora la naturaleza de la misión cristiana, estrategias misioneras, contextos culturales, y cómo participar efectivamente en la Gran Comisión en el mundo contemporáneo.",
+        fechaInicio: "Julio 2025",
+        profesor: "Misionera Ana López"
+      }
     }
   ];
 
