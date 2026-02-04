@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { HomeConfigService } from '../../core/services/home-config.service';
-import { ConfiguracionHome } from '../../core/models/config-home.model';
+import { ConfiguracionHome, CursoInfo } from '../../core/models/config-home.model';
 
 declare const bootstrap: any;
 
@@ -22,6 +22,36 @@ export class HomeComponent implements OnInit, AfterViewInit {
   // Configuración dinámica del home
   config: ConfiguracionHome | null = null;
   loadingConfig = true;
+
+  // Datos de fallback para cursos (si no hay config en Firestore)
+  cursosDefault: CursoInfo[] = [
+    {
+      titulo: 'Básico',
+      subtitulo: 'Estudio Bíblico Fundamental',
+      icono: 'fa-book-reader',
+      descripcion: 'Este curso introduce los principios básicos del estudio de la Biblia. Ideal para quienes desean establecer una base sólida en su camino de fe y servicio cristiano.',
+      materias: [
+        { nombre: 'Evangelismo Personal', estado: 'en-curso' },
+        { nombre: 'Vida Cristiana', estado: null },
+        { nombre: 'Síntesis del Antiguo Testamento', estado: null },
+        { nombre: 'Síntesis del Nuevo Testamento', estado: null },
+        { nombre: 'Servicio Ministerial', estado: null }
+      ]
+    },
+    {
+      titulo: 'Avanzado',
+      subtitulo: 'Teología y Evangelismo Profesional',
+      icono: 'fa-graduation-cap',
+      descripcion: 'Este curso profundiza en el estudio avanzado de la Biblia y la teología cristiana. Está diseñado para aquellos que buscan un conocimiento más profundo para ejercer un liderazgo efectivo en la iglesia y en la misión cristiana.',
+      materias: [
+        { nombre: 'Métodos de Evangelismo General', estado: 'en-curso' },
+        { nombre: 'Introducción a la Teología Sistemática', estado: null },
+        { nombre: 'Bibliología', estado: null },
+        { nombre: 'Homilética', estado: null },
+        { nombre: 'Misiología', estado: null }
+      ]
+    }
+  ];
 
   constructor(
     private authService: AuthService,

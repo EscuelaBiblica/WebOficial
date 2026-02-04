@@ -8,8 +8,8 @@
             <i class="fas fa-home me-2"></i>Configuración del Home
           </h2>
           <p class="text-muted mb-0">
-            <i class="fas fa-info-circle me-1"></i>
-            Prueba de concepto - Sección Hero/Masthead
+            <i class="fas fa-cog me-1"></i>
+            FASE 1 - Hero y Sección Cursos
           </p>
         </div>
         <div>
@@ -21,6 +21,30 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Tabs de Navegación -->
+  <div class="row mb-4" *ngIf="!loading">
+    <div class="col-12">
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="tabActiva === 'hero'"
+             (click)="cambiarTab('hero')"
+             style="cursor: pointer;">
+            <i class="fas fa-image me-2"></i>Hero/Masthead
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="tabActiva === 'cursos'"
+             (click)="cambiarTab('cursos')"
+             style="cursor: pointer;">
+            <i class="fas fa-graduation-cap me-2"></i>Sección Cursos
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
 
@@ -53,8 +77,8 @@
     </div>
   </div>
 
-  <!-- Formulario -->
-  <div class="row" *ngIf="!loading">
+  <!-- Formulario Hero -->
+  <div class="row" *ngIf="!loading && tabActiva === 'hero'">
     <div class="col-lg-8 mx-auto">
       <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
@@ -165,6 +189,51 @@
               </div>
             </div>
 
+            <!-- Imagen de Fondo (Cloudinary) -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                <i class="fas fa-image me-2"></i>Imagen de Fondo (Opcional)
+              </label>
+
+              <div class="card border" *ngIf="config?.hero?.imagenFondo">
+                <div class="card-body">
+                  <div class="row align-items-center">
+                    <div class="col-md-3">
+                      <img [src]="config?.hero?.imagenFondo || ''" class="img-fluid rounded" alt="Imagen de fondo actual">
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1 small text-muted">Imagen actual:</p>
+                      <p class="mb-0 small">{{ config?.hero?.imagenFondo }}</p>
+                    </div>
+                    <div class="col-md-3 text-end">
+                      <button type="button" class="btn btn-sm btn-danger" (click)="eliminarImagenFondo()">
+                        <i class="fas fa-trash me-1"></i>Eliminar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-group mt-2">
+                <input
+                  type="file"
+                  class="form-control"
+                  id="imagenFondo"
+                  accept="image/*"
+                  (change)="onImagenFondoSelected($event)"
+                  [disabled]="uploadingImage">
+                <label class="input-group-text" for="imagenFondo">
+                  <i class="fas fa-upload me-1"></i>
+                  {{ uploadingImage ? 'Subiendo...' : 'Seleccionar' }}
+                </label>
+              </div>
+              <div class="form-text">
+                <i class="fas fa-info-circle me-1"></i>
+                Imagen de fondo para el Hero. Recomendado: 1920x1080px, máx 5MB.
+                Si no se especifica, se usa la imagen por defecto del CSS.
+              </div>
+            </div>
+
             <!-- Información de Última Actualización -->
             <div class="alert alert-light border" *ngIf="config">
               <small class="text-muted">
@@ -203,7 +272,7 @@
         </div>
       </div>
 
-      <!-- Información Técnica -->
+      <!-- Información Técnica Hero -->
       <div class="card mt-4 border-info">
         <div class="card-header bg-info text-white">
           <h6 class="mb-0">
@@ -215,8 +284,203 @@
             <li>Los cambios se aplican <strong>inmediatamente</strong> en el home</li>
             <li>El caché se invalida automáticamente al guardar</li>
             <li>Los visitantes verán los cambios en su próxima carga</li>
-            <li>Esta es la <strong>Fase 0.5</strong> - Prueba de concepto con Hero</li>
-            <li>Si funciona bien, agregaremos el resto de secciones</li>
+            <li>Esta es la <strong>FASE 1</strong> - Hero y Sección Cursos</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario Cursos -->
+  <div class="row" *ngIf="!loading && tabActiva === 'cursos'">
+    <div class="col-lg-10 mx-auto">
+      <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-graduation-cap me-2"></i>Editar Sección Cursos
+          </h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="cursosForm" (ngSubmit)="guardarCambiosCursos()">
+
+            <!-- Toggle de visibilidad -->
+            <div class="form-check form-switch mb-4">
+              <input class="form-check-input" type="checkbox" id="cursosVisible"
+                     formControlName="visible">
+              <label class="form-check-label fw-bold" for="cursosVisible">
+                <i class="fas fa-eye me-2"></i>Sección Visible en el Home
+              </label>
+            </div>
+
+            <hr>
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="cursosTitulo" class="form-label fw-bold">
+                  <i class="fas fa-heading me-2"></i>Título de la Sección
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="cursosTitulo"
+                  formControlName="titulo"
+                  placeholder="Cursos">
+              </div>
+              <div class="col-md-6">
+                <label for="cursosSubtitulo" class="form-label fw-bold">
+                  <i class="fas fa-text-height me-2"></i>Subtítulo
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="cursosSubtitulo"
+                  formControlName="subtitulo"
+                  placeholder="Dos niveles para elegir.">
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Lista de Cursos -->
+            <div formArrayName="cursos">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5><i class="fas fa-list me-2"></i>Cursos</h5>
+                <button type="button" class="btn btn-sm btn-success" (click)="agregarCurso()">
+                  <i class="fas fa-plus me-1"></i>Agregar Curso
+                </button>
+              </div>
+
+              <div *ngFor="let curso of cursos.controls; let i = index" class="card mb-3">
+                <div class="card-header bg-light">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Curso {{ i + 1 }}</h6>
+                    <button type="button" class="btn btn-sm btn-danger" (click)="eliminarCurso(i)">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body" [formGroupName]="i">
+                  <div class="row">
+                    <div class="col-md-4 mb-3">
+                      <label class="form-label fw-bold">Título</label>
+                      <input type="text" class="form-control" formControlName="titulo" placeholder="Básico">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                      <label class="form-label fw-bold">Subtítulo</label>
+                      <input type="text" class="form-control" formControlName="subtitulo" placeholder="Estudio Bíblico Fundamental">
+                    </div>
+                    <div class="col-md-12 mb-3">
+                      <label class="form-label fw-bold">
+                        Icono
+                        <span class="badge bg-primary ms-2">
+                          <i class="fas" [ngClass]="curso.value.icono || 'fa-question'"></i>
+                          {{ curso.value.icono ? 'Seleccionado' : 'Ninguno' }}
+                        </span>
+                      </label>
+                      <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                        <div class="row g-2">
+                          <div class="col-auto" *ngFor="let icono of iconosDisponibles">
+                            <button
+                              type="button"
+                              class="btn btn-sm"
+                              [class.btn-primary]="curso.value.icono === icono.clase"
+                              [class.btn-outline-secondary]="curso.value.icono !== icono.clase"
+                              (click)="curso.get('icono')?.setValue(icono.clase)"
+                              [title]="icono.nombre"
+                              style="width: 45px; height: 45px;"
+                            >
+                              <i class="fas fa-lg" [ngClass]="icono.clase"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <small class="text-muted">Haz clic en un icono para seleccionarlo</small>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Descripción</label>
+                    <textarea class="form-control" formControlName="descripcion" rows="2"
+                              placeholder="Descripción del curso..."></textarea>
+                  </div>
+
+                  <!-- Materias del curso -->
+                  <div formArrayName="materias">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <label class="form-label fw-bold mb-0">Materias</label>
+                      <button type="button" class="btn btn-sm btn-outline-primary" (click)="agregarMateria(i)">
+                        <i class="fas fa-plus me-1"></i>Agregar Materia
+                      </button>
+                    </div>
+
+                    <div *ngFor="let materia of getMaterias(i).controls; let j = index"
+                         class="input-group mb-2" [formGroupName]="j">
+                      <input type="text" class="form-control" formControlName="nombre" placeholder="Nombre de la materia">
+                      <select class="form-select" formControlName="estado" style="max-width: 150px;">
+                        <option [ngValue]="null">Sin badge</option>
+                        <option value="en-curso">EN CURSO</option>
+                        <option value="proximamente">PRÓXIMAMENTE</option>
+                        <option value="completado">COMPLETADO</option>
+                      </select>
+                      <button type="button" class="btn btn-outline-danger" (click)="eliminarMateria(i, j)">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información de Última Actualización -->
+            <div class="alert alert-light border" *ngIf="config">
+              <small class="text-muted">
+                <i class="fas fa-clock me-1"></i>
+                Última actualización: {{ config.ultimaActualizacion | date:'medium' }}
+                por {{ config.actualizadoPor }}
+              </small>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="d-flex justify-content-between">
+              <button
+                type="button"
+                class="btn btn-outline-warning"
+                (click)="resetearValores()"
+                [disabled]="saving">
+                <i class="fas fa-undo me-1"></i>Restablecer Todo
+              </button>
+
+              <div>
+                <button
+                  type="submit"
+                  class="btn btn-success btn-lg"
+                  [disabled]="cursosForm.invalid || saving">
+                  <span *ngIf="!saving">
+                    <i class="fas fa-save me-2"></i>Guardar Cursos
+                  </span>
+                  <span *ngIf="saving">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Guardando...
+                  </span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Información Técnica Cursos -->
+      <div class="card mt-4 border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Tips
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>Puedes agregar o eliminar cursos dinámicamente</li>
+            <li>Cada curso puede tener múltiples materias</li>
+            <li>Los estados de materia muestran badges: EN CURSO, PRÓXIMAMENTE, COMPLETADO</li>
+            <li>Los íconos son de Font Awesome (versión 6)</li>
+            <li>Puedes ocultar toda la sección con el switch "Sección Visible"</li>
           </ul>
         </div>
       </div>

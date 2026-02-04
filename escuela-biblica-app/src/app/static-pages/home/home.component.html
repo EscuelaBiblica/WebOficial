@@ -39,11 +39,12 @@
             </div>
         </nav>
         <!-- Masthead-->
-        <header class="masthead">
+        <header class="masthead" [style.background-image]="config?.hero?.imagenFondo ? 'url(' + config?.hero?.imagenFondo + ')' : null">
             <div class="container">
                 <!--
                     SECCIÓN HERO - Ahora dinámico desde Firestore
                     Si no hay config cargada, muestra valores por defecto (fallback)
+                    La imagen de fondo puede ser personalizada desde Cloudinary
                 -->
                 <div class="masthead-subheading">
                     {{ (config?.hero?.subtitulo1) ?? '¡Desarrolla tu fe!' }}
@@ -61,57 +62,31 @@
             </div>
         </header>
 <!-- Services-->
-<section class="page-section" id="services">
+<section class="page-section" id="services" *ngIf="(config?.seccionCursos?.visible) ?? true">
     <div class="container">
         <div class="text-center">
-            <h2 class="section-heading text-uppercase">Cursos</h2>
-            <h3 class="section-subheading text-muted">Dos niveles para elegir.</h3>
+            <h2 class="section-heading text-uppercase">{{ (config?.seccionCursos?.titulo) ?? 'Cursos' }}</h2>
+            <h3 class="section-subheading text-muted">{{ (config?.seccionCursos?.subtitulo) ?? 'Dos niveles para elegir.' }}</h3>
         </div>
         <div class="row text-center">
-            <!-- Curso Básico -->
-            <div class="col-md-6">
+            <!-- Cursos dinámicos -->
+            <div class="col-md-6" *ngFor="let curso of (config?.seccionCursos?.cursos) ?? cursosDefault">
                 <span class="fa-stack fa-4x">
                     <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                    <i class="fas fa-book-reader fa-stack-1x fa-inverse"></i>
+                    <i class="fas {{ curso.icono }} fa-stack-1x fa-inverse"></i>
                 </span>
-                <h4 class="my-3">Básico</h4>
-                <h5 class="section-subheading text-muted mb-3">Estudio Bíblico Fundamental</h5>
-                <p class="text-muted mb-4">
-                    Este curso introduce los principios básicos del estudio de la Biblia.
-                    Ideal para quienes desean establecer una base sólida en su camino de fe y servicio cristiano.
-                </p>
+                <h4 class="my-3">{{ curso.titulo }}</h4>
+                <h5 class="section-subheading text-muted mb-3">{{ curso.subtitulo }}</h5>
+                <p class="text-muted mb-4">{{ curso.descripcion }}</p>
                 <div class="text-start">
                     <h5 class="my-3">Materias:</h5>
                     <ul class="text-muted fa-ul">
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Evangelismo Personal <span class="en-curso">EN CURSO</span></li>
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Vida Cristiana  <!--<span class="proximamente">PRÓXIMAMENTE</span> -->     </li>
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Síntesis del Antiguo Testamento</li>
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Síntesis del Nuevo Testamento</li>
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Servicio Ministerial</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Curso Avanzado -->
-            <div class="col-md-6">
-                <span class="fa-stack fa-4x">
-                    <i class="fas fa-circle fa-stack-2x text-primary"></i>
-                    <i class="fas fa-graduation-cap fa-stack-1x fa-inverse"></i>
-                </span>
-                <h4 class="my-3">Avanzado</h4>
-                <h5 class="section-subheading text-muted mb-3">Teología y Evangelismo Profesional</h5>
-                <p class="text-muted mb-4">
-                    Este curso profundiza en el estudio avanzado de la Biblia y la teología cristiana.
-                    Está diseñado para aquellos que buscan un conocimiento más profundo para ejercer un liderazgo efectivo en la iglesia y en la misión cristiana.
-                </p>
-                <div class="text-start">
-                    <h5 class="my-3">Materias:</h5>
-                    <ul class="text-muted fa-ul">
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Métodos de Evangelismo General <span class="en-curso">EN CURSO</span></li>
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Introducción a la Teología Sistemática</li>
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Bibliología</li>
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Homilética</li>
-                        <li><span class="fa-li"><i class="fas fa-check"></i></span>Misiología</li>
+                        <li *ngFor="let materia of curso.materias">
+                            <span class="fa-li"><i class="fas fa-check"></i></span>
+                            {{ materia.nombre }}
+                            <span *ngIf="materia.estado === 'en-curso'" class="en-curso">EN CURSO</span>
+                            <span *ngIf="materia.estado === 'proximamente'" class="proximamente">PRÓXIMAMENTE</span>
+                        </li>
                     </ul>
                 </div>
             </div>

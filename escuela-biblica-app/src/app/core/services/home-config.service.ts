@@ -80,6 +80,13 @@ export class HomeConfigService {
   }
 
   /**
+   * Actualiza solo la sección Cursos
+   */
+  async updateSeccionCursos(cursosConfig: ConfiguracionHome['seccionCursos'], adminId: string): Promise<void> {
+    await this.updateConfiguracion({ seccionCursos: cursosConfig }, adminId);
+  }
+
+  /**
    * Inicializa la configuración con valores por defecto
    * Se ejecuta una sola vez al crear el sistema
    */
