@@ -216,6 +216,7 @@
                 </div>
             </div>
         </section>
+
         <!-- Clients-->
         <div class="py-5">
             <div class="container">
@@ -229,93 +230,41 @@
                 </div>
             </div>
         </div>
-        <!-- Contact-->
-<!-- Contact -->
-<section class="page-section" id="contact">
-    <div class="container">
-        <div class="text-center">
-            <h2 class="section-heading text-uppercase">INSCRIPCIÓN</h2>
-            <h3 class="section-subheading text-muted">Regístrate para llevar uno de los cursos.</h3>
-        </div>
-        <form id="contactForm" (submit)="onSubmit($event)">
-            <div class="row align-items-stretch mb-5">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <input class="form-control" id="name" type="text" placeholder="Nombre Completo *" required />
-                        <div class="invalid-feedback">Tu nombre completo es requerido.</div>
-                    </div>
-                    <div class="form-group">
-                        <select class="form-control" id="curso" required>
-                            <option value="" disabled selected>Seleccione un curso *</option>
-                            <option value="CURSO BASICO COMPLETO">CURSO BASICO COMPLETO</option>
-                            <option value="CURSO AVANZADO COMPLETO">CURSO AVANZADO COMPLETO</option>
-                            <option value="EVANGELISMO PERSONAL">EVANGELISMO PERSONAL</option>
-                            <option value="VIDA CRISTIANA">VIDA CRISTIANA</option>
-                            <option value="SINTESIS DEL AT">SÍNTESIS DEL AT</option>
-                            <option value="SINTESIS DEL NT">SÍNTESIS DEL NT</option>
-                            <option value="SERVICIO MINISTERIAL">SERVICIO MINISTERIAL</option>
-                            <option value="METODOS DE EVANGELISMO GENERAL">MÉTODOS DE EVANGELISMO GENERAL</option>
-                            <option value="INTRODUCCION A LA TEOLOGIA SISTEMATICA">INTRODUCCIÓN A LA TEOLOGÍA SISTEMÁTICA</option>
-                            <option value="BIBLIOLOGIA">BIBLIOLOGÍA</option>
-                            <option value="HOMILETICA">HOMILÉTICA</option>
-                            <option value="MISIOLOGIA">MISIOLOGÍA</option>
-                        </select>
-                        <div class="invalid-feedback">Debes elegir un curso o materia.</div>
-                    </div>
-                    <div class="form-group mb-md-0">
-                        <input class="form-control" id="phone" type="tel" placeholder="Celular *" required />
-                        <div class="invalid-feedback">Tu número de celular es requerido.</div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group form-group-textarea mb-md-0">
-                        <textarea class="form-control" id="message" placeholder="¿A que iglesia perteneces?"></textarea>
+
+        <!-- Sección Inscripción (FASE 5) - Versión simplificada -->
+        <section class="page-section" id="contact" *ngIf="config?.seccionInscripcion?.visible !== false">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8 text-center">
+                        <!-- Título principal -->
+                        <h2 class="section-heading text-uppercase text-white mb-5">
+                            {{ config?.seccionInscripcion?.titulo || '¿Listo para empezar?' }}
+                        </h2>
+
+                        <!-- Video de YouTube -->
+                        <div class="mb-5" *ngIf="config?.seccionInscripcion?.videoYoutube">
+                            <h4 class="text-white mb-3">{{ config?.seccionInscripcion?.videoTitulo || 'Tutorial: Cómo crear cuenta y solicitar inscripción' }}</h4>
+                            <div class="ratio ratio-16x9">
+                                <iframe
+                                    [src]="getYoutubeEmbedUrl(config?.seccionInscripcion?.videoYoutube || '')"
+                                    title="Video tutorial"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+
+                        <!-- Botón de inscripción -->
+                        <a
+                            [routerLink]="config?.seccionInscripcion?.botonLink || '/login'"
+                            class="btn btn-primary btn-xl text-uppercase">
+                            {{ config?.seccionInscripcion?.botonTexto || 'Inscribirme Ahora' }}
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="text-center">
-                <button class="btn btn-primary btn-xl text-uppercase" id="submitButton" type="submit">Inscribirse</button>
-            </div>
-        </form>
-    </div>
-</section>
-
-<!-- Modal de Éxito -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="successModalLabel">¡Inscripción Exitosa!</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Tu inscripción ha sido registrada con éxito. Nos pondremos en contacto contigo pronto.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Error -->
-<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="errorModalLabel">¡Error en la Inscripción!</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Ocurrió un problema al registrar tu inscripción. Intenta nuevamente más tarde.
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
+        </section>
 
         <!-- Footer-->
         <footer class="footer py-4">

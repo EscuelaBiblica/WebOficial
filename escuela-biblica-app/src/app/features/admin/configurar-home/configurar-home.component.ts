@@ -20,6 +20,7 @@ export class ConfigurarHomeComponent implements OnInit {
   portfolioForm!: FormGroup;
   aboutForm!: FormGroup;
   profesoresForm!: FormGroup;
+  inscripcionForm!: FormGroup;
   config: ConfiguracionHome | null = null;
   loading = true;
   saving = false;
@@ -32,7 +33,7 @@ export class ConfigurarHomeComponent implements OnInit {
   loadingProfesores = false;
 
   // Tabs de navegación
-  tabActiva: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' = 'hero';
+  tabActiva: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion' = 'hero';
 
   // Lista de iconos disponibles para cursos
   iconosDisponibles = [
@@ -130,6 +131,16 @@ export class ConfigurarHomeComponent implements OnInit {
       subtitulo: ['', Validators.required],
       descripcionPie: ['', Validators.required],
       usarProfesoresReales: [false]
+    });
+
+    // Crear formulario Inscripción
+    this.inscripcionForm = this.fb.group({
+      visible: [true],
+      titulo: ['', Validators.required],
+      botonTexto: ['', Validators.required],
+      botonLink: ['', Validators.required],
+      videoYoutube: [''],
+      videoTitulo: ['']
     });
 
     // Cargar configuración actual
@@ -261,6 +272,32 @@ export class ConfigurarHomeComponent implements OnInit {
             subtitulo: CONFIG_HOME_DEFAULT.seccionProfesores!.subtitulo,
             descripcionPie: CONFIG_HOME_DEFAULT.seccionProfesores!.descripcionPie,
             usarProfesoresReales: CONFIG_HOME_DEFAULT.seccionProfesores!.usarProfesoresReales
+          });
+        }
+
+        // Poblar formulario Inscripción si existe
+        if (this.config.seccionInscripcion) {
+          this.inscripcionForm.patchValue({
+            visible: this.config.seccionInscripcion.visible,
+            titulo: this.config.seccionInscripcion.titulo,
+            subtitulo: this.config.seccionInscripcion.subtitulo,
+            descripcion: this.config.seccionInscripcion.descripcion,
+            botonTexto: this.config.seccionInscripcion.botonTexto,
+            botonLink: this.config.seccionInscripcion.botonLink,
+            videoYoutube: this.config.seccionInscripcion.videoYoutube,
+            videoTitulo: this.config.seccionInscripcion.videoTitulo
+          });
+        } else {
+          // Si no hay seccionInscripcion en Firestore, cargar datos por defecto
+          this.inscripcionForm.patchValue({
+            visible: CONFIG_HOME_DEFAULT.seccionInscripcion!.visible,
+            titulo: CONFIG_HOME_DEFAULT.seccionInscripcion!.titulo,
+            subtitulo: CONFIG_HOME_DEFAULT.seccionInscripcion!.subtitulo,
+            descripcion: CONFIG_HOME_DEFAULT.seccionInscripcion!.descripcion,
+            botonTexto: CONFIG_HOME_DEFAULT.seccionInscripcion!.botonTexto,
+            botonLink: CONFIG_HOME_DEFAULT.seccionInscripcion!.botonLink,
+            videoYoutube: CONFIG_HOME_DEFAULT.seccionInscripcion!.videoYoutube,
+            videoTitulo: CONFIG_HOME_DEFAULT.seccionInscripcion!.videoTitulo
           });
         }
       }
@@ -679,11 +716,11 @@ export class ConfigurarHomeComponent implements OnInit {
     }
   }
 
-  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores') {
+  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion') {
     this.tabActiva = tab;
   }
 
-  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores') {
+  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion') {
     if (!confirm('¿Cargar valores por defecto en el formulario? (No se guardará hasta que presiones "Guardar Cambios")')) {
       return;
     }
@@ -751,6 +788,20 @@ export class ConfigurarHomeComponent implements OnInit {
         });
         this.mostrarMensaje('info', 'Valores por defecto cargados en Profesores');
         break;
+
+      case 'inscripcion':
+        this.inscripcionForm.patchValue({
+          visible: CONFIG_HOME_DEFAULT.seccionInscripcion!.visible,
+          titulo: CONFIG_HOME_DEFAULT.seccionInscripcion!.titulo,
+          subtitulo: CONFIG_HOME_DEFAULT.seccionInscripcion!.subtitulo,
+          descripcion: CONFIG_HOME_DEFAULT.seccionInscripcion!.descripcion,
+          botonTexto: CONFIG_HOME_DEFAULT.seccionInscripcion!.botonTexto,
+          botonLink: CONFIG_HOME_DEFAULT.seccionInscripcion!.botonLink,
+          videoYoutube: CONFIG_HOME_DEFAULT.seccionInscripcion!.videoYoutube,
+          videoTitulo: CONFIG_HOME_DEFAULT.seccionInscripcion!.videoTitulo
+        });
+        this.mostrarMensaje('info', 'Valores por defecto cargados en Inscripción');
+        break;
     }
   }
 
@@ -782,6 +833,27 @@ export class ConfigurarHomeComponent implements OnInit {
     } catch (error) {
       console.error('Error guardando configuración de profesores:', error);
       alert('Error al guardar la configuración de profesores. Intenta nuevamente.');
+    } finally {
+      this.saving = false;
+    }
+  }
+
+  async guardarCambiosInscripcion() {
+    if (this.inscripcionForm.invalid) {
+      this.mostrarMensaje('error', 'Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    try {
+      this.saving = true;
+      const datos = this.inscripcionForm.value;
+
+      await this.homeConfigService.updateSeccionInscripcion(datos, this.currentUserId);
+      this.mostrarMensaje('success', 'Sección Inscripción guardada correctamente');
+      await this.cargarConfiguracion();
+    } catch (error) {
+      console.error('Error guardando sección inscripción:', error);
+      this.mostrarMensaje('error', 'Error al guardar la sección de inscripción');
     } finally {
       this.saving = false;
     }

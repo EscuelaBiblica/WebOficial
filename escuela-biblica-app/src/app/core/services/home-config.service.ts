@@ -108,6 +108,13 @@ export class HomeConfigService {
   }
 
   /**
+   * Actualiza solo la sección Inscripción
+   */
+  async updateSeccionInscripcion(inscripcionConfig: ConfiguracionHome['seccionInscripcion'], adminId: string): Promise<void> {
+    await this.updateConfiguracion({ seccionInscripcion: inscripcionConfig }, adminId);
+  }
+
+  /**
    * Inicializa la configuración con valores por defecto
    * Se ejecuta una sola vez al crear el sistema
    */

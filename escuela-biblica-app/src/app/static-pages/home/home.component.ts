@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../../core/services/auth.service';
 import { HomeConfigService } from '../../core/services/home-config.service';
 import { ConfiguracionHome, CursoInfo, MateriaDetalle, TimelineItem, ProfesorInfo } from '../../core/models/config-home.model';
@@ -320,7 +321,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private homeConfigService: HomeConfigService
+    private homeConfigService: HomeConfigService,
+    private sanitizer: DomSanitizer
   ) {}
 
   async ngOnInit() {
@@ -483,5 +485,34 @@ export class HomeComponent implements OnInit, AfterViewInit {
     } finally {
       this.isSubmitting = false;
     }
+  }
+
+  /**
+   * Convierte URL de YouTube a formato embed seguro
+   */
+  getYoutubeEmbedUrl(url: string): SafeResourceUrl | null {
+    if (!url) return null;
+
+    let videoId = '';
+
+    // Detectar diferentes formatos de URL de YouTube
+    if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1]?.split('&')[0] || '';
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+    } else if (url.includes('youtube.com/embed/')) {
+      videoId = url.split('embed/')[1]?.split('?')[0] || '';
+    } else if (url.includes('youtube.com/live/')) {
+      // Formato de YouTube Live
+      videoId = url.split('live/')[1]?.split('?')[0] || '';
+    } else {
+      // Asumir que es solo el ID del video
+      videoId = url;
+    }
+
+    if (!videoId) return null;
+
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 }

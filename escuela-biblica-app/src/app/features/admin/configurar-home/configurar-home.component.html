@@ -68,6 +68,14 @@
             <i class="fas fa-chalkboard-teacher me-2"></i>Profesores
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="tabActiva === 'inscripcion'"
+             (click)="cambiarTab('inscripcion')"
+             style="cursor: pointer;">
+            <i class="fas fa-user-plus me-2"></i>Inscripción
+          </a>
+        </li>
       </ul>
     </div>
   </div>
@@ -1114,6 +1122,84 @@
             <li>Si no hay profesores en la BD, se mostrarán automáticamente los profesores predefinidos</li>
             <li>Los profesores predefinidos son: Eben Ezer, Cristian, Marco, Eliezer, Hernán, Efrain, Kevin, Freddy, y uno más</li>
           </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 6: INSCRIPCIÓN -->
+  <div class="row" *ngIf="!loading && tabActiva === 'inscripcion'">
+    <div class="col-12">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-user-plus me-2"></i>Configuración de Inscripción
+          </h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="inscripcionForm">
+            <!-- Visibilidad -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="inscripcionVisible" formControlName="visible">
+                  <label class="form-check-label" for="inscripcionVisible">
+                    <strong>Mostrar sección en Home</strong>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Título -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <label for="inscripcionTitulo" class="form-label">Título Principal *</label>
+                <input type="text" class="form-control" id="inscripcionTitulo" formControlName="titulo" placeholder="¿Listo para empezar?">
+              </div>
+            </div>
+
+            <!-- Botón CTA -->
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="inscripcionBotonTexto" class="form-label">Texto del Botón *</label>
+                <input type="text" class="form-control" id="inscripcionBotonTexto" formControlName="botonTexto" placeholder="Inscribirme Ahora">
+              </div>
+              <div class="col-md-6">
+                <label for="inscripcionBotonLink" class="form-label">Enlace del Botón *</label>
+                <input type="text" class="form-control" id="inscripcionBotonLink" formControlName="botonLink" placeholder="/login">
+                <small class="form-text text-muted">Rutas internas: /login, /registro</small>
+              </div>
+            </div>
+
+            <!-- Video de YouTube -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <label for="inscripcionVideoTitulo" class="form-label">Título del Video (opcional)</label>
+                <input type="text" class="form-control" id="inscripcionVideoTitulo" formControlName="videoTitulo" placeholder="Tutorial: Cómo crear cuenta y solicitar inscripción">
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-12">
+                <label for="inscripcionVideoYoutube" class="form-label">URL del Video de YouTube (opcional)</label>
+                <input type="text" class="form-control" id="inscripcionVideoYoutube" formControlName="videoYoutube" placeholder="https://www.youtube.com/watch?v=xxxxx">
+                <small class="form-text text-muted">Acepta: URL completa, enlace corto (youtu.be), o solo el ID del video</small>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <button type="button" class="btn btn-primary me-2" (click)="guardarCambiosInscripcion()" [disabled]="saving || inscripcionForm.invalid">
+                  <i class="fas fa-save me-2"></i>
+                  {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="cargarValoresPorDefecto('inscripcion')" [disabled]="saving">
+                  <i class="fas fa-undo me-2"></i>Cargar Valores por Defecto
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
     </div>

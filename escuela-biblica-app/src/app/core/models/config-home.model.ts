@@ -112,6 +112,18 @@ export interface SeccionProfesoresConfig {
   // No se almacenan en la config, solo título/subtítulo/footer
 }
 
+// ===== SECCIÓN INSCRIPCIÓN (FASE 5) =====
+export interface SeccionInscripcionConfig {
+  visible: boolean;
+  titulo: string; // "¿Listo para empezar?"
+  subtitulo: string; // "Inscríbete ahora en nuestra Escuela Bíblica"
+  descripcion: string; // Texto explicativo
+  botonTexto: string; // "Inscribirme Ahora"
+  botonLink: string; // "/login" o "/registro"
+  videoYoutube?: string; // URL del video de YouTube (ej: "https://www.youtube.com/watch?v=xxxxx" o "xxxxx")
+  videoTitulo?: string; // "Tutorial: Cómo inscribirse"
+}
+
 // ===== CONFIGURACIÓN PRINCIPAL =====
 export interface ConfiguracionHome {
   id: 'principal';
@@ -135,9 +147,10 @@ export interface ConfiguracionHome {
   // Sección Profesores (FASE 4)
   seccionProfesores?: SeccionProfesoresConfig;
 
+  // Sección Inscripción (FASE 5)
+  seccionInscripcion?: SeccionInscripcionConfig;
+
   // TODO: Agregar resto de secciones en fases posteriores
-  // seccionProfesores?: SeccionProfesoresConfig;
-  // seccionInscripcion?: SeccionInscripcionConfig;
   // footer?: FooterConfig;
 }
 
@@ -385,5 +398,17 @@ export const CONFIG_HOME_DEFAULT: Omit<ConfiguracionHome, 'ultimaActualizacion' 
     textoFooter: 'Con pasión por el evangelio y experiencia en el servicio, nuestros docentes se esfuerzan por transmitir las verdades bíblicas de manera clara y práctica, fomentando el aprendizaje y la aplicación de la enseñanza en la vida diaria.',
     descripcionPie: 'Con pasión por el evangelio y experiencia en el servicio, nuestros docentes se esfuerzan por transmitir las verdades bíblicas de manera clara y práctica, fomentando el aprendizaje y la aplicación de la enseñanza en la vida diaria.',
     usarProfesoresReales: true
+  },
+
+  // ===== SECCIÓN INSCRIPCIÓN (FASE 5) =====
+  seccionInscripcion: {
+    visible: true,
+    titulo: '¿Listo para empezar?',
+    subtitulo: 'Inscríbete ahora en nuestra Escuela Bíblica',
+    descripcion: 'Crea tu cuenta y solicita tu inscripción. Mira nuestro tutorial para conocer el proceso paso a paso.',
+    botonTexto: 'Inscribirme Ahora',
+    botonLink: '/login',
+    videoYoutube: '',
+    videoTitulo: 'Tutorial: Cómo crear cuenta y solicitar inscripción'
   }
 };
