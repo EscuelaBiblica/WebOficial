@@ -60,6 +60,14 @@
             <i class="fas fa-timeline me-2"></i>About / Timeline
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="tabActiva === 'profesores'"
+             (click)="cambiarTab('profesores')"
+             style="cursor: pointer;">
+            <i class="fas fa-chalkboard-teacher me-2"></i>Profesores
+          </a>
+        </li>
       </ul>
     </div>
   </div>
@@ -960,6 +968,151 @@
             <li>Alterna "Posición invertida" para crear el efecto zigzag del timeline</li>
             <li>El mensaje final aparece al final del timeline con estilo especial</li>
             <li>Recomendación: mantén 4 items para un diseño equilibrado</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: PROFESORES -->
+  <div class="row" *ngIf="!loading && tabActiva === 'profesores'">
+    <div class="col-lg-10 mx-auto">
+      <div class="card">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0">
+            <i class="fas fa-chalkboard-teacher me-2"></i>Configuración de Profesores
+          </h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="profesoresForm" (ngSubmit)="guardarCambiosProfesores()">
+
+            <!-- Toggle Visibilidad -->
+            <div class="mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="profesoresVisible" formControlName="visible">
+                <label class="form-check-label" for="profesoresVisible">
+                  <strong>Mostrar sección de Profesores</strong>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Título -->
+            <div class="mb-3">
+              <label for="profesoresTitulo" class="form-label">Título de la sección</label>
+              <input type="text" class="form-control" id="profesoresTitulo" formControlName="titulo"
+                     placeholder="Ej: PROFESORES">
+            </div>
+
+            <!-- Subtítulo -->
+            <div class="mb-3">
+              <label for="profesoresSubtitulo" class="form-label">Subtítulo</label>
+              <input type="text" class="form-control" id="profesoresSubtitulo" formControlName="subtitulo"
+                     placeholder="Ej: Equipo de maestros de la Escuela Bíblica">
+            </div>
+
+            <!-- Descripción del pie -->
+            <div class="mb-3">
+              <label for="profesoresDescripcionPie" class="form-label">Descripción del pie</label>
+              <textarea class="form-control" id="profesoresDescripcionPie" formControlName="descripcionPie" rows="3"
+                        placeholder="Texto que aparece al final de la sección..."></textarea>
+              <div class="form-text">Este texto aparece debajo de la grid de profesores</div>
+            </div>
+
+            <hr>
+
+            <!-- Toggle usar profesores reales vs hardcodeados -->
+            <div class="mb-4">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="usarProfesoresReales" formControlName="usarProfesoresReales">
+                <label class="form-check-label" for="usarProfesoresReales">
+                  <strong>Cargar profesores dinámicamente desde la base de datos de usuarios</strong>
+                </label>
+              </div>
+              <div class="form-text mt-2">
+                <i class="fas fa-info-circle me-1"></i>
+                Cuando está <strong>activado</strong>, se cargan automáticamente los usuarios con rol "profesor" o "docente" desde Firestore.<br>
+                Cuando está <strong>desactivado</strong>, se muestran los profesores predefinidos en el código.
+              </div>
+            </div>
+
+            <!-- Lista de profesores cargados desde Firestore -->
+            <div class="alert alert-info" *ngIf="profesoresForm.value.usarProfesoresReales">
+              <h6><i class="fas fa-database me-2"></i>Profesores cargados desde Firestore:</h6>
+
+              <div *ngIf="loadingProfesores" class="text-center py-3">
+                <div class="spinner-border spinner-border-sm" role="status">
+                  <span class="visually-hidden">Cargando profesores...</span>
+                </div>
+                <span class="ms-2">Cargando profesores...</span>
+              </div>
+
+              <div *ngIf="!loadingProfesores && profesoresReales.length === 0" class="text-muted">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                No hay usuarios con rol "profesor" o "docente" en la base de datos.
+                <br>
+                <small>Los profesores predefinidos se mostrarán como fallback.</small>
+              </div>
+
+              <ul class="list-group mt-3" *ngIf="!loadingProfesores && profesoresReales.length > 0">
+                <li class="list-group-item d-flex align-items-center" *ngFor="let profesor of profesoresReales">
+                  <img [src]="profesor.foto" [alt]="profesor.nombre"
+                       class="rounded-circle me-3"
+                       style="width: 50px; height: 50px; object-fit: cover;">
+                  <div class="flex-grow-1">
+                    <strong>{{ profesor.nombre }}</strong>
+                    <br>
+                    <small class="text-muted">{{ profesor.descripcion }}</small>
+                  </div>
+                </li>
+              </ul>
+
+              <div class="mt-3">
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="cargarProfesores()">
+                  <i class="fas fa-sync-alt me-1"></i>Recargar profesores
+                </button>
+              </div>
+            </div>
+
+            <!-- Mensaje cuando no se usan profesores reales -->
+            <div class="alert alert-secondary" *ngIf="!profesoresForm.value.usarProfesoresReales">
+              <i class="fas fa-code me-2"></i>
+              Se están mostrando los <strong>profesores predefinidos</strong> en el código.<br>
+              <small>Activa el toggle de arriba para cargar profesores dinámicamente desde la base de datos.</small>
+            </div>
+
+            <hr>
+
+            <!-- Botones de acción -->
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success" [disabled]="saving || profesoresForm.invalid">
+                <i class="fas fa-save me-2" *ngIf="!saving"></i>
+                <span class="spinner-border spinner-border-sm me-2" *ngIf="saving"></span>
+                {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+              </button>
+              <button type="button" class="btn btn-warning" (click)="cargarValoresPorDefecto('profesores')" [disabled]="saving">
+                <i class="fas fa-undo me-2"></i>Cargar Valores por Defecto
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Información Técnica Profesores -->
+      <div class="card mt-4 border-info">
+        <div class="card-header bg-info text-white">
+          <h6 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Tips
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="mb-0">
+            <li>Los profesores se cargan automáticamente desde la colección <code>users</code> con rol <code>profesor</code> o <code>docente</code></li>
+            <li>Para agregar o editar profesores, hazlo desde el panel de "Gestión de Usuarios"</li>
+            <li>Asegúrate de que los usuarios tengan una foto de perfil configurada en Cloudinary</li>
+            <li>Si no hay profesores en la BD, se mostrarán automáticamente los profesores predefinidos</li>
+            <li>Los profesores predefinidos son: Eben Ezer, Cristian, Marco, Eliezer, Hernán, Efrain, Kevin, Freddy, y uno más</li>
           </ul>
         </div>
       </div>

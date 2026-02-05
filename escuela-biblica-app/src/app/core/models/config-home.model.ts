@@ -3,7 +3,8 @@
  * FASE 0.5 - Hero ✅
  * FASE 1 - Sección Cursos ✅
  * FASE 2 - Sección Portfolio/Materias ✅
- * FASE 3 - Sección About/Timeline ⏳
+ * FASE 3 - Sección About/Timeline ✅
+ * FASE 4 - Sección Profesores ⏳
  */
 
 // ===== HERO/MASTHEAD =====
@@ -83,6 +84,34 @@ export interface SeccionAboutConfig {
   };
 }
 
+// ===== SECCIÓN PROFESORES =====
+export interface ProfesorInfo {
+  uid?: string; // ID del usuario (opcional para hardcodeados)
+  nombreCompleto: string;
+  nombre?: string; // Alias de nombreCompleto
+  email?: string;
+  fotoPerfil?: string; // URL de la foto
+  foto?: string; // Alias de fotoPerfil
+  especialidad?: string; // Materias que enseña
+  descripcion?: string; // Alias de especialidad
+  redesSociales?: {
+    twitter?: string;
+    facebook?: string;
+    linkedin?: string;
+  };
+}
+
+export interface SeccionProfesoresConfig {
+  visible: boolean;
+  titulo: string; // "PROFESORES"
+  subtitulo: string; // "Equipo de maestros de la Escuela Bíblica"
+  textoFooter?: string; // Descripción al final de la sección (alias)
+  descripcionPie?: string; // Alias de textoFooter
+  usarProfesoresReales?: boolean; // Si true, carga desde users, si false usa hardcodeados
+  // Los profesores se cargan dinámicamente desde la colección users (rol: profesor/docente)
+  // No se almacenan en la config, solo título/subtítulo/footer
+}
+
 // ===== CONFIGURACIÓN PRINCIPAL =====
 export interface ConfiguracionHome {
   id: 'principal';
@@ -102,6 +131,9 @@ export interface ConfiguracionHome {
 
   // Sección About/Timeline (FASE 3)
   seccionAbout?: SeccionAboutConfig;
+
+  // Sección Profesores (FASE 4)
+  seccionProfesores?: SeccionProfesoresConfig;
 
   // TODO: Agregar resto de secciones en fases posteriores
   // seccionProfesores?: SeccionProfesoresConfig;
@@ -343,5 +375,15 @@ export const CONFIG_HOME_DEFAULT: Omit<ConfiguracionHome, 'ultimaActualizacion' 
       linea2: 'Puedes',
       linea3: 'Ser Parte'
     }
+  },
+
+  // ===== SECCIÓN PROFESORES (FASE 4) =====
+  seccionProfesores: {
+    visible: true,
+    titulo: 'PROFESORES',
+    subtitulo: 'Equipo de maestros de la Escuela Bíblica',
+    textoFooter: 'Con pasión por el evangelio y experiencia en el servicio, nuestros docentes se esfuerzan por transmitir las verdades bíblicas de manera clara y práctica, fomentando el aprendizaje y la aplicación de la enseñanza en la vida diaria.',
+    descripcionPie: 'Con pasión por el evangelio y experiencia en el servicio, nuestros docentes se esfuerzan por transmitir las verdades bíblicas de manera clara y práctica, fomentando el aprendizaje y la aplicación de la enseñanza en la vida diaria.',
+    usarProfesoresReales: true
   }
 };

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { HomeConfigService } from '../../core/services/home-config.service';
-import { ConfiguracionHome, CursoInfo, MateriaDetalle, TimelineItem } from '../../core/models/config-home.model';
+import { ConfiguracionHome, CursoInfo, MateriaDetalle, TimelineItem, ProfesorInfo } from '../../core/models/config-home.model';
 
 declare const bootstrap: any;
 
@@ -22,6 +22,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
   // Configuración dinámica del home
   config: ConfiguracionHome | null = null;
   loadingConfig = true;
+
+  // Profesores dinámicos (desde Firestore users)
+  profesores: ProfesorInfo[] = [];
+  loadingProfesores = false;
 
   // Datos de fallback para cursos (si no hay config en Firestore)
   cursosDefault: CursoInfo[] = [
@@ -229,6 +233,90 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   ];
 
+  // Datos de fallback para profesores (si no hay usuarios con rol profesor/docente)
+  profesoresDefault: ProfesorInfo[] = [
+    {
+      uid: 'default-1',
+      nombreCompleto: 'Eben Ezer Cayo',
+      nombre: 'Eben Ezer Cayo',
+      email: '',
+      fotoPerfil: 'assets/img/team/1.jpg',
+      foto: 'assets/img/team/1.jpg',
+      especialidad: 'Métodos de evangelismo general y Homilética',
+      descripcion: 'Métodos de evangelismo general y Homilética'
+    },
+    {
+      uid: 'default-2',
+      nombreCompleto: 'Cristian Villafuerte',
+      nombre: 'Cristian Villafuerte',
+      email: '',
+      fotoPerfil: 'assets/img/team/2.jpg',
+      foto: 'assets/img/team/2.jpg',
+      especialidad: 'Vida Cristiana',
+      descripcion: 'Vida Cristiana'
+    },
+    {
+      uid: 'default-3',
+      nombreCompleto: 'Marco Sanchez',
+      nombre: 'Marco Sanchez',
+      email: '',
+      fotoPerfil: 'assets/img/team/8.jpg',
+      foto: 'assets/img/team/8.jpg',
+      especialidad: 'Síntesis del Antiguo Testamento',
+      descripcion: 'Síntesis del Antiguo Testamento'
+    },
+    {
+      uid: 'default-4',
+      nombreCompleto: 'Eliezer Villafuerte',
+      nombre: 'Eliezer Villafuerte',
+      email: '',
+      fotoPerfil: 'assets/img/team/7.jpg',
+      foto: 'assets/img/team/7.jpg',
+      especialidad: 'Introducción a la Teología Sistemática y Servicio Ministerial',
+      descripcion: 'Introducción a la Teología Sistemática y Servicio Ministerial'
+    },
+    {
+      uid: 'default-5',
+      nombreCompleto: 'Hernán Pérez',
+      nombre: 'Hernán Pérez',
+      email: '',
+      fotoPerfil: 'assets/img/team/5.jpg',
+      foto: 'assets/img/team/5.jpg',
+      especialidad: 'Evangelismo Personal',
+      descripcion: 'Evangelismo Personal'
+    },
+    {
+      uid: 'default-6',
+      nombreCompleto: 'Efrain Villafuerte',
+      nombre: 'Efrain Villafuerte',
+      email: '',
+      fotoPerfil: 'assets/img/team/6.jpg',
+      foto: 'assets/img/team/6.jpg',
+      especialidad: 'Síntesis del Nuevo Testamento',
+      descripcion: 'Síntesis del Nuevo Testamento'
+    },
+    {
+      uid: 'default-7',
+      nombreCompleto: 'Kevin Franco',
+      nombre: 'Kevin Franco',
+      email: '',
+      fotoPerfil: 'assets/img/team/4.jpg',
+      foto: 'assets/img/team/4.jpg',
+      especialidad: 'Bibliología',
+      descripcion: 'Bibliología'
+    },
+    {
+      uid: 'default-8',
+      nombreCompleto: 'Freddy Uvaldez',
+      nombre: 'Freddy Uvaldez',
+      email: '',
+      fotoPerfil: 'assets/img/team/9.jpg',
+      foto: 'assets/img/team/9.jpg',
+      especialidad: 'Misiología',
+      descripcion: 'Misiología'
+    }
+  ];
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -238,6 +326,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
   async ngOnInit() {
     // Cargar configuración del home
     await this.cargarConfiguracion();
+
+    // Cargar profesores desde Firestore
+    await this.cargarProfesores();
 
     // Verificar estado de autenticación
     this.authService.userProfile$.subscribe(userProfile => {
@@ -259,6 +350,44 @@ export class HomeComponent implements OnInit, AfterViewInit {
       // En caso de error, mantener null y el HTML mostrará valores por defecto
     } finally {
       this.loadingConfig = false;
+    }
+  }
+
+  /**
+   * Carga los profesores desde la colección users (rol: profesor/docente)
+   * Si no hay profesores, usa el array profesoresDefault
+   */
+  private async cargarProfesores() {
+    try {
+      this.loadingProfesores = true;
+
+      // Verificar si se debe usar profesores reales o hardcodeados
+      const usarReales = this.config?.seccionProfesores?.usarProfesoresReales !== false;
+
+      if (usarReales) {
+        const profesoresFirestore = await this.homeConfigService.getProfesores();
+        console.log('👨‍🏫 Profesores desde Firestore:', profesoresFirestore);
+
+        if (profesoresFirestore.length > 0) {
+          this.profesores = profesoresFirestore;
+        } else {
+          // Si no hay profesores en Firestore, usar fallback
+          console.log('⚠️ No hay profesores en Firestore, usando hardcodeados');
+          this.profesores = this.profesoresDefault;
+        }
+      } else {
+        // Usar profesores hardcodeados
+        console.log('📋 Usando profesores hardcodeados (usarProfesoresReales = false)');
+        this.profesores = this.profesoresDefault;
+      }
+
+      console.log('✅ Profesores cargados:', this.profesores.length, this.profesores);
+    } catch (error) {
+      console.error('❌ Error cargando profesores:', error);
+      // En caso de error, usar fallback
+      this.profesores = this.profesoresDefault;
+    } finally {
+      this.loadingProfesores = false;
     }
   }
 
@@ -323,17 +452,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { id: 8, titulo: 'Bibliología', curso: 'Curso Avanzado', imagen: 'assets/img/portfolio/8.png', enCurso: false },
     { id: 9, titulo: 'Homilética', curso: 'Curso Avanzado', imagen: 'assets/img/portfolio/9.png', enCurso: false },
     { id: 10, titulo: 'Misiología', curso: 'Curso Avanzado', imagen: 'assets/img/portfolio/10.png', enCurso: false }
-  ];
-
-  profesores = [
-    { nombre: 'Eben Ezer Cayo', materia: 'Métodos de evangelismo general y Homilética', imagen: 'assets/img/team/1.jpg' },
-    { nombre: 'Cristian Villafuerte', materia: 'Vida Cristiana', imagen: 'assets/img/team/2.jpg' },
-    { nombre: 'Marco Sanchez', materia: 'Síntesis del Antiguo Testamento', imagen: 'assets/img/team/8.jpg' },
-    { nombre: 'Eliezer Villafuerte', materia: 'Introducción a la Teología Sistemática y Servicio Ministerial', imagen: 'assets/img/team/7.jpg' },
-    { nombre: 'Hernán Pérez', materia: 'Evangelismo Personal', imagen: 'assets/img/team/5.jpg' },
-    { nombre: 'Efrain Villafuerte', materia: 'Síntesis del Nuevo Testamento', imagen: 'assets/img/team/6.jpg' },
-    { nombre: 'Kevin Franco', materia: 'Bibliología', imagen: 'assets/img/team/4.jpg' },
-    { nombre: 'Freddy Uvaldez', materia: 'Misiología', imagen: 'assets/img/team/9.jpg' }
   ];
 
   async onSubmit(event: Event) {

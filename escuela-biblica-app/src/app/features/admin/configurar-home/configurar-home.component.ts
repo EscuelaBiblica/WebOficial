@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { HomeConfigService } from '../../../core/services/home-config.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
-import { ConfiguracionHome, CONFIG_HOME_DEFAULT } from '../../../core/models/config-home.model';
+import { ConfiguracionHome, CONFIG_HOME_DEFAULT, ProfesorInfo } from '../../../core/models/config-home.model';
 
 @Component({
   selector: 'app-configurar-home',
@@ -19,6 +19,7 @@ export class ConfigurarHomeComponent implements OnInit {
   cursosForm!: FormGroup;
   portfolioForm!: FormGroup;
   aboutForm!: FormGroup;
+  profesoresForm!: FormGroup;
   config: ConfiguracionHome | null = null;
   loading = true;
   saving = false;
@@ -26,8 +27,12 @@ export class ConfigurarHomeComponent implements OnInit {
   currentUserId: string = '';
   mensaje: { tipo: 'success' | 'error' | 'info'; texto: string } | null = null;
 
+  // Profesores cargados desde Firestore
+  profesoresReales: ProfesorInfo[] = [];
+  loadingProfesores = false;
+
   // Tabs de navegación
-  tabActiva: 'hero' | 'cursos' | 'portfolio' | 'about' = 'hero';
+  tabActiva: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' = 'hero';
 
   // Lista de iconos disponibles para cursos
   iconosDisponibles = [
@@ -85,7 +90,8 @@ export class ConfigurarHomeComponent implements OnInit {
       subtitulo2: ['', Validators.required],
       titulo: ['', Validators.required],
       botonTexto: ['', Validators.required],
-      botonLink: ['', Validators.required]
+      botonLink: ['', Validators.required],
+      imagenFondo: ['']
     });
 
     // Crear formulario Cursos
@@ -117,8 +123,20 @@ export class ConfigurarHomeComponent implements OnInit {
       })
     });
 
+    // Crear formulario Profesores
+    this.profesoresForm = this.fb.group({
+      visible: [true],
+      titulo: ['', Validators.required],
+      subtitulo: ['', Validators.required],
+      descripcionPie: ['', Validators.required],
+      usarProfesoresReales: [false]
+    });
+
     // Cargar configuración actual
     await this.cargarConfiguracion();
+
+    // Cargar profesores desde Firestore
+    await this.cargarProfesores();
   }
 
   async cargarConfiguracion() {
@@ -225,12 +243,47 @@ export class ConfigurarHomeComponent implements OnInit {
             this.timelineItems.push(this.crearTimelineItemForm(item));
           });
         }
+
+        // Poblar formulario Profesores si existe
+        if (this.config.seccionProfesores) {
+          this.profesoresForm.patchValue({
+            visible: this.config.seccionProfesores.visible,
+            titulo: this.config.seccionProfesores.titulo,
+            subtitulo: this.config.seccionProfesores.subtitulo,
+            descripcionPie: this.config.seccionProfesores.descripcionPie,
+            usarProfesoresReales: this.config.seccionProfesores.usarProfesoresReales
+          });
+        } else {
+          // Si no hay seccionProfesores en Firestore, cargar datos por defecto
+          this.profesoresForm.patchValue({
+            visible: CONFIG_HOME_DEFAULT.seccionProfesores!.visible,
+            titulo: CONFIG_HOME_DEFAULT.seccionProfesores!.titulo,
+            subtitulo: CONFIG_HOME_DEFAULT.seccionProfesores!.subtitulo,
+            descripcionPie: CONFIG_HOME_DEFAULT.seccionProfesores!.descripcionPie,
+            usarProfesoresReales: CONFIG_HOME_DEFAULT.seccionProfesores!.usarProfesoresReales
+          });
+        }
       }
     } catch (error) {
       console.error('Error cargando configuración:', error);
       this.mostrarMensaje('error', 'Error al cargar la configuración del home');
     } finally {
       this.loading = false;
+    }
+  }
+
+  /**
+   * Carga los profesores desde la colección users (rol: profesor/docente)
+   */
+  async cargarProfesores() {
+    try {
+      this.loadingProfesores = true;
+      this.profesoresReales = await this.homeConfigService.getProfesores();
+    } catch (error) {
+      console.error('Error cargando profesores:', error);
+      this.mostrarMensaje('error', 'Error al cargar profesores desde Firestore');
+    } finally {
+      this.loadingProfesores = false;
     }
   }
 
@@ -626,11 +679,11 @@ export class ConfigurarHomeComponent implements OnInit {
     }
   }
 
-  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio' | 'about') {
+  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores') {
     this.tabActiva = tab;
   }
 
-  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio' | 'about') {
+  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores') {
     if (!confirm('¿Cargar valores por defecto en el formulario? (No se guardará hasta que presiones "Guardar Cambios")')) {
       return;
     }
@@ -687,6 +740,50 @@ export class ConfigurarHomeComponent implements OnInit {
         });
         this.mostrarMensaje('info', 'Valores por defecto cargados en About/Timeline');
         break;
+
+      case 'profesores':
+        this.profesoresForm.patchValue({
+          visible: CONFIG_HOME_DEFAULT.seccionProfesores!.visible,
+          titulo: CONFIG_HOME_DEFAULT.seccionProfesores!.titulo,
+          subtitulo: CONFIG_HOME_DEFAULT.seccionProfesores!.subtitulo,
+          descripcionPie: CONFIG_HOME_DEFAULT.seccionProfesores!.descripcionPie,
+          usarProfesoresReales: CONFIG_HOME_DEFAULT.seccionProfesores!.usarProfesoresReales
+        });
+        this.mostrarMensaje('info', 'Valores por defecto cargados en Profesores');
+        break;
+    }
+  }
+
+  /**
+   * Guarda los cambios de la sección Profesores
+   */
+  async guardarCambiosProfesores() {
+    if (this.profesoresForm.invalid) {
+      alert('Por favor completa todos los campos requeridos.');
+      return;
+    }
+
+    try {
+      this.saving = true;
+      const formData = this.profesoresForm.value;
+
+      await this.homeConfigService.updateSeccionProfesores({
+        visible: formData.visible,
+        titulo: formData.titulo,
+        subtitulo: formData.subtitulo,
+        descripcionPie: formData.descripcionPie,
+        usarProfesoresReales: formData.usarProfesoresReales
+      }, this.currentUserId);
+
+      this.mostrarMensaje('success', '✅ Configuración de Profesores guardada exitosamente');
+
+      // Recargar config para reflejar cambios
+      await this.cargarConfiguracion();
+    } catch (error) {
+      console.error('Error guardando configuración de profesores:', error);
+      alert('Error al guardar la configuración de profesores. Intenta nuevamente.');
+    } finally {
+      this.saving = false;
     }
   }
 

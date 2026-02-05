@@ -158,81 +158,61 @@
             </div>
         </section>
         <!-- Team-->
-        <section class="page-section bg-light" id="team">
+        <section class="page-section bg-light" id="team" *ngIf="config?.seccionProfesores?.visible !== false">
             <div class="container">
                 <div class="text-center">
-                    <h2 class="section-heading text-uppercase">PROFESORES</h2>
-                    <h3 class="section-subheading text-muted">Equipo de maestros de la Escuela Biblica.</h3>
+                    <h2 class="section-heading text-uppercase">{{ config?.seccionProfesores?.titulo || 'PROFESORES' }}</h2>
+                    <h3 class="section-subheading text-muted">{{ config?.seccionProfesores?.subtitulo || 'Equipo de maestros de la Escuela Bíblica.' }}</h3>
                 </div>
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/1.jpg" alt="..." />
-                            <h4>Eben Ezer Cayo</h4>
-                            <p class="text-muted">Metodos de evangelismo general y Homiletica</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/2.jpg" alt="..." />
-                            <h4>Cristian Villafuerte</h4>
-                            <p class="text-muted">Vida Cristiana</p>
 
-                        </div>
+                <!-- Loader mientras cargan profesores -->
+                <div *ngIf="loadingProfesores" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando profesores...</span>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/8.jpg" alt="..." />
-                            <h4>Marco Sanchez</h4>
-                            <p class="text-muted">Sintesis del Antiguo Testamento</p>
+                </div>
 
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
+                <!-- Grid de profesores -->
+                <div class="row" *ngIf="!loadingProfesores">
+                    <div class="col-lg-4" *ngFor="let profesor of profesores">
                         <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/7.jpg" alt="..." />
-                            <h4>Eliezer Villafuerte</h4>
-                            <p class="text-muted">Introduccion a la Teologia Sistematica y Servicio Ministerial</p>
+                            <img class="mx-auto rounded-circle" [src]="profesor.foto" [alt]="profesor.nombre" />
+                            <h4>{{ profesor.nombre }}</h4>
+                            <p class="text-muted">{{ profesor.descripcion }}</p>
 
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/5.jpg" alt="..." />
-                            <h4>Hernán Pérez</h4>
-                            <p class="text-muted">Evangelismo Personal</p>
-
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/6.jpg" alt="..." />
-                            <h4>Efrain Villafuerte</h4>
-                            <p class="text-muted">Sintesis del Nuevo Testamento</p>
-
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/4.jpg" alt="..." />
-                            <h4>Kevin Franco</h4>
-                            <p class="text-muted">Bibliología</p>
-
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="team-member">
-                            <img class="mx-auto rounded-circle" src="assets/img/team/9.jpg" alt="..." />
-                            <h4>Freddy Uvaldez</h4>
-                            <p class="text-muted">Misiología</p>
-                            <!--<a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Twitter Profile"><i class="fab fa-twitter"></i></a>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker Facebook Profile"><i class="fab fa-facebook-f"></i></a>
-                            <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Larry Parker LinkedIn Profile"><i class="fab fa-linkedin-in"></i></a>-->
+                            <!-- Redes sociales (si existen) -->
+                            <div *ngIf="profesor.redesSociales" class="mt-2">
+                                <a *ngIf="profesor.redesSociales.twitter"
+                                   class="btn btn-dark btn-social mx-2"
+                                   [href]="profesor.redesSociales.twitter"
+                                   target="_blank"
+                                   [attr.aria-label]="profesor.nombre + ' Twitter Profile'">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a *ngIf="profesor.redesSociales.facebook"
+                                   class="btn btn-dark btn-social mx-2"
+                                   [href]="profesor.redesSociales.facebook"
+                                   target="_blank"
+                                   [attr.aria-label]="profesor.nombre + ' Facebook Profile'">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a *ngIf="profesor.redesSociales.linkedin"
+                                   class="btn btn-dark btn-social mx-2"
+                                   [href]="profesor.redesSociales.linkedin"
+                                   target="_blank"
+                                   [attr.aria-label]="profesor.nombre + ' LinkedIn Profile'">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-lg-8 mx-auto text-center"><p class="large text-muted">Con pasión por el evangelio y experiencia en el servicio, nuestros docentes se esfuerzan por transmitir las verdades bíblicas de manera clara y práctica, fomentando el aprendizaje y la aplicación de la enseñanza en la vida diaria.</p></div>
+
+                <!-- Descripción del pie -->
+                <div class="row" *ngIf="!loadingProfesores && profesores.length > 0">
+                    <div class="col-lg-8 mx-auto text-center">
+                        <p class="large text-muted">{{ config?.seccionProfesores?.descripcionPie || config?.seccionProfesores?.textoFooter || 'Con pasión por el evangelio y experiencia en el servicio, nuestros docentes se esfuerzan por transmitir las verdades bíblicas de manera clara y práctica, fomentando el aprendizaje y la aplicación de la enseñanza en la vida diaria.' }}</p>
+                    </div>
                 </div>
             </div>
         </section>

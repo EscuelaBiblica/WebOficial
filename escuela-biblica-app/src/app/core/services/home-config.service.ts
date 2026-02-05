@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Firestore, doc, getDoc, setDoc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject, from } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ConfiguracionHome, CONFIG_HOME_DEFAULT } from '../models/config-home.model';
+import { ConfiguracionHome, CONFIG_HOME_DEFAULT, ProfesorInfo } from '../models/config-home.model';
 
 @Injectable({
   providedIn: 'root'
@@ -98,6 +98,13 @@ export class HomeConfigService {
    */
   async updateSeccionAbout(aboutConfig: ConfiguracionHome['seccionAbout'], adminId: string): Promise<void> {
     await this.updateConfiguracion({ seccionAbout: aboutConfig }, adminId);
+  }
+
+  /**
+   * Actualiza solo la sección Profesores (título/subtítulo/footer)
+   */
+  async updateSeccionProfesores(profesoresConfig: ConfiguracionHome['seccionProfesores'], adminId: string): Promise<void> {
+    await this.updateConfiguracion({ seccionProfesores: profesoresConfig }, adminId);
   }
 
   /**
@@ -202,5 +209,84 @@ export class HomeConfigService {
    */
   clearCache(): void {
     localStorage.removeItem(this.CACHE_KEY);
+  }
+
+  /**
+   * Obtiene los profesores desde la colección de usuarios
+   * Filtra por rol 'profesor' o 'docente'
+   */
+  async getProfesores(): Promise<ProfesorInfo[]> {
+    try {
+      const usersRef = collection(this.firestore, 'users');
+      const q = query(usersRef, where('rol', 'in', ['profesor', 'docente']));
+      const querySnapshot = await getDocs(q);
+
+      // Obtener todos los cursos de Firestore para mapear IDs a nombres
+      const cursosRef = collection(this.firestore, 'cursos');
+      const cursosSnapshot = await getDocs(cursosRef);
+      const cursosMap = new Map<string, string>();
+
+      // Crear mapa de ID -> nombre de curso desde Firestore
+      cursosSnapshot.forEach((cursoDoc) => {
+        const cursoData = cursoDoc.data();
+        const nombreCurso = cursoData['nombre'] || cursoData['titulo'] || cursoDoc.id;
+        cursosMap.set(cursoDoc.id, nombreCurso);
+      });
+
+      console.log('📚 Cursos cargados desde Firestore:', Array.from(cursosMap.entries()));
+
+      const profesores: ProfesorInfo[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+
+        // Construir nombre completo concatenando nombre + apellido
+        const nombre = data['nombre'] || '';
+        const apellido = data['apellido'] || '';
+        const nombreCompleto = `${nombre} ${apellido}`.trim() || 'Sin nombre';
+
+        // Foto de perfil
+        const fotoPerfil = data['fotoPerfil'] || 'assets/img/team/default.jpg';
+
+        // Especialidad: mostrar cursos asignados con sus nombres
+        let especialidad = '';
+        if (data['cursosAsignados'] && Array.isArray(data['cursosAsignados']) && data['cursosAsignados'].length > 0) {
+          console.log('🔍 Cursos asignados para', nombreCompleto, ':', data['cursosAsignados']);
+
+          // Mapear IDs a nombres de cursos
+          const nombresCursos = data['cursosAsignados']
+            .map((cursoId: string) => {
+              const nombreCurso = cursosMap.get(cursoId);
+              console.log(`  Mapeando ID "${cursoId}" -> "${nombreCurso || 'NO ENCONTRADO'}"`);
+              return nombreCurso || cursoId;
+            })
+            .filter((nombre: string) => nombre); // Filtrar vacíos
+
+          especialidad = nombresCursos.length > 0
+            ? nombresCursos.join(', ')
+            : 'Materias por asignar';
+        } else {
+          // Si no tiene cursos, usar especialidad personalizada o texto por defecto
+          especialidad = data['especialidad'] || 'Materias por asignar';
+        }
+
+        profesores.push({
+          uid: doc.id,
+          nombreCompleto: nombreCompleto,
+          nombre: nombreCompleto, // Alias para HTML
+          email: data['email'] || '',
+          fotoPerfil: fotoPerfil,
+          foto: fotoPerfil, // Alias para HTML
+          especialidad: especialidad,
+          descripcion: especialidad, // Alias para HTML
+          redesSociales: data['redesSociales'] || {}
+        });
+      });
+
+      console.log('🎓 Total profesores cargados desde Firestore:', profesores.length);
+      return profesores;
+    } catch (error) {
+      console.error('Error obteniendo profesores:', error);
+      return [];
+    }
   }
 }
