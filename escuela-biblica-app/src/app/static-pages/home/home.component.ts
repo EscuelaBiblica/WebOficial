@@ -515,4 +515,29 @@ export class HomeComponent implements OnInit, AfterViewInit {
     const embedUrl = `https://www.youtube.com/embed/${videoId}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
+
+  /**
+   * Codifica el mensaje de WhatsApp para URL
+   */
+  encodeWhatsappMessage(message: string): string {
+    return encodeURIComponent(message);
+  }
+
+  /**
+   * Construye el enlace de WhatsApp con número y mensaje opcional
+   */
+  getWhatsappLink(): string {
+    if (!this.config?.footer?.whatsappNumero) {
+      return 'https://wa.me/59163332108';
+    }
+
+    const numero = this.config.footer.whatsappNumero.replace(/[^0-9]/g, '');
+    const mensaje = this.config.footer.whatsappMensaje;
+
+    if (mensaje) {
+      return `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+    }
+
+    return `https://wa.me/${numero}`;
+  }
 }

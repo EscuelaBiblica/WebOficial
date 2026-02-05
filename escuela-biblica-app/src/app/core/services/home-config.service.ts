@@ -115,6 +115,13 @@ export class HomeConfigService {
   }
 
   /**
+   * Actualiza solo la sección Footer
+   */
+  async updateSeccionFooter(footerConfig: ConfiguracionHome['footer'], adminId: string): Promise<void> {
+    await this.updateConfiguracion({ footer: footerConfig }, adminId);
+  }
+
+  /**
    * Inicializa la configuración con valores por defecto
    * Se ejecuta una sola vez al crear el sistema
    */

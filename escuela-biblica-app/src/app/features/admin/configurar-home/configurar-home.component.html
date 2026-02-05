@@ -76,6 +76,14 @@
             <i class="fas fa-user-plus me-2"></i>Inscripción
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             [class.active]="tabActiva === 'footer'"
+             (click)="cambiarTab('footer')"
+             style="cursor: pointer;">
+            <i class="fas fa-info-circle me-2"></i>Footer
+          </a>
+        </li>
       </ul>
     </div>
   </div>
@@ -1195,6 +1203,190 @@
                   {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
                 </button>
                 <button type="button" class="btn btn-outline-secondary" (click)="cargarValoresPorDefecto('inscripcion')" [disabled]="saving">
+                  <i class="fas fa-undo me-2"></i>Cargar Valores por Defecto
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 7: Footer -->
+  <div class="row" *ngIf="!loading && tabActiva === 'footer'">
+    <div class="col-12">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-info-circle me-2"></i>Configuración del Footer
+          </h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="footerForm">
+            <!-- Visibilidad -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="footerVisible" formControlName="visible">
+                  <label class="form-check-label" for="footerVisible">
+                    <strong>Mostrar Footer</strong>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Copyright -->
+            <div class="row mb-3">
+              <div class="col-md-8">
+                <label for="footerCopyright" class="form-label">Texto de Copyright *</label>
+                <input type="text" class="form-control" id="footerCopyright" formControlName="textoCopyright" placeholder="Escuela Biblica CAVEVID">
+              </div>
+              <div class="col-md-4">
+                <label for="footerAnio" class="form-label">Año *</label>
+                <input type="number" class="form-control" id="footerAnio" formControlName="anioCopyright" min="2000" max="2100">
+              </div>
+            </div>
+
+            <!-- Redes Sociales -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <h6 class="border-bottom pb-2 mb-3">Redes Sociales</h6>
+              </div>
+            </div>
+
+            <div formGroupName="redesSociales">
+              <!-- Facebook -->
+              <div formGroupName="facebook" class="row mb-3">
+                <div class="col-md-1 d-flex align-items-center">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="facebookVisible" formControlName="visible">
+                  </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                  <label class="form-label mb-0">
+                    <i class="fab fa-facebook me-2"></i>Facebook
+                  </label>
+                </div>
+                <div class="col-md-9">
+                  <input type="url" class="form-control" formControlName="url" placeholder="https://facebook.com/tu-pagina">
+                </div>
+              </div>
+
+              <!-- Instagram -->
+              <div formGroupName="instagram" class="row mb-3">
+                <div class="col-md-1 d-flex align-items-center">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="instagramVisible" formControlName="visible">
+                  </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                  <label class="form-label mb-0">
+                    <i class="fab fa-instagram me-2"></i>Instagram
+                  </label>
+                </div>
+                <div class="col-md-9">
+                  <input type="url" class="form-control" formControlName="url" placeholder="https://instagram.com/tu-perfil">
+                </div>
+              </div>
+
+              <!-- Twitter -->
+              <div formGroupName="twitter" class="row mb-3">
+                <div class="col-md-1 d-flex align-items-center">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="twitterVisible" formControlName="visible">
+                  </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                  <label class="form-label mb-0">
+                    <i class="fab fa-twitter me-2"></i>Twitter
+                  </label>
+                </div>
+                <div class="col-md-9">
+                  <input type="url" class="form-control" formControlName="url" placeholder="https://twitter.com/tu-usuario">
+                </div>
+              </div>
+
+              <!-- YouTube -->
+              <div formGroupName="youtube" class="row mb-3">
+                <div class="col-md-1 d-flex align-items-center">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="youtubeVisible" formControlName="visible">
+                  </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                  <label class="form-label mb-0">
+                    <i class="fab fa-youtube me-2"></i>YouTube
+                  </label>
+                </div>
+                <div class="col-md-9">
+                  <input type="url" class="form-control" formControlName="url" placeholder="https://youtube.com/@tu-canal">
+                </div>
+              </div>
+
+              <!-- LinkedIn -->
+              <div formGroupName="linkedin" class="row mb-3">
+                <div class="col-md-1 d-flex align-items-center">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="linkedinVisible" formControlName="visible">
+                  </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                  <label class="form-label mb-0">
+                    <i class="fab fa-linkedin me-2"></i>LinkedIn
+                  </label>
+                </div>
+                <div class="col-md-9">
+                  <input type="url" class="form-control" formControlName="url" placeholder="https://linkedin.com/company/tu-empresa">
+                </div>
+              </div>
+            </div>
+
+            <!-- WhatsApp -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <h6 class="border-bottom pb-2 mb-3">Contacto WhatsApp</h6>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="whatsappVisible" formControlName="whatsappVisible">
+                  <label class="form-check-label" for="whatsappVisible">
+                    <strong>Mostrar contacto de WhatsApp</strong>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="whatsappTexto" class="form-label">Texto de contacto *</label>
+                <input type="text" class="form-control" id="whatsappTexto" formControlName="whatsappTexto" placeholder="Contacto WhatsApp:">
+              </div>
+              <div class="col-md-6">
+                <label for="whatsappNumero" class="form-label">Número de WhatsApp *</label>
+                <input type="text" class="form-control" id="whatsappNumero" formControlName="whatsappNumero" placeholder="+591 63332108">
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-12">
+                <label for="whatsappMensaje" class="form-label">Mensaje predeterminado (opcional)</label>
+                <textarea class="form-control" id="whatsappMensaje" formControlName="whatsappMensaje" rows="2" placeholder="Hola, quiero participar del curso de la Escuela Biblica!"></textarea>
+                <small class="form-text text-muted">Este mensaje se enviará automáticamente al hacer clic en el enlace de WhatsApp</small>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <button type="button" class="btn btn-primary me-2" (click)="guardarCambiosFooter()" [disabled]="saving || footerForm.invalid">
+                  <i class="fas fa-save me-2"></i>
+                  {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="cargarValoresPorDefecto('footer')" [disabled]="saving">
                   <i class="fas fa-undo me-2"></i>Cargar Valores por Defecto
                 </button>
               </div>

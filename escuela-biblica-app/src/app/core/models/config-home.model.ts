@@ -124,6 +124,24 @@ export interface SeccionInscripcionConfig {
   videoTitulo?: string; // "Tutorial: Cómo inscribirse"
 }
 
+// ===== SECCIÓN FOOTER (FASE 6) =====
+export interface RedSocial {
+  tipo: 'facebook' | 'instagram' | 'twitter' | 'youtube' | 'linkedin';
+  url: string;
+  visible: boolean;
+}
+
+export interface SeccionFooterConfig {
+  visible: boolean;
+  textoCopyright: string; // "Escuela Biblica CAVEVID"
+  anioCopyright: number; // 2025
+  redesSociales: RedSocial[];
+  whatsappVisible: boolean;
+  whatsappTexto: string; // "Contacto WhatsApp:"
+  whatsappNumero: string; // "+591 63332108"
+  whatsappMensaje: string; // "Hola, quiero participar del curso de la Escuela Biblica!"
+}
+
 // ===== CONFIGURACIÓN PRINCIPAL =====
 export interface ConfiguracionHome {
   id: 'principal';
@@ -150,8 +168,8 @@ export interface ConfiguracionHome {
   // Sección Inscripción (FASE 5)
   seccionInscripcion?: SeccionInscripcionConfig;
 
-  // TODO: Agregar resto de secciones en fases posteriores
-  // footer?: FooterConfig;
+  // Sección Footer (FASE 6)
+  footer?: SeccionFooterConfig;
 }
 
 // ===== CONFIGURACIÓN POR DEFECTO (Valores actuales del index.html) =====
@@ -410,5 +428,23 @@ export const CONFIG_HOME_DEFAULT: Omit<ConfiguracionHome, 'ultimaActualizacion' 
     botonLink: '/login',
     videoYoutube: '',
     videoTitulo: 'Tutorial: Cómo crear cuenta y solicitar inscripción'
+  },
+
+  // ===== SECCIÓN FOOTER (FASE 6) =====
+  footer: {
+    visible: true,
+    textoCopyright: 'Escuela Biblica CAVEVID',
+    anioCopyright: 2025,
+    redesSociales: [
+      { tipo: 'facebook', url: '', visible: false },
+      { tipo: 'instagram', url: '', visible: false },
+      { tipo: 'twitter', url: '', visible: false },
+      { tipo: 'youtube', url: '', visible: false },
+      { tipo: 'linkedin', url: '', visible: false }
+    ],
+    whatsappVisible: true,
+    whatsappTexto: 'Contacto WhatsApp:',
+    whatsappNumero: '+591 63332108',
+    whatsappMensaje: 'Hola, quiero participar del curso de la Escuela Biblica!'
   }
 };

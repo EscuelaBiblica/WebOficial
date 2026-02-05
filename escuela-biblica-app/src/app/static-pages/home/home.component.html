@@ -267,18 +267,46 @@
         </section>
 
         <!-- Footer-->
-        <footer class="footer py-4">
+        <footer class="footer py-4" *ngIf="config?.footer?.visible !== false">
             <div class="container">
                 <div class="row align-items-center">
-                    <div class="col-lg-4 text-lg-start">Copyright &copy; Escuela Biblica CAVEVID 2025</div>
-                    <div class="col-lg-4 my-3 my-lg-0">
-                         <!--<a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                        <a class="btn btn-dark btn-social mx-2" href="#!" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>-->
+                    <!-- Copyright -->
+                    <div class="col-lg-4 text-lg-start">
+                        Copyright &copy; {{ config?.footer?.textoCopyright || 'Escuela Biblica CAVEVID' }} {{ config?.footer?.anioCopyright || 2025 }}
                     </div>
+
+                    <!-- Redes Sociales -->
+                    <div class="col-lg-4 my-3 my-lg-0">
+                        <ng-container *ngFor="let red of config?.footer?.redesSociales || []">
+                            <a *ngIf="red.visible && red.url"
+                               class="btn btn-dark btn-social mx-2"
+                               [href]="red.url"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               [attr.aria-label]="red.tipo">
+                                <i class="fab" [ngClass]="{
+                                    'fa-facebook-f': red.tipo === 'facebook',
+                                    'fa-instagram': red.tipo === 'instagram',
+                                    'fa-twitter': red.tipo === 'twitter',
+                                    'fa-youtube': red.tipo === 'youtube',
+                                    'fa-linkedin-in': red.tipo === 'linkedin'
+                                }"></i>
+                            </a>
+                        </ng-container>
+                    </div>
+
+                    <!-- WhatsApp -->
                     <div class="col-lg-4 text-lg-end">
-                        <a class="link-dark text-decoration-none me-3" href="https://wa.me/59163332108?text=Hola,%20quiero%20participar%20del%20curso%20de%20la%20Escuela%20Biblica!">Contacto WhatsApp:</a>
-                        <a class="link-dark text-decoration-none" href="https://wa.me/59163332108?text=Hola,%20quiero%20participar%20del%20curso%20de%20la%20Escuela%20Biblica!">+591 63332108</a>
+                        <ng-container *ngIf="config?.footer?.whatsappVisible !== false && config?.footer?.whatsappNumero">
+                            <a class="link-dark text-decoration-none me-3"
+                               [href]="getWhatsappLink()">
+                                {{ config?.footer?.whatsappTexto || 'Contacto WhatsApp:' }}
+                            </a>
+                            <a class="link-dark text-decoration-none"
+                               [href]="getWhatsappLink()">
+                                {{ config?.footer?.whatsappNumero || '+591 63332108' }}
+                            </a>
+                        </ng-container>
                     </div>
                 </div>
             </div>

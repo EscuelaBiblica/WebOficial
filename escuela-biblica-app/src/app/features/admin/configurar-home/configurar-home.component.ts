@@ -21,6 +21,7 @@ export class ConfigurarHomeComponent implements OnInit {
   aboutForm!: FormGroup;
   profesoresForm!: FormGroup;
   inscripcionForm!: FormGroup;
+  footerForm!: FormGroup;
   config: ConfiguracionHome | null = null;
   loading = true;
   saving = false;
@@ -33,7 +34,7 @@ export class ConfigurarHomeComponent implements OnInit {
   loadingProfesores = false;
 
   // Tabs de navegación
-  tabActiva: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion' = 'hero';
+  tabActiva: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion' | 'footer' = 'hero';
 
   // Lista de iconos disponibles para cursos
   iconosDisponibles = [
@@ -141,6 +142,39 @@ export class ConfigurarHomeComponent implements OnInit {
       botonLink: ['', Validators.required],
       videoYoutube: [''],
       videoTitulo: ['']
+    });
+
+    // Crear formulario Footer
+    this.footerForm = this.fb.group({
+      visible: [true],
+      textoCopyright: ['', Validators.required],
+      anioCopyright: [new Date().getFullYear(), [Validators.required, Validators.min(2000), Validators.max(2100)]],
+      whatsappVisible: [true],
+      whatsappTexto: ['', Validators.required],
+      whatsappNumero: ['', Validators.required],
+      whatsappMensaje: [''],
+      redesSociales: this.fb.group({
+        facebook: this.fb.group({
+          url: [''],
+          visible: [false]
+        }),
+        instagram: this.fb.group({
+          url: [''],
+          visible: [false]
+        }),
+        twitter: this.fb.group({
+          url: [''],
+          visible: [false]
+        }),
+        youtube: this.fb.group({
+          url: [''],
+          visible: [false]
+        }),
+        linkedin: this.fb.group({
+          url: [''],
+          visible: [false]
+        })
+      })
     });
 
     // Cargar configuración actual
@@ -298,6 +332,76 @@ export class ConfigurarHomeComponent implements OnInit {
             botonLink: CONFIG_HOME_DEFAULT.seccionInscripcion!.botonLink,
             videoYoutube: CONFIG_HOME_DEFAULT.seccionInscripcion!.videoYoutube,
             videoTitulo: CONFIG_HOME_DEFAULT.seccionInscripcion!.videoTitulo
+          });
+        }
+
+        // Poblar formulario Footer si existe
+        if (this.config.footer) {
+          const redesSociales = this.config.footer.redesSociales;
+          this.footerForm.patchValue({
+            visible: this.config.footer.visible,
+            textoCopyright: this.config.footer.textoCopyright,
+            anioCopyright: this.config.footer.anioCopyright,
+            whatsappVisible: this.config.footer.whatsappVisible,
+            whatsappTexto: this.config.footer.whatsappTexto,
+            whatsappNumero: this.config.footer.whatsappNumero,
+            whatsappMensaje: this.config.footer.whatsappMensaje,
+            redesSociales: {
+              facebook: {
+                url: redesSociales.find(r => r.tipo === 'facebook')?.url || '',
+                visible: redesSociales.find(r => r.tipo === 'facebook')?.visible || false
+              },
+              instagram: {
+                url: redesSociales.find(r => r.tipo === 'instagram')?.url || '',
+                visible: redesSociales.find(r => r.tipo === 'instagram')?.visible || false
+              },
+              twitter: {
+                url: redesSociales.find(r => r.tipo === 'twitter')?.url || '',
+                visible: redesSociales.find(r => r.tipo === 'twitter')?.visible || false
+              },
+              youtube: {
+                url: redesSociales.find(r => r.tipo === 'youtube')?.url || '',
+                visible: redesSociales.find(r => r.tipo === 'youtube')?.visible || false
+              },
+              linkedin: {
+                url: redesSociales.find(r => r.tipo === 'linkedin')?.url || '',
+                visible: redesSociales.find(r => r.tipo === 'linkedin')?.visible || false
+              }
+            }
+          });
+        } else {
+          // Si no hay footer en Firestore, cargar datos por defecto
+          const redesDefault = CONFIG_HOME_DEFAULT.footer!.redesSociales;
+          this.footerForm.patchValue({
+            visible: CONFIG_HOME_DEFAULT.footer!.visible,
+            textoCopyright: CONFIG_HOME_DEFAULT.footer!.textoCopyright,
+            anioCopyright: CONFIG_HOME_DEFAULT.footer!.anioCopyright,
+            whatsappVisible: CONFIG_HOME_DEFAULT.footer!.whatsappVisible,
+            whatsappTexto: CONFIG_HOME_DEFAULT.footer!.whatsappTexto,
+            whatsappNumero: CONFIG_HOME_DEFAULT.footer!.whatsappNumero,
+            whatsappMensaje: CONFIG_HOME_DEFAULT.footer!.whatsappMensaje,
+            redesSociales: {
+              facebook: {
+                url: redesDefault.find(r => r.tipo === 'facebook')?.url || '',
+                visible: redesDefault.find(r => r.tipo === 'facebook')?.visible || false
+              },
+              instagram: {
+                url: redesDefault.find(r => r.tipo === 'instagram')?.url || '',
+                visible: redesDefault.find(r => r.tipo === 'instagram')?.visible || false
+              },
+              twitter: {
+                url: redesDefault.find(r => r.tipo === 'twitter')?.url || '',
+                visible: redesDefault.find(r => r.tipo === 'twitter')?.visible || false
+              },
+              youtube: {
+                url: redesDefault.find(r => r.tipo === 'youtube')?.url || '',
+                visible: redesDefault.find(r => r.tipo === 'youtube')?.visible || false
+              },
+              linkedin: {
+                url: redesDefault.find(r => r.tipo === 'linkedin')?.url || '',
+                visible: redesDefault.find(r => r.tipo === 'linkedin')?.visible || false
+              }
+            }
           });
         }
       }
@@ -716,11 +820,11 @@ export class ConfigurarHomeComponent implements OnInit {
     }
   }
 
-  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion') {
+  cambiarTab(tab: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion' | 'footer') {
     this.tabActiva = tab;
   }
 
-  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion') {
+  cargarValoresPorDefecto(seccion: 'hero' | 'cursos' | 'portfolio' | 'about' | 'profesores' | 'inscripcion' | 'footer') {
     if (!confirm('¿Cargar valores por defecto en el formulario? (No se guardará hasta que presiones "Guardar Cambios")')) {
       return;
     }
@@ -802,6 +906,42 @@ export class ConfigurarHomeComponent implements OnInit {
         });
         this.mostrarMensaje('info', 'Valores por defecto cargados en Inscripción');
         break;
+
+      case 'footer':
+        const redesDefault = CONFIG_HOME_DEFAULT.footer!.redesSociales;
+        this.footerForm.patchValue({
+          visible: CONFIG_HOME_DEFAULT.footer!.visible,
+          textoCopyright: CONFIG_HOME_DEFAULT.footer!.textoCopyright,
+          anioCopyright: CONFIG_HOME_DEFAULT.footer!.anioCopyright,
+          whatsappVisible: CONFIG_HOME_DEFAULT.footer!.whatsappVisible,
+          whatsappTexto: CONFIG_HOME_DEFAULT.footer!.whatsappTexto,
+          whatsappNumero: CONFIG_HOME_DEFAULT.footer!.whatsappNumero,
+          whatsappMensaje: CONFIG_HOME_DEFAULT.footer!.whatsappMensaje,
+          redesSociales: {
+            facebook: {
+              url: redesDefault.find(r => r.tipo === 'facebook')?.url || '',
+              visible: redesDefault.find(r => r.tipo === 'facebook')?.visible || false
+            },
+            instagram: {
+              url: redesDefault.find(r => r.tipo === 'instagram')?.url || '',
+              visible: redesDefault.find(r => r.tipo === 'instagram')?.visible || false
+            },
+            twitter: {
+              url: redesDefault.find(r => r.tipo === 'twitter')?.url || '',
+              visible: redesDefault.find(r => r.tipo === 'twitter')?.visible || false
+            },
+            youtube: {
+              url: redesDefault.find(r => r.tipo === 'youtube')?.url || '',
+              visible: redesDefault.find(r => r.tipo === 'youtube')?.visible || false
+            },
+            linkedin: {
+              url: redesDefault.find(r => r.tipo === 'linkedin')?.url || '',
+              visible: redesDefault.find(r => r.tipo === 'linkedin')?.visible || false
+            }
+          }
+        });
+        this.mostrarMensaje('info', 'Valores por defecto cargados en Footer');
+        break;
     }
   }
 
@@ -854,6 +994,45 @@ export class ConfigurarHomeComponent implements OnInit {
     } catch (error) {
       console.error('Error guardando sección inscripción:', error);
       this.mostrarMensaje('error', 'Error al guardar la sección de inscripción');
+    } finally {
+      this.saving = false;
+    }
+  }
+
+  async guardarCambiosFooter() {
+    if (this.footerForm.invalid) {
+      this.mostrarMensaje('error', 'Por favor completa todos los campos requeridos');
+      return;
+    }
+
+    try {
+      this.saving = true;
+      const formValue = this.footerForm.value;
+
+      // Convertir formato del formulario a formato del modelo
+      const footerConfig = {
+        visible: formValue.visible,
+        textoCopyright: formValue.textoCopyright,
+        anioCopyright: formValue.anioCopyright,
+        whatsappVisible: formValue.whatsappVisible,
+        whatsappTexto: formValue.whatsappTexto,
+        whatsappNumero: formValue.whatsappNumero,
+        whatsappMensaje: formValue.whatsappMensaje,
+        redesSociales: [
+          { tipo: 'facebook' as const, url: formValue.redesSociales.facebook.url, visible: formValue.redesSociales.facebook.visible },
+          { tipo: 'instagram' as const, url: formValue.redesSociales.instagram.url, visible: formValue.redesSociales.instagram.visible },
+          { tipo: 'twitter' as const, url: formValue.redesSociales.twitter.url, visible: formValue.redesSociales.twitter.visible },
+          { tipo: 'youtube' as const, url: formValue.redesSociales.youtube.url, visible: formValue.redesSociales.youtube.visible },
+          { tipo: 'linkedin' as const, url: formValue.redesSociales.linkedin.url, visible: formValue.redesSociales.linkedin.visible }
+        ]
+      };
+
+      await this.homeConfigService.updateSeccionFooter(footerConfig, this.currentUserId);
+      this.mostrarMensaje('success', 'Sección Footer guardada correctamente');
+      await this.cargarConfiguracion();
+    } catch (error) {
+      console.error('Error guardando sección footer:', error);
+      this.mostrarMensaje('error', 'Error al guardar la sección del footer');
     } finally {
       this.saving = false;
     }
