@@ -1,27 +1,132 @@
-# EscuelaBiblicaApp
+# 🎓 Escuela Bíblica CAVEVID - Sistema de Gestión
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.7.
+Sistema web completo para la administración y gestión de Escuela Bíblica con panel de administración, gestión de estudiantes, profesores y contenido dinámico.
 
-## Development server
+## 🚀 Tecnologías
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- **Angular 17** - Framework frontend con Standalone Components
+- **Firebase** - Backend as a Service
+  - Firestore - Base de datos
+  - Authentication - Sistema de login
+  - Storage - Almacenamiento de archivos
+- **Cloudinary** - Gestión de imágenes
+- **Vercel** - Hosting y deployment
 
-## Code scaffolding
+## 📋 Características
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### Para Administradores
+- ✅ Panel de administración completo
+- ✅ Gestión de usuarios (estudiantes y profesores)
+- ✅ Configuración dinámica del Home (6 fases completas)
+- ✅ Gestión de cursos y materias
+- ✅ Control de inscripciones
+- ✅ Dashboard con estadísticas
 
-## Build
+### Para Profesores
+- ✅ Gestión de materias asignadas
+- ✅ Asignación de actividades
+- ✅ Revisión de trabajos
+- ✅ Calificaciones
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+### Para Estudiantes
+- ✅ Inscripción en cursos
+- ✅ Visualización de materias
+- ✅ Sistema de desbloqueo progresivo
+- ✅ Entrega de actividades
+- ✅ Seguimiento de progreso
 
-## Running unit tests
+## 🛠️ Instalación
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```bash
+# Clonar el repositorio
+git clone <tu-repositorio>
 
-## Running end-to-end tests
+# Instalar dependencias
+npm install
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+# Ejecutar en desarrollo
+npm start
+```
 
-## Further help
+La aplicación estará disponible en `http://localhost:4200/`
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+## 🚀 Deployment en Vercel
+
+Este proyecto está preconfigurado para Vercel con auto-deploy desde GitHub.
+
+**Ver guía completa:** [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+**Resumen rápido:**
+1. Sube el código a GitHub
+2. Importa el proyecto en Vercel
+3. Vercel detecta Angular automáticamente
+4. Cada `git push` despliega automáticamente
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── app/
+│   ├── core/                  # Servicios, guards, modelos
+│   ├── features/             # Módulos por funcionalidad
+│   │   ├── admin/           # Panel de administración
+│   │   ├── estudiante/      # Dashboard estudiante
+│   │   └── profesor/        # Dashboard profesor
+│   ├── shared/              # Componentes compartidos
+│   └── static-pages/        # Páginas públicas (home, login)
+├── assets/                  # Imágenes, estilos, scripts
+└── environments/            # Configuración Firebase
+```
+
+## 🔑 Roles y Permisos
+
+- **Admin**: Acceso total al sistema
+- **Profesor**: Gestión de materias y actividades
+- **Estudiante**: Acceso a cursos y actividades
+
+## 📦 Scripts Disponibles
+
+```bash
+npm start              # Servidor de desarrollo
+npm run build          # Build de producción
+npm run vercel-build   # Build para Vercel (automático)
+npm test               # Tests unitarios
+```
+
+## 🔐 Seguridad
+
+- Reglas de Firestore configuradas en `firestore.rules`
+- Guards de Angular para protección de rutas
+- Validación de roles en backend y frontend
+
+## 📝 Configuración Firebase
+
+Actualizar `src/environments/environment.ts` con tus credenciales:
+
+```typescript
+export const environment = {
+  production: false,
+  firebase: {
+    apiKey: "tu-api-key",
+    authDomain: "tu-auth-domain",
+    projectId: "tu-project-id",
+    // ... resto de configuración
+  }
+};
+```
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-caracteristica`)
+3. Commit cambios (`git commit -m 'Agregar nueva característica'`)
+4. Push a la rama (`git push origin feature/nueva-caracteristica`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto es privado y está desarrollado para Escuela Bíblica CAVEVID.
+
+---
+
+**Desarrollado con ❤️ para Escuela Bíblica CAVEVID** 🙏
